@@ -8,7 +8,6 @@ import os
 from datetime import datetime, timedelta
 from utils.openai_utils import summarize, tag_news
 
-
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def fetch_url_content(url):
     try:
@@ -71,14 +70,16 @@ def parse_rss_feed(url, tags):
 def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
 
+def get_audio_files(directory='media'):
+    return [f for f in os.listdir(directory) if f.startswith('voice_') and f.endswith('.mp3')]
+
+audio_files = get_audio_files()
+
 def create_audio_player(index):
-    audio_file = f"media/voice_{index}.mp3"
-    return f'''
-    <audio controls>
-        <source src="{audio_file}" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-    '''
+    if index < len(audio_files):
+        audio_file = f"media/{audio_files[index]}"
+        return audio_file
+    return None
 
 # Streamlit app title
 st.title("NASDAQ Baltic Market News")
@@ -87,34 +88,13 @@ st.title("NASDAQ Baltic Market News")
 rss_url = "https://nasdaqbaltic.com/statistics/en/news?rss=1&num=100&issuer="
 
 tag_list = [
-    "shares_issue",
-    "observation_status",
-    "financial_results",
-    "mergers_acquisitions",
-    "annual_general_meeting",
-    "management_change",
-    "annual_report",
-    "exchange_announcement",
-    "ex_dividend_date",
-    "converence_call_webinar",
-    "geographic_expansion",
-    "analyst_coverage",
-    "financial_calendar",
-    "share_capital_increase",
-    "bond_fixing",
-    "fund_data_announcement",
-    "capital_investment",
-    "calendar_of_events",
-    "voting_rights",
-    "law_legal_issues",
-    "initial_public_offering",
-    "regulatory_filings",
-    "joint_venture",
-    "partnerships",
-    "environmental_social_governance",
-    "business_contracts",
-    "financing_agreements",
-    "patents"
+    "shares_issue", "observation_status", "financial_results", "mergers_acquisitions",
+    "annual_general_meeting", "management_change", "annual_report", "exchange_announcement",
+    "ex_dividend_date", "converence_call_webinar", "geographic_expansion", "analyst_coverage",
+    "financial_calendar", "share_capital_increase", "bond_fixing", "fund_data_announcement",
+    "capital_investment", "calendar_of_events", "voting_rights", "law_legal_issues",
+    "initial_public_offering", "regulatory_filings", "joint_venture", "partnerships",
+    "environmental_social_governance", "business_contracts", "financing_agreements", "patents"
 ]
 tags = ",".join(tag_list)
 
@@ -128,7 +108,6 @@ if st.button("Refresh Data"):
 def get_cached_dataframe():
     df = parse_rss_feed(rss_url, tags)
     df['Title'] = df.apply(lambda x: make_clickable(x['Title'], x['Link']), axis=1)
-    df['Podcast'] = df.index.map(lambda x: create_audio_player(x+1))  # Add 1 to index to start from voice_1.mp3
     return df
 
 df = get_cached_dataframe()
@@ -145,8 +124,18 @@ start_idx = (page - 1) * items_per_page
 end_idx = start_idx + items_per_page
 
 # Display DataFrame for the current page
-columns_to_display = ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?', 'Podcast']
-st.markdown(df[columns_to_display][start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
+columns_to_display = ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']
+df_display = df[columns_to_display][start_idx:end_idx]
+
+# Display each row with its audio player
+for index, row in df_display.iterrows():
+    st.write(row.to_frame().T.to_html(escape=False, index=False), unsafe_allow_html=True)
+    audio_file = create_audio_player(index)
+    if audio_file:
+        st.audio(audio_file)
+    else:
+        st.write("No audio available for this item.")
+    st.write("---")  # Add a separator between items
 
 # Display pagination information
 st.write(f"Page {page} of {total_pages}")
