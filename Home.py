@@ -2,45 +2,24 @@ import streamlit as st
 import pandas as pd
 import feedparser
 import requests
-from dotenv import load_dotenv
-from openai import OpenAI
+from bs4 import BeautifulSoup
 from gptcache import cache
 import os
 from datetime import datetime, timedelta
+from utils.openai_utils import summarize, tag_news
 
-# Load the environment variables from the .env file
-load_dotenv()
-
-client = OpenAI()
-cache.init()
-cache.set_openai_key()
-
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def tag_news(news, tags):
-    prompt = f'Answering with one tag only, pick up the best tag which describes the news "{news}" from the list: {tags}'
-    response = client.chat.completions.create(
-        model="gpt-4-0125-preview",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    tag = response.choices[0].message.content
-    return tag
-
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def summarize(news):
-    prompt = f'Summarize this in an exciting way like a sports commentary: "{news}"'
-    response = client.chat.completions.create(
-        model="gpt-4-0125-preview",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    summary = response.choices[0].message.content
-    return summary
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def fetch_url_content(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        return response.text
+        soup = BeautifulSoup(response.content, 'html.parser')
+        # Extract text from paragraphs, removing any scripts or styles
+        for script in soup(["script", "style"]):
+            script.decompose()
+        text = ' '.join([p.get_text() for p in soup.find_all('p')])
+        return text[:1000]  # Return first 1000 characters
     except requests.RequestException:
         return "Failed to fetch content"
 
@@ -56,10 +35,19 @@ def parse_rss_feed(url, tags):
         link = item.link
         pub_date = item.published
         issuer = item.get('issuer', 'N/A')
-        content = fetch_url_content(link)[:500]
+        content = fetch_url_content(link)
 
-        event_tag = tag_news(content, tags)
-        exciting_summary = summarize(content)
+        try:
+            event_tag = tag_news(content, tags)
+        except Exception as e:
+            st.warning(f"Error tagging news: {str(e)}")
+            event_tag = "Error in tagging"
+
+        try:
+            exciting_summary = summarize(content)
+        except Exception as e:
+            st.warning(f"Error summarizing news: {str(e)}")
+            exciting_summary = "Error in summarization"
 
         data.append({
             'Title': title,
@@ -71,7 +59,14 @@ def parse_rss_feed(url, tags):
             'Why it Moves?': exciting_summary
         })
 
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    
+    # Ensure all expected columns are present
+    for col in ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']:
+        if col not in df.columns:
+            df[col] = "N/A"
+
+    return df
 
 def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
@@ -140,7 +135,8 @@ start_idx = (page - 1) * items_per_page
 end_idx = start_idx + items_per_page
 
 # Display DataFrame for the current page
-st.write(df[['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']][start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
+columns_to_display = ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']
+st.write(df[columns_to_display][start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
 
 # Display pagination information
 st.write(f"Page {page} of {total_pages}")

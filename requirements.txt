@@ -4,3 +4,5 @@ feedparser
 python-dotenv
 openai
 gptcache
+beautifulsoup4
+SQLAlchemy
