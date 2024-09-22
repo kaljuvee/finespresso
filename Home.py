@@ -3,29 +3,38 @@ import pandas as pd
 import feedparser
 import requests
 from dotenv import load_dotenv
-from openai import OpenAI  # Ensure this points to your actual OpenAI client and cache module
+from openai import OpenAI
 from gptcache import cache
-
 import os
+from datetime import datetime, timedelta
+
 # Load the environment variables from the .env file
 load_dotenv()
-
-#DB_NAME = os.getenv('OPENAI_API_KEY')
-#os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY")
 
 client = OpenAI()
 cache.init()
 cache.set_openai_key()
 
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def tag_news(news, tags):
     prompt = f'Answering with one tag only, pick up the best tag which describes the news "{news}" from the list: {tags}'
     response = client.chat.completions.create(
-        model="gpt-4-0125-preview",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}]
     )
     tag = response.choices[0].message.content
     return tag
 
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def fetch_url_content(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.text
+    except requests.RequestException:
+        return "Failed to fetch content"
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def parse_rss_feed(url, tags):
     feed = feedparser.parse(url)
     items = feed.entries
@@ -36,7 +45,7 @@ def parse_rss_feed(url, tags):
         'Publication Date': [],
         'Issuer': [],
         'Content': [],
-        'Event': []  # New column for tagged events
+        'Event': []
     }
 
     for item in items:
@@ -44,12 +53,10 @@ def parse_rss_feed(url, tags):
         link = item.link
         pub_date = item.published
         issuer = item.get('issuer', 'N/A')
-        content = fetch_url_content(link)[:500]  # Limit content to 500 characters for tagging
+        content = fetch_url_content(link)[:500]
 
-        # Tag the news content
         event_tag = tag_news(content, tags)
 
-        # Append data
         data['Title'].append(title)
         data['Link'].append(link)
         data['Publication Date'].append(pub_date)
@@ -58,14 +65,6 @@ def parse_rss_feed(url, tags):
         data['Event'].append(event_tag)
 
     return pd.DataFrame(data)
-
-def fetch_url_content(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
-    except requests.RequestException:
-        return "Failed to fetch content"
 
 def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
@@ -108,11 +107,22 @@ tag_list = [
 ]
 tags = ",".join(tag_list)
 
-# Parse the RSS feed and tag news
-df = parse_rss_feed(rss_url, tags)
+# Add a button to refresh the data
+if st.button("Refresh Data"):
+    st.cache_data.clear()
+    st.experimental_rerun()
 
-# Format 'Title' column to hyperlink
-df['Title'] = df.apply(lambda x: make_clickable(x['Title'], x['Link']), axis=1)
+# Parse the RSS feed and tag news
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def get_cached_dataframe():
+    df = parse_rss_feed(rss_url, tags)
+    df['Title'] = df.apply(lambda x: make_clickable(x['Title'], x['Link']), axis=1)
+    return df
+
+df = get_cached_dataframe()
 
 # Display DataFrame in Streamlit, including the new 'Event' column
 st.write(df[['Title', 'Publication Date', 'Issuer', 'Event']].to_html(escape=False, index=False), unsafe_allow_html=True)
+
+# Display last update time
+st.write(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
