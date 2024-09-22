@@ -19,11 +19,21 @@ cache.set_openai_key()
 def tag_news(news, tags):
     prompt = f'Answering with one tag only, pick up the best tag which describes the news "{news}" from the list: {tags}'
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-0125-preview",
         messages=[{"role": "user", "content": prompt}]
     )
     tag = response.choices[0].message.content
     return tag
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def summarize(news):
+    prompt = f'Summarize this in an exciting way like a sports commentary: "{news}"'
+    response = client.chat.completions.create(
+        model="gpt-4-0125-preview",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    summary = response.choices[0].message.content
+    return summary
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def fetch_url_content(url):
@@ -37,16 +47,9 @@ def fetch_url_content(url):
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def parse_rss_feed(url, tags):
     feed = feedparser.parse(url)
-    items = feed.entries
+    items = feed.entries[:100]  # Limit to 100 news items
 
-    data = {
-        'Title': [],
-        'Link': [],
-        'Publication Date': [],
-        'Issuer': [],
-        'Content': [],
-        'Event': []
-    }
+    data = []
 
     for item in items:
         title = item.title
@@ -56,13 +59,17 @@ def parse_rss_feed(url, tags):
         content = fetch_url_content(link)[:500]
 
         event_tag = tag_news(content, tags)
+        exciting_summary = summarize(content)
 
-        data['Title'].append(title)
-        data['Link'].append(link)
-        data['Publication Date'].append(pub_date)
-        data['Issuer'].append(issuer)
-        data['Content'].append(content)
-        data['Event'].append(event_tag)
+        data.append({
+            'Title': title,
+            'Link': link,
+            'Publication Date': pub_date,
+            'Issuer': issuer,
+            'Content': content,
+            'Event': event_tag,
+            'Why it Moves?': exciting_summary
+        })
 
     return pd.DataFrame(data)
 
@@ -70,7 +77,7 @@ def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
 
 # Streamlit app title
-st.title("Finespresso - NASDAQ Baltic Market News")
+st.title("NASDAQ Baltic Market News")
 
 # Define your RSS feed URL and tags
 rss_url = "https://nasdaqbaltic.com/statistics/en/news?rss=1&num=100&issuer="
@@ -121,8 +128,22 @@ def get_cached_dataframe():
 
 df = get_cached_dataframe()
 
-# Display DataFrame in Streamlit, including the new 'Event' column
-st.write(df[['Title', 'Publication Date', 'Issuer', 'Event']].to_html(escape=False, index=False), unsafe_allow_html=True)
+# Pagination
+items_per_page = 25
+total_pages = len(df) // items_per_page + (1 if len(df) % items_per_page > 0 else 0)
+
+# Add a select box for page selection
+page = st.selectbox("Select Page", options=range(1, total_pages + 1))
+
+# Calculate start and end indices for the current page
+start_idx = (page - 1) * items_per_page
+end_idx = start_idx + items_per_page
+
+# Display DataFrame for the current page
+st.write(df[['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']][start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
+
+# Display pagination information
+st.write(f"Page {page} of {total_pages}")
 
 # Display last update time
 st.write(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
