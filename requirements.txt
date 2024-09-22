@@ -1,0 +1,6 @@
+pandas
+streamlit
+feedparser
+python-dotenv
+openai
+gptcache
