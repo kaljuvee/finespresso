@@ -23,7 +23,7 @@ def tag_news(news, tags):
     return tag
 
 def summarize(news):
-    prompt = f'Summarize this in an exciting way like a sports commentary: "{news}"'
+    prompt = f'Summarize this in a brief, exciting way like a sports commentary (50 words or less): "{news}"'
     response = client.chat.completions.create(
         model=model_name,
         messages=[{"role": "user", "content": prompt}]
