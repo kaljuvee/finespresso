@@ -71,6 +71,10 @@ def parse_rss_feed(url, tags):
 def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
 
+def create_audio_player(index):
+    audio_file = f"media/voice_{index}.mp3"
+    return f'<audio controls><source src="{audio_file}" type="audio/mpeg">Your browser does not support the audio element.</audio>'
+
 # Streamlit app title
 st.title("NASDAQ Baltic Market News")
 
@@ -119,6 +123,7 @@ if st.button("Refresh Data"):
 def get_cached_dataframe():
     df = parse_rss_feed(rss_url, tags)
     df['Title'] = df.apply(lambda x: make_clickable(x['Title'], x['Link']), axis=1)
+    df['Podcast'] = df.index.map(create_audio_player)
     return df
 
 df = get_cached_dataframe()
@@ -135,7 +140,7 @@ start_idx = (page - 1) * items_per_page
 end_idx = start_idx + items_per_page
 
 # Display DataFrame for the current page
-columns_to_display = ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']
+columns_to_display = ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?', 'Podcast']
 st.write(df[columns_to_display][start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
 
 # Display pagination information
