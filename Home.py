@@ -70,7 +70,7 @@ def make_clickable(title, link):
     return f'<a target="_blank" href="{link}">{title}</a>'
 
 # Streamlit app title
-st.title("NASDAQ Baltic Market News")
+st.title("Finespresso - NASDAQ Baltic Market News")
 
 # Define your RSS feed URL and tags
 rss_url = "https://nasdaqbaltic.com/statistics/en/news?rss=1&num=100&issuer="
