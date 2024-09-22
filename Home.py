@@ -116,7 +116,7 @@ tags = ",".join(tag_list)
 # Add a button to refresh the data
 if st.button("Refresh Data"):
     st.cache_data.clear()
-    st.experimental_rerun()
+    st.rerun()
 
 # Parse the RSS feed and tag news
 @st.cache_data(ttl=3600)  # Cache for 1 hour
