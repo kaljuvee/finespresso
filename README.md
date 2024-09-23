@@ -1,6 +1,6 @@
-# NASDAQ OMX Nordic News Scraper
+# Playwright Web Scraper
 
-This repository contains a Python script that uses Playwright to scrape company news from the NASDAQ OMX Nordic website.
+This repository contains a Python script that uses Playwright to scrape tables from websites. It supports multiple browser engines and custom URLs.
 
 ## Prerequisites
 
@@ -11,8 +11,8 @@ This repository contains a Python script that uses Playwright to scrape company 
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/nasdaq-nordic-scraper.git
-   cd nasdaq-nordic-scraper
+   git clone https://github.com/yourusername/web-scraper.git
+   cd web-scraper
    ```
 
 2. Create a virtual environment (optional but recommended):
@@ -31,17 +31,26 @@ This repository contains a Python script that uses Playwright to scrape company 
    playwright install
    ```
 
+   Note: If you're on WSL (Windows Subsystem for Linux) or encountering issues, you might need to install additional dependencies:
+   ```
+   sudo apt-get update
+   sudo apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libxcb1 libxkbcommon0 libx11-6 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0 libwayland-client0
+   ```
+
 ## Usage
 
 To run the web scraper:
 
 ```
-python scrape_nasdaq_news.py [OPTIONS]
+python scrape_website.py [URL] [OPTIONS]
 ```
+
+### Arguments:
+
+- `URL`: The URL of the website to scrape (required)
 
 ### Options:
 
-- `--url`: The URL to scrape (default: https://www.nasdaqomxnordic.com/news/companynews)
 - `--browser {chromium,firefox,webkit}`: Browser to use (default: chromium)
 - `--ignore-https-errors`: Ignore HTTPS errors (optional)
 
@@ -50,18 +59,14 @@ python scrape_nasdaq_news.py [OPTIONS]
 To scrape the NASDAQ OMX Nordic company news using Chromium:
 
 ```
-python scrape_nasdaq_news.py
+python scrape_website.py https://www.nasdaqomxnordic.com/news/companynews --browser chromium
 ```
 
 To use Firefox and ignore HTTPS errors:
 
 ```
-python scrape_nasdaq_news.py --browser firefox --ignore-https-errors
+python fetch_news.py https://www.nasdaqomxnordic.com/news/companynews --browser firefox --ignore-https-errors
 ```
-
-## Output
-
-The script will create a CSV file named `nasdaq_news.csv` in the current directory, containing the scraped news data.
 
 ## Troubleshooting
 
