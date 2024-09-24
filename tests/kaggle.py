@@ -19,15 +19,24 @@ async def scrape_kaggle_competitions(url, browser_type, ignore_https_errors):
             raise ValueError(f"Invalid browser type: {browser_type}")
 
         logging.info(f"Launching {browser_type} browser")
-        browser = await browser_launch.launch(headless=False)  # Changed to headless=False for debugging
+        browser = await browser_launch.launch(headless=False)
         context = await browser.new_context(ignore_https_errors=ignore_https_errors)
         page = await context.new_page()
 
         logging.info(f"Navigating to {url}")
-        await page.goto(url, wait_until='networkidle', timeout=60000)
+        await page.goto(url, wait_until='networkidle', timeout=120000)  # Increased timeout to 2 minutes
 
         logging.info("Waiting for the page to load completely")
-        await page.wait_for_load_state('networkidle', timeout=60000)
+        try:
+            # Wait for the site-container to be visible
+            await page.wait_for_selector('#site-container', state='visible', timeout=120000)
+            
+            # Wait for dynamic content to load (adjust as needed)
+            await page.wait_for_selector('div[role="main"]', state='visible', timeout=60000)
+        except PlaywrightTimeoutError:
+            logging.error("Timeout waiting for content to load")
+            await browser.close()
+            return pd.DataFrame()
 
         # Take a screenshot for debugging
         await page.screenshot(path="kaggle_page.png", full_page=True)
@@ -39,52 +48,35 @@ async def scrape_kaggle_competitions(url, browser_type, ignore_https_errors):
             f.write(content)
         logging.info("Page content saved as kaggle_page_content.html")
 
-        logging.info("Checking for competition elements")
-        selectors = ['.competition-row', '.competition-list-view__item', '.c-list-view__item', 'div[data-component-name="CompetitionsList"]']
-        competition_selector = None
-        for selector in selectors:
-            elements = await page.query_selector_all(selector)
-            if elements:
-                competition_selector = selector
-                logging.info(f"Found {len(elements)} elements with selector: {selector}")
-                break
-
-        if not competition_selector:
-            logging.error("Could not find any competition elements")
-            await browser.close()
-            return pd.DataFrame()
-
-        logging.info("Extracting competition data")
-        competitions_data = []
-        
-        competition_rows = await page.query_selector_all(competition_selector)
-        for row in competition_rows:
-            title_elem = await row.query_selector('h3, .competition-title')
-            title = await title_elem.inner_text() if title_elem else "N/A"
-            
-            link_elem = await row.query_selector('a')
-            link = await link_elem.get_attribute('href') if link_elem else "N/A"
-            
-            description_elem = await row.query_selector('p, .competition-description')
-            description = await description_elem.inner_text() if description_elem else "N/A"
-            
-            deadline_elem = await row.query_selector('.competition-deadline, .c-list-view__meta')
-            deadline = await deadline_elem.inner_text() if deadline_elem else "N/A"
-            
-            reward_elem = await row.query_selector('.competition-reward')
-            reward = await reward_elem.inner_text() if reward_elem else "N/A"
-            
-            team_elem = await row.query_selector('.competition-team')
-            team = await team_elem.inner_text() if team_elem else "N/A"
-            
-            competitions_data.append({
-                'Title': title,
-                'Link': f"https://www.kaggle.com{link}" if link != "N/A" else "N/A",
-                'Description': description,
-                'Deadline': deadline,
-                'Reward': reward,
-                'Team': team
-            })
+        logging.info("Attempting to extract competition data")
+        try:
+            competitions_data = await page.evaluate("""
+                () => {
+                    const competitions = [];
+                    const items = document.querySelectorAll('div[role="main"] > div > div');
+                    items.forEach(item => {
+                        const titleElem = item.querySelector('h3');
+                        const linkElem = item.querySelector('a');
+                        const descriptionElem = item.querySelector('p');
+                        const metaElems = item.querySelectorAll('span');
+                        
+                        if (titleElem && linkElem) {
+                            competitions.push({
+                                Title: titleElem.textContent.trim(),
+                                Link: linkElem.href,
+                                Description: descriptionElem ? descriptionElem.textContent.trim() : 'N/A',
+                                Deadline: metaElems[0] ? metaElems[0].textContent.trim() : 'N/A',
+                                Reward: metaElems[1] ? metaElems[1].textContent.trim() : 'N/A',
+                                Team: metaElems[2] ? metaElems[2].textContent.trim() : 'N/A'
+                            });
+                        }
+                    });
+                    return competitions;
+                }
+            """)
+        except Exception as e:
+            logging.error(f"Error extracting competition data: {str(e)}")
+            competitions_data = []
 
         await browser.close()
         
