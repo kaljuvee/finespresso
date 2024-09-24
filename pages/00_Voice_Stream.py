@@ -11,7 +11,7 @@ ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 ELEVENLABS_VOICE_ID = "Xb7hH8MSUJpSbSDYk0k2"
 ELEVENLABS_URL = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
 
-def text_to_speech(text):
+def text_to_speech(text, language):
     headers = {
         "Accept": "audio/mpeg",
         "Content-Type": "application/json",
@@ -24,7 +24,8 @@ def text_to_speech(text):
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.5
-        }
+        },
+        "language": language  # Add language to the request data
     }
     
     response = requests.post(ELEVENLABS_URL, json=data, headers=headers)
@@ -40,8 +41,10 @@ def main():
     
     text_input = st.text_area("Enter the text you want to convert to speech:", "Hello, this is a test of ElevenLabs text-to-speech with Streamlit.")
     
+    language = st.selectbox("Choose a language:", ["en", "fr", "de", "it", "es", "sv"])
+    
     if st.button("Generate Speech"):
-        audio_content = text_to_speech(text_input)
+        audio_content = text_to_speech(text_input, language)
         
         if audio_content:
             # Create a temporary file to store the audio
