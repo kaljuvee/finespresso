@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from gptcache import cache
 import os
 from datetime import datetime, timedelta
-from utils.openai_utils import summarize, tag_news
+from utils.openai_util import summarize, tag_news
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def fetch_url_content(url):
