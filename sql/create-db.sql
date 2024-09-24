@@ -2,8 +2,12 @@ CREATE TABLE news (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255),
     link VARCHAR(255),
-    description TEXT,
+    company VARCHAR(255),
     published_date TIMESTAMP WITH TIME ZONE,
-    summary TEXT,
-    ai_insights TEXT
+    content TEXT,
+    ai_summary TEXT,
+    industry VARCHAR(255),
+    publisher_topic VARCHAR(255),
+    ai_topic VARCHAR(255),
+    publisher VARCHAR(255)
 );
