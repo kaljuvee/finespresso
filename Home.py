@@ -52,7 +52,7 @@ def parse_rss_feed(url, tags):
             'Title': title,
             'Link': link,
             'Publication Date': pub_date,
-            'Issuer': issuer,
+            'Company': issuer,
             'Content': content,
             'Event': event_tag,
             'Why it Moves?': exciting_summary
@@ -61,7 +61,7 @@ def parse_rss_feed(url, tags):
     df = pd.DataFrame(data)
     
     # Ensure all expected columns are present
-    for col in ['Title', 'Publication Date', 'Issuer', 'Event', 'Why it Moves?']:
+    for col in ['Title', 'Publication Date', 'Company', 'Event', 'Why it Moves?']:
         if col not in df.columns:
             df[col] = "N/A"
 

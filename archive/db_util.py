@@ -15,6 +15,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 # Create SQLAlchemy engine and session
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
+
 # Define the News model
 Base = declarative_base()
 
@@ -47,8 +48,8 @@ def add_news_items(news_items):
     finally:
         session.close()
 
-def map_to_db(df, source):
-    logging.info(f"Mapping dataframe to News objects for source: {source}")
+def map_to_db(df):
+    logging.info("Mapping dataframe to News objects")
     news_items = []
     for _, row in df.iterrows():
         news_item = News(
@@ -56,20 +57,12 @@ def map_to_db(df, source):
             link=row['link'],
             company=row['company'],
             published_date=row['published_date'],
+            ai_summary=row['ai_summary'],
+            industry=row['industry'],
             publisher_topic=row['publisher_topic'],
+            ai_topic=row['ai_topic'],
             publisher=row['publisher']
         )
-
-        # Map industry only if source is 'euronext'
-        if source == 'euronext':
-            news_item.industry = row['industry']
-
-        # Map AI-related fields only if publisher is 'ai'
-        if row['publisher'] == 'ai':
-            news_item.ai_summary = row['ai_summary']
-            news_item.ai_topic = row['ai_topic']
-
         news_items.append(news_item)
-    
     logging.info(f"Created {len(news_items)} News objects")
     return news_items

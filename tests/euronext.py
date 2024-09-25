@@ -3,8 +3,11 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 import pandas as pd
 import argparse
 import logging
+from utils.db_util import map_to_db, add_news_items
+from utils.openai_util import summarize, tag_news
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+URL_PREFIX = 'https://live.euronext.com'
 
 async def scrape_euronext(url, browser_type, ignore_https_errors):
     async with async_playwright() as p:
@@ -44,12 +47,13 @@ async def scrape_euronext(url, browser_type, ignore_https_errors):
                 topic = await columns[4].inner_text()
                 
                 news_data.append({
-                    'Date': date,
-                    'Company': company,
-                    'Title': title,
-                    'Link': link,
-                    'Industry': industry,
-                    'Topic': topic
+                    'published_date': date,
+                    'company': company,
+                    'title': title,
+                    'link': URL_PREFIX + link,
+                    'industry': industry,
+                    'publisher_topic': topic,
+                    'publisher': 'Euronext'
                 })
 
         await browser.close()
@@ -70,6 +74,14 @@ async def main():
         print(df.head())
         df.to_csv('euronext_news.csv', index=False)
         logging.info("Data saved to euronext_news.csv")
+        
+        # Map dataframe to News objects
+        news_items = map_to_db(df, 'euronext')
+
+        # Store news in the database
+        logging.info(f"Adding {len(news_items)} news items to the database")
+        add_news_items(news_items)
+        logging.info("Added news items to the database")
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
 

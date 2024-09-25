@@ -3,11 +3,10 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 import pandas as pd
 import argparse
 import logging
-from utils.db_util import map_to_db, add_news_items
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-async def scrape_nasdaq_news(url, browser_type, ignore_https_errors):
+async def scrape_euronext(url, browser_type, ignore_https_errors):
     async with async_playwright() as p:
         browser_types = {
             'chromium': p.chromium,
@@ -27,29 +26,30 @@ async def scrape_nasdaq_news(url, browser_type, ignore_https_errors):
         await page.goto(url)
 
         logging.info("Waiting for the news table to load")
-        await page.wait_for_selector('#searchNewsTableId')
+        await page.wait_for_selector('table.table')
 
         logging.info("Extracting news data")
         news_data = []
-        rows = await page.query_selector_all('#searchNewsTableId tbody tr')
+        rows = await page.query_selector_all('table.table tbody tr')
         
         for row in rows:
             columns = await row.query_selector_all('td')
             if len(columns) >= 5:
                 date = await columns[0].inner_text()
                 company = await columns[1].inner_text()
-                category = await columns[2].inner_text()
-                headline_link = await columns[3].query_selector('a')
-                headline = await headline_link.inner_text() if headline_link else "N/A"
-                link = await headline_link.get_attribute('href') if headline_link else "N/A"
+                title_link = await columns[2].query_selector('a')
+                title = await title_link.inner_text() if title_link else "N/A"
+                link = await title_link.get_attribute('href') if title_link else "N/A"
+                industry = await columns[3].inner_text()
+                topic = await columns[4].inner_text()
                 
                 news_data.append({
-                    'published_date': date,
-                    'company': company,
-                    'title': headline,
-                    'link': link,
-                    'publisher_topic': category,
-                    'publisher': 'Nasdaq OMX Nordic'
+                    'Date': date,
+                    'Company': company,
+                    'Title': title,
+                    'Link': link,
+                    'Industry': industry,
+                    'Topic': topic
                 })
 
         await browser.close()
@@ -59,21 +59,17 @@ async def scrape_nasdaq_news(url, browser_type, ignore_https_errors):
         return df
 
 async def main():
-    parser = argparse.ArgumentParser(description="Web scraper for NASDAQ OMX Nordic Company News (First Page Only)")
-    parser.add_argument("--url", default="https://www.nasdaqomxnordic.com/news/companynews", help="URL to scrape")
+    parser = argparse.ArgumentParser(description="Web scraper for Euronext Company News")
+    parser.add_argument("--url", default="https://live.euronext.com/en/products/equities/company-news", help="URL to scrape")
     parser.add_argument("--browser", default="firefox", choices=["chromium", "firefox", "webkit"], help="Browser to use")
     parser.add_argument("--ignore-https-errors", action="store_true", help="Ignore HTTPS errors")
     args = parser.parse_args()
 
     try:
-        df = await scrape_nasdaq_news(args.url, args.browser, args.ignore_https_errors)
+        df = await scrape_euronext(args.url, args.browser, args.ignore_https_errors)
         print(df.head())
-        df.to_csv('data/omx.csv', index=False)
-        logging.info("Data saved to nasdaq_news_first_page.csv")
-        news_items = map_to_db(df, 'omx')
-
-        add_news_items(news_items)
-        logging.info(f"Added {len(news_items)} news items to the database")
+        df.to_csv('euronext_news.csv', index=False)
+        logging.info("Data saved to euronext_news.csv")
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
 
