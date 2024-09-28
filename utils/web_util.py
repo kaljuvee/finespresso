@@ -1,8 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import feedparser
-import streamlit as st
-import pandas as pd
 
 def fetch_url_content(url):
     try:

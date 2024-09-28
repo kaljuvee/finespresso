@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Download Scheduler</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+        h1, h2 { color: #333; }
+        button, select { margin-right: 10px; padding: 10px; cursor: pointer; }
+        #status, .task-status { font-weight: bold; margin-top: 20px; }
+        #history { list-style-type: none; padding: 0; }
+        #history li { background: #f4f4f4; margin: 5px 0; padding: 10px; border-radius: 5px; }
+        .task-container { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Data Download Scheduler</h1>
+    
+    <div>
+        <button onclick="startScheduler()">Start Scheduler</button>
+        <button onclick="stopScheduler()">Stop Scheduler</button>
+    </div>
+
+    <div id="status">Scheduler Status: <span id="schedulerStatus">Unknown</span></div>
+
+    {% for task_name, info in task_info.items() %}
+    <div class="task-container">
+        <h2>{{ task_name|capitalize }} Task</h2>
+        <button onclick="runTask('{{ task_name }}')">Run {{ task_name|capitalize }} Task</button>
+        <select id="{{ task_name }}Frequency" onchange="setFrequency('{{ task_name }}')">
+            {% for i in range(1, 13) %}
+            <option value="{{ i }}" {% if info.frequency == i %}selected{% endif %}>Every {{ i }} hour{% if i > 1 %}s{% endif %}</option>
+            {% endfor %}
+        </select>
+        <div class="task-status">Status: <span id="{{ task_name }}Status">{{ info.status }}</span></div>
+    </div>
+    {% endfor %}
+
+    <h2>Run History</h2>
+    <ul id="history"></ul>
+
+    <script>
+        function startScheduler() {
+            axios.post('/start').then(response => {
+                alert(response.data.status);
+                updateSchedulerStatus();
+            });
+        }
+
+        function stopScheduler() {
+            axios.post('/stop').then(response => {
+                alert(response.data.status);
+                updateSchedulerStatus();
+            });
+        }
+
+        function runTask(taskName) {
+            axios.post(`/run_task/${taskName}`).then(response => {
+                alert(response.data.status);
+                updateTaskInfo();
+                updateLogs();
+            });
+        }
+
+        function setFrequency(taskName) {
+            const frequency = document.getElementById(`${taskName}Frequency`).value;
+            axios.post(`/set_frequency/${taskName}`, `frequency=${frequency}`).then(response => {
+                alert(response.data.status);
+                updateTaskInfo();
+            });
+        }
+
+        function updateLogs() {
+            axios.get('/get_logs').then(response => {
+                const historyList = document.getElementById('history');
+                historyList.innerHTML = '';
+                response.data.logs.forEach(log => {
+                    const li = document.createElement('li');
+                    li.textContent = log;
+                    historyList.appendChild(li);
+                });
+            });
+        }
+
+        function updateSchedulerStatus() {
+            axios.get('/scheduler_status').then(response => {
+                document.getElementById('schedulerStatus').textContent = response.data.status;
+            });
+        }
+
+        function updateTaskInfo() {
+            axios.get('/task_info').then(response => {
+                for (const [task, info] of Object.entries(response.data)) {
+                    document.getElementById(`${task}Status`).textContent = info.status;
+                    document.getElementById(`${task}Frequency`).value = info.frequency;
+                }
+            });
+        }
+
+        // Update logs, scheduler status, and task info every 5 seconds
+        setInterval(() => {
+            updateLogs();
+            updateSchedulerStatus();
+            updateTaskInfo();
+        }, 5000);
+
+        // Initial update
+        updateLogs();
+        updateSchedulerStatus();
+        updateTaskInfo();
+    </script>
+</body>
+</html>

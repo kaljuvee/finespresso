@@ -1,93 +1,113 @@
-# Playwright Web Scraper
+# Flask Scheduler Application
 
-This repository contains a Python script that uses Playwright to scrape tables from websites. It supports multiple browser engines and custom URLs.
+This application is a Flask-based web service that schedules and runs data download tasks for Baltics, Euronext, and OMX markets.
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.7+
 - pip (Python package installer)
 
 ## Installation
 
-1. Clone this repository:
+1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/web-scraper.git
-   cd web-scraper
+   git clone [your-repo-url]
+   cd [your-repo-directory]
    ```
 
-2. Create a virtual environment (optional but recommended):
+2. Create a virtual environment:
    ```
    python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
    ```
 
-3. Install the required packages:
+3. Activate the virtual environment:
+   - On Windows:
+     ```
+     venv\Scripts\activate
+     ```
+   - On macOS and Linux:
+     ```
+     source venv/bin/activate
+     ```
+
+4. Install the required packages:
    ```
-   pip install playwright pandas
+   pip install -r requirements.txt
    ```
 
-4. Install Playwright browsers:
+## Configuration
+
+1. Create a `.env` file in the root directory with the following content:
    ```
-   playwright install
+   DATABASE_URL=your_database_url_here
    ```
 
-   Note: If you're on WSL (Windows Subsystem for Linux) or encountering issues, you might need to install additional dependencies:
+2. Create a `.flaskenv` file in the root directory with the following content:
    ```
-   sudo apt-get update
-   sudo apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libxcb1 libxkbcommon0 libx11-6 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0 libwayland-client0
+   FLASK_APP=app.py
+   FLASK_ENV=production
+   FLASK_RUN_PORT=8000
+   FLASK_RUN_HOST=0.0.0.0
    ```
+
+## Running the Application
+
+### Development Mode
+
+To run the application in development mode:
+
+```
+flask run
+```
+
+### Production Mode with Gunicorn
+
+1. Ensure Gunicorn is installed:
+   ```
+   pip install gunicorn
+   ```
+
+2. Create a `start.sh` file in the root directory with the following content:
+   ```bash
+   #!/bin/bash
+   gunicorn app:app -b 0.0.0.0:$PORT
+   ```
+
+3. Make the script executable:
+   ```
+   chmod +x start.sh
+   ```
+
+4. Run the application:
+   ```
+   ./start.sh
+   ```
+
+   If you need to specify a port, you can do so by setting the PORT environment variable:
+   ```
+   PORT=8000 ./start.sh
+   ```
+
+## Deployment
+
+For deployment on platforms like Render:
+
+1. Set the build command to:
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. Set the start command to:
+   ```
+   ./start.sh
+   ```
+
+3. Ensure all environment variables (like DATABASE_URL) are set in your deployment platform's configuration.
 
 ## Usage
 
-To run the web scraper:
+Once the application is running:
 
-```
-python scrape_website.py [URL] [OPTIONS]
-```
-
-### Arguments:
-
-- `URL`: The URL of the website to scrape (required)
-
-### Options:
-
-- `--browser {chromium,firefox,webkit}`: Browser to use (default: chromium)
-- `--ignore-https-errors`: Ignore HTTPS errors (optional)
-
-### Example:
-
-To scrape the NASDAQ OMX Nordic company news using Chromium:
-
-```
-python scrape_website.py https://www.nasdaqomxnordic.com/news/companynews --browser chromium
-```
-
-To use Firefox and ignore HTTPS errors:
-
-```
-python fetch_news.py https://www.nasdaqomxnordic.com/news/companynews --browser firefox --ignore-https-errors
-```
-
-## Troubleshooting
-
-If you encounter any issues:
-
-1. Make sure you have the latest version of Playwright:
-   ```
-   pip install --upgrade playwright
-   playwright install
-   ```
-
-2. Check your internet connection and make sure you can access the website manually in a regular browser.
-
-3. If you're behind a corporate firewall or using a VPN, try using the `--ignore-https-errors` option.
-
-4. If you're still having issues with one browser, try another (e.g., switch from Chromium to Firefox).
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. Open a web browser and navigate to `http://localhost:8000` (or your server's address).
+2. Use the web interface to start/stop the scheduler, run tasks manually, and set task frequencies.
+3. The scheduler will run tasks automatically based on the set frequencies.

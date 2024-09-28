@@ -30,3 +30,12 @@ def summarize(news):
     )
     summary = response.choices[0].message.content
     return summary
+
+def extract_ticker(news):
+    prompt = f'Extract the company or issuer ticker/symbol from this news text. If multiple are present, return the most relevant one. If none are present, return "N/A". News: "{news}"'
+    response = client.chat.completions.create(
+        model=model_name,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    ticker = response.choices[0].message.content.strip()
+    return ticker if ticker != "N/A" else None

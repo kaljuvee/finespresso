@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, func, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 import logging
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -26,11 +27,14 @@ class News(Base):
     link = Column(String(255))
     company = Column(String(255))
     published_date = Column(TIMESTAMP(timezone=True))
+    content = Column(Text)
     ai_summary = Column(Text)
+    ai_topic = Column(String(255))
     industry = Column(String(255))
     publisher_topic = Column(String(255))
-    ai_topic = Column(String(255))
     publisher = Column(String(255))
+    downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    status = Column(String(255))
 
 def create_tables():
     Base.metadata.create_all(engine)
@@ -38,6 +42,8 @@ def create_tables():
 def add_news_items(news_items):
     session = Session()
     try:
+        for item in news_items:
+            item.downloaded_at = datetime.utcnow()
         session.add_all(news_items)
         session.commit()
         print(f"Successfully added {len(news_items)} news items to the database.")
@@ -57,7 +63,9 @@ def map_to_db(df, source):
             company=row['company'],
             published_date=row['published_date'],
             publisher_topic=row['publisher_topic'],
-            publisher=row['publisher']
+            publisher=row['publisher'],
+            downloaded_at=datetime.utcnow(),
+            status=row['status']
         )
 
         # Map industry only if source is 'euronext'
@@ -73,3 +81,34 @@ def map_to_db(df, source):
     
     logging.info(f"Created {len(news_items)} News objects")
     return news_items
+
+def remove_duplicate_news():
+    session = Session()
+    try:
+        # Step 1: Remove duplicates
+        # Subquery to find the oldest record for each link
+        subquery = session.query(News.link, func.min(News.downloaded_at).label('min_downloaded_at')) \
+                          .group_by(News.link) \
+                          .subquery()
+        
+        # Query to select duplicate records that are not the oldest
+        duplicates = session.query(News.id) \
+                            .join(subquery, and_(News.link == subquery.c.link,
+                                                 News.downloaded_at != subquery.c.min_downloaded_at))
+        
+        # Delete the duplicates
+        deleted_count = session.query(News).filter(News.id.in_(duplicates)).delete(synchronize_session='fetch')
+        
+        # Step 2: Update status of remaining items
+        updated_count = session.query(News).filter(News.status == 'raw').update({News.status: 'clean'}, synchronize_session='fetch')
+        
+        session.commit()
+        logging.info(f"Successfully removed {deleted_count} duplicate news items.")
+        logging.info(f"Updated status to 'clean' for {updated_count} news items.")
+        return deleted_count, updated_count
+    except Exception as e:
+        logging.error(f"An error occurred while removing duplicates and updating status: {e}")
+        session.rollback()
+        return 0, 0
+    finally:
+        session.close()

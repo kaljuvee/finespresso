@@ -1,5 +1,7 @@
 pandas
 streamlit
+flask
+flask-apscheduler
 feedparser
 python-dotenv
 openai
@@ -9,3 +11,4 @@ SQLAlchemy
 psycopg2-binary
 playwright
 elevenlabs
+gunicorn
