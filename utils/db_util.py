@@ -38,6 +38,13 @@ class News(Base):
     downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     status = Column(String(255))
 
+class Signups(Base):
+    __tablename__ = 'signups'
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), unique=True, nullable=False)
+    captured_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+
 def create_tables():
     Base.metadata.create_all(engine)
 
@@ -133,5 +140,20 @@ def get_news_df(publisher):
         } for item in news_items]
         
         return pd.DataFrame(data)
+    finally:
+        session.close()
+
+def save_email(email):
+    session = Session()
+    try:
+        new_signup = Signups(email=email)
+        session.add(new_signup)
+        session.commit()
+        logging.info(f"Successfully added email: {email}")
+        return True
+    except Exception as e:
+        logging.error(f"An error occurred while saving email: {e}")
+        session.rollback()
+        return False
     finally:
         session.close()
