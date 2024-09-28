@@ -8,8 +8,8 @@ import os
 from tasks.baltics import main as baltics_main
 from tasks.euronext import main as euronext_main
 from tasks.omx import main as omx_main
-from tasks.omx import clean as clean_main
-from tasks.omx import enrich as enrich_main
+from tasks.clean import main as clean_main
+from tasks.enrich_all import enrich_all as enrich_main
 from utils.db_util import create_tables
 
 app = Flask(__name__)

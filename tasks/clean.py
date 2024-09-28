@@ -1,3 +1,7 @@
+import logging
+from sqlalchemy import func, and_
+from archive.db_util import Session, News, engine
+
 def remove_duplicate_news():
     session = Session()
     try:
@@ -30,3 +34,11 @@ def remove_duplicate_news():
         return 0, 0
     finally:
         session.close()
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+    deleted_count, updated_count = remove_duplicate_news()
+    logging.info(f"Total deleted: {deleted_count}, Total updated: {updated_count}")
+
+if __name__ == "__main__":
+    main()

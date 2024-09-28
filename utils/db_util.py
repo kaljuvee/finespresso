@@ -1,11 +1,13 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, func, and_
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, func, and_, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 import logging
 from datetime import datetime
+import pandas as pd
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -110,5 +112,26 @@ def remove_duplicate_news():
         logging.error(f"An error occurred while removing duplicates and updating status: {e}")
         session.rollback()
         return 0, 0
+    finally:
+        session.close()
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def get_news_df(publisher):
+    session = Session()
+    try:
+        query = select(News).where(News.publisher == publisher).order_by(News.published_date.desc())
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        
+        data = [{
+            'Title': item.title,
+            'Link': item.link,
+            'Date': item.published_date,  # Changed back to 'Publication Date'
+            'Company': item.company,
+            'Event': item.ai_topic,
+            'Why it Moves?': item.ai_summary
+        } for item in news_items]
+        
+        return pd.DataFrame(data)
     finally:
         session.close()
