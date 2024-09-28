@@ -8,7 +8,7 @@ from utils.db_util import save_email
 # Function to generate random data
 def generate_random_data(n=100):
     tickers = [f"TICK{i:03d}" for i in range(1, n+1)]
-    exchanges = ["NYSE", "NASDAQ", "LSE", "TSE", "HKEX"]
+    exchanges = ["Euronext", "Nasdaq Baltics", "Nasdaq Nordic", "LSEG", "SIX", "Deutsche Börse"]
     data = {
         "ticker": tickers,
         "market_cap": [random.randint(100000000, 1000000000000) for _ in range(n)],
@@ -16,7 +16,7 @@ def generate_random_data(n=100):
         "predicted_move": [random.uniform(-0.05, 0.05) for _ in range(n)]
     }
     df = pd.DataFrame(data)
-    df.to_csv("stock_data.csv", index=False)
+    df.to_csv("data/stock_data.csv", index=False)
     return df
 
 # Streamlit app
@@ -28,9 +28,9 @@ email = st.text_input("Enter your email:")
 if st.button("Get my alerts"):
     if email:
         if save_email(email):
-            st.success(f"Thank you! Alerts will be sent to {email}")
+            st.success(f"Thank you! The daily Finespresso will be sent to {email}.")
         else:
-            st.error("An error occurred while saving your email. Please try again.")
+            st.success("Thank you! We already have you covered for our daily Finespresso.")
     else:
         st.warning("Please enter a valid email address")
 
@@ -39,10 +39,10 @@ if not st.session_state.get("data_loaded"):
     df = generate_random_data()
     st.session_state.data_loaded = True
 else:
-    df = pd.read_csv("stock_data.csv")
+    df = pd.read_csv("data/stock_data.csv")
 
 # Create treemap
-st.header("Stock Market Treemap")
+st.subheader("AI Predicted Moves Based on Newsflow")
 fig = px.treemap(df, 
                  path=[px.Constant("All Stocks"), "exchange", "ticker"],
                  values="market_cap",
