@@ -37,7 +37,7 @@ def text_to_speech(text, language):
         return None
 
 def main():
-    st.title("ElevenLabs Text-to-Speech with Streamlit")
+    st.title("Finespresso Voice Stream!")
     
     text_input = st.text_area("Enter the text you want to convert to speech:", "Hello, this is a test of ElevenLabs text-to-speech with Streamlit.")
     

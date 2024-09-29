@@ -5,6 +5,8 @@ tag_list = [
     "financial_calendar", "share_capital_increase", "bond_fixing", "fund_data_announcement",
     "capital_investment", "calendar_of_events", "voting_rights", "law_legal_issues",
     "initial_public_offering", "regulatory_filings", "joint_venture", "partnerships",
-    "environmental_social_governance", "business_contracts", "financing_agreements", "patents"
+    "environmental_social_governance", "business_contracts", "financing_agreements", "patents",
+    "bankruptcy",
+    "lawsuit"  # Added new tag
 ]
 tags = ",".join(tag_list)

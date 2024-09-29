@@ -36,7 +36,11 @@ class News(Base):
     publisher_topic = Column(String(255))
     publisher = Column(String(255))
     downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
-    status = Column(String(255))
+    mw_ticker = Column(String(255))
+    yf_ticker = Column(String(255))
+
+status = Column(String(255))
+
 
 class Signups(Base):
     __tablename__ = 'signups'
@@ -157,3 +161,75 @@ def save_email(email):
         return False
     finally:
         session.close()
+
+class Company(Base):
+    __tablename__ = 'company'
+
+    id = Column(Integer, primary_key=True)
+    yf_ticker = Column(String(255))
+    mw_ticker = Column(String(255))
+    yf_url = Column(String(255))
+    mw_url = Column(String(255))
+
+def save_company(df):
+    session = Session()
+    try:
+        for _, row in df.iterrows():
+            company = Company(
+                yf_ticker=row['yf_ticker'],
+                mw_ticker=row['mw_ticker'],
+                yf_url=row['yf_url'],
+                mw_url=row['mw_url']
+            )
+            session.add(company)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(f"An error occurred: {e}")
+    finally:
+        session.close()
+
+def get_news_without_tickers():
+    logging.info("Retrieving news items without MW tickers from database")
+    session = Session()
+    try:
+        query = select(News).where(News.mw_ticker.is_(None))
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        count = len(news_items)
+        logging.info(f"Retrieved {count} news items without MW tickers")
+        return news_items
+    finally:
+        session.close()
+
+def update_news_tickers(news_items_with_tickers):
+    logging.info("Updating database with extracted tickers")
+    session = Session()
+    try:
+        updated_count = 0
+        total_items = len(news_items_with_tickers)
+        for index, (news_id, ticker) in enumerate(news_items_with_tickers):
+            if ticker:
+                stmt = update(News).where(News.id == news_id).values(mw_ticker=ticker)
+                session.execute(stmt)
+                updated_count += 1
+            
+            if (index + 1) % 10 == 0 or index == total_items - 1:
+                session.commit()
+                logging.info(f"Processed {index + 1}/{total_items} items")
+        
+        logging.info(f"Successfully updated {updated_count} news items with tickers")
+    except Exception as e:
+        logging.error(f"Error updating tickers: {str(e)}")
+        session.rollback()
+    finally:
+        session.close()
+
+# Example usage:
+# df = pd.DataFrame({
+#     'yf_ticker': ['AAPL', 'GOOGL'],
+#     'mw_ticker': ['AAPL', 'GOOGL'],
+#     'yf_url': ['https://finance.yahoo.com/quote/AAPL', 'https://finance.yahoo.com/quote/GOOGL'],
+#     'mw_url': ['https://www.marketwatch.com/investing/stock/aapl', 'https://www.marketwatch.com/investing/stock/googl']
+# })
+# save_company(df)
