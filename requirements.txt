@@ -13,3 +13,4 @@ playwright
 elevenlabs
 gunicorn
 plotly
+yfinance
