@@ -20,7 +20,7 @@ def generate_random_data(n=100):
     return df
 
 # Streamlit app
-st.title("Finespresso - Why it moves?")
+st.title("Finespresso - Why Is It Moving?")
 
 # Email sign-up form
 st.header("Sign up for alerts")
