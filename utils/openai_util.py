@@ -23,7 +23,7 @@ def tag_news(news, tags):
     return tag
 
 def summarize(news):
-    prompt = f'Summarize this in a brief, exciting way like a sports commentary (50 words or less): "{news}"'
+    prompt = f'Summarize this in a brief, concise and neutral way like a financial analyst (50 words or less): "{news}"'
     response = client.chat.completions.create(
         model=model_name,
         messages=[{"role": "user", "content": prompt}]
@@ -32,7 +32,7 @@ def summarize(news):
     return summary
 
 def extract_ticker(news):
-    prompt = f'Extract the company or issuer ticker/symbol from this news text. If multiple are present, return the most relevant one. If none are present, return "N/A". News: "{news}"'
+    prompt = f'Extract the company or issuer ticker or symbol from this news text in Yahoo finance format, eg XXXX.YY or XXXX. If multiple are present, return the most relevant one. If none are present, return "N/A". News: "{news}"'
     response = client.chat.completions.create(
         model=model_name,
         messages=[{"role": "user", "content": prompt}]

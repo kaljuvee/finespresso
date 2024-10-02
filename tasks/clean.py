@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import func, and_
-from archive.db_util import Session, News, engine
+from utils.db_util import Session, News
 
 def remove_duplicate_news():
     session = Session()
