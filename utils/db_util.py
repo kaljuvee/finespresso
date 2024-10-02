@@ -39,8 +39,8 @@ class News(Base):
     status = Column(String(255))
     mw_ticker = Column(String(255))
     yf_ticker = Column(String(255))
+    ticker = Column(String(16))
 
-status = Column(String(255))
 
 
 class Signups(Base):
