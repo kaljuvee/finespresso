@@ -50,7 +50,18 @@ This application is a Flask-based web service that schedules and runs data downl
    FLASK_RUN_HOST=0.0.0.0
    ```
 
-## Running the Application
+## Running the Web Application
+
+### Web / Streamlit app
+
+To run the application in development mode:
+
+```
+streamlit run Home.py
+```
+- Then open a web browser and navigate to `http://localhost:8000` (or your server's address).
+
+## Running the Flask Scheduler
 
 ### Development Mode
 
@@ -59,6 +70,15 @@ To run the application in development mode:
 ```
 flask run
 ```
+
+### Usage
+
+Once the application is running:
+
+1. Open a web browser and navigate to `http://localhost:8000` (or your server's address).
+2. Use the web interface to start/stop the scheduler, run tasks manually, and set task frequencies.
+3. The scheduler will run tasks automatically based on the set frequencies.
+
 
 ### Production Mode with Gunicorn
 
@@ -87,27 +107,3 @@ flask run
    ```
    PORT=8000 ./start.sh
    ```
-
-## Deployment
-
-For deployment on platforms like Render:
-
-1. Set the build command to:
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. Set the start command to:
-   ```
-   ./start.sh
-   ```
-
-3. Ensure all environment variables (like DATABASE_URL) are set in your deployment platform's configuration.
-
-## Usage
-
-Once the application is running:
-
-1. Open a web browser and navigate to `http://localhost:8000` (or your server's address).
-2. Use the web interface to start/stop the scheduler, run tasks manually, and set task frequencies.
-3. The scheduler will run tasks automatically based on the set frequencies.
