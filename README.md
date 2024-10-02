@@ -59,7 +59,7 @@ To run the application in development mode:
 ```
 streamlit run Home.py
 ```
-- Then open a web browser and navigate to `http://localhost:8000` (or your server's address).
+- Then open a web browser and navigate to `http://localhost:8501` (or your server's address).
 
 ## Running the Flask Scheduler
 
