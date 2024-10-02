@@ -25,22 +25,21 @@ class News(Base):
     __tablename__ = 'news'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(255))
-    link = Column(String(255))
-    company = Column(String(255))
+    title = Column(Text)
+    link = Column(Text)
+    company = Column(Text)
     published_date = Column(TIMESTAMP(timezone=True))
     content = Column(Text)
     ai_summary = Column(Text)
-    ai_topic = Column(String(255))
-    industry = Column(String(255))
-    publisher_topic = Column(String(255))
-    publisher = Column(String(255))
+    ai_topic = Column(Text)
+    industry = Column(Text)
+    publisher_topic = Column(Text)
+    publisher = Column(Text)
     downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     status = Column(String(255))
     mw_ticker = Column(String(255))
     yf_ticker = Column(String(255))
     ticker = Column(String(16))
-
 
 
 class Signups(Base):
