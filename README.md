@@ -102,8 +102,19 @@ Once the application is running:
    ```
    ./start.sh
    ```
+### Running Tasks Manually
 
-   If you need to specify a port, you can do so by setting the PORT environment variable:
+1. Tasks can also be run manually, one by one, for example download tasks:
    ```
-   PORT=8000 ./start.sh
+   python -m tasks.clean
+   python -m tasks.baltics
+   python -m tasks.omx
+   python -m tasks.euronext
+   ```
+1. Enrichment tasks:
+   ```
+   python -m tasks.enrich_tag
+   python -m tasks.enrich_summary
+   python -m tasks.enrich_content
+   python -m tasks.enrich_ticker
    ```
