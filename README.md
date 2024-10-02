@@ -104,7 +104,17 @@ Once the application is running:
    ```
 ### Running Tasks Manually
 
-- Tasks can also be run manually, for example:
+1. Tasks can also be run manually, one by one, for example download tasks:
    ```
    python -m tasks.clean
+   python -m tasks.baltics
+   python -m tasks.omx
+   python -m tasks.euronext
+   ```
+1. Enrichment tasks:
+   ```
+   python -m tasks.enrich_tag
+   python -m tasks.enrich_summary
+   python -m tasks.enrich_content
+   python -m tasks.enrich_ticker
    ```
