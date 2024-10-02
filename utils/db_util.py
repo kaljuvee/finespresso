@@ -36,6 +36,7 @@ class News(Base):
     publisher_topic = Column(String(255))
     publisher = Column(String(255))
     downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    status = Column(String(255))
     mw_ticker = Column(String(255))
     yf_ticker = Column(String(255))
 
