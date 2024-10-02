@@ -102,8 +102,9 @@ Once the application is running:
    ```
    ./start.sh
    ```
+### Running Tasks Manually
 
-   If you need to specify a port, you can do so by setting the PORT environment variable:
+- Tasks can also be run manually, for example:
    ```
-   PORT=8000 ./start.sh
+   python -m tasks.clean
    ```
