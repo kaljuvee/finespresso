@@ -8,31 +8,29 @@ import time
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def get_news_without_tags():
-    print("Retrieving news items without AI topics...")
-    logging.info("Retrieving news items without AI topics from database")
+# Define the list of publishers
+PUBLISHERS = ['omx', 'baltics', 'euronext']
+
+def get_news_without_tags(publisher):
+    logging.info(f"Retrieving news items without AI topics for publisher: {publisher}")
     session = Session()
     try:
-        query = select(News).where(News.ai_topic.is_(None))
+        query = select(News).where(News.ai_topic.is_(None), News.publisher == publisher)
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        print(f"Retrieved {count} news items without AI topics")
-        logging.info(f"Retrieved {count} news items without AI topics")
+        logging.info(f"Retrieved {count} news items without AI topics for {publisher}")
         return news_items
     finally:
         session.close()
 
 def news_to_dataframe(news_items):
-    print("Converting news items to DataFrame...")
     logging.info("Converting news items to DataFrame")
     df = pd.DataFrame([{'id': item.id, 'link': item.link} for item in news_items])
-    print(f"Created DataFrame with {len(df)} rows")
     logging.info(f"Created DataFrame with {len(df)} rows")
     return df
 
 def update_tags(enriched_df):
-    print("Updating database with enriched tags...")
     logging.info("Updating database with enriched tags")
     session = Session()
     try:
@@ -45,42 +43,41 @@ def update_tags(enriched_df):
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
-                print(f"Updated {index + 1}/{total_items} items")
                 logging.info(f"Updated {index + 1}/{total_items} items")
         
         session.commit()
-        print(f"Successfully updated {updated_count} news items with tags")
         logging.info(f"Successfully updated {updated_count} news items with tags")
     except Exception as e:
-        print(f"Error updating tags: {str(e)}")
         logging.error(f"Error updating tags: {str(e)}")
         session.rollback()
     finally:
         session.close()
 
-def main():
-    start_time = time.time()
-    print("Starting tag enrichment task")
-    logging.info("Starting tag enrichment task")
+def process_publisher(publisher):
+    logging.info(f"Processing publisher: {publisher}")
     
-    news_without_tags = get_news_without_tags()
+    news_without_tags = get_news_without_tags(publisher)
     if not news_without_tags:
-        print("No news items without AI topics found. Task completed.")
-        logging.info("No news items without AI topics found. Task completed.")
+        logging.info(f"No news items without AI topics found for {publisher}. Skipping.")
         return
     
     news_df = news_to_dataframe(news_without_tags)
     
-    print("Enriching news items with tags...")
-    logging.info("Enriching news items with tags")
+    logging.info(f"Enriching news items with tags for {publisher}")
     enriched_df = enrich_tag_from_url(news_df)
     
     update_tags(enriched_df)
+
+def main():
+    start_time = time.time()
+    logging.info("Starting tag enrichment task")
+    
+    for publisher in PUBLISHERS:
+        process_publisher(publisher)
     
     end_time = time.time()
     duration = end_time - start_time
-    print(f"Tag enrichment task completed. Duration: {duration:.2f} seconds")
-    logging.info(f"Tag enrichment task completed. Duration: {duration:.2f} seconds")
+    logging.info(f"Tag enrichment task completed for all publishers. Duration: {duration:.2f} seconds")
 
 if __name__ == "__main__":
     main()

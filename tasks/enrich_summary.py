@@ -7,53 +7,76 @@ import time
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def get_news_without_summary():
-    logging.info("Retrieving news items without summaries from database")
+# Define the list of publishers
+PUBLISHERS = ['omx', 'baltics', 'euronext']
+
+def get_news_without_summary(publisher):
+    logging.info(f"Retrieving news items without summaries for publisher: {publisher}")
     session = Session()
     try:
-        query = select(News).where(News.ai_summary.is_(None))
+        query = select(News).where(News.ai_summary.is_(None), News.publisher == publisher)
         result = session.execute(query)
         news_items = result.scalars().all()
-        logging.info(f"Retrieved {len(news_items)} news items without summaries")
+        count = len(news_items)
+        logging.info(f"Retrieved {count} news items without summaries for {publisher}")
         return news_items
     finally:
         session.close()
 
 def news_to_dataframe(news_items):
-    return pd.DataFrame([{'id': item.id, 'link': item.link} for item in news_items])
+    logging.info("Converting news items to DataFrame")
+    df = pd.DataFrame([{'id': item.id, 'link': item.link} for item in news_items])
+    logging.info(f"Created DataFrame with {len(df)} rows")
+    return df
 
 def update_summaries(enriched_df):
+    logging.info("Updating database with enriched summaries")
     session = Session()
     try:
         updated_count = 0
-        for _, row in enriched_df.iterrows():
+        total_items = len(enriched_df)
+        for index, row in enriched_df.iterrows():
             news_item = session.get(News, row['id'])
             if news_item and 'ai_summary' in row:
                 news_item.ai_summary = row['ai_summary']
                 updated_count += 1
+            
+            if (index + 1) % 10 == 0 or index == total_items - 1:
+                logging.info(f"Updated {index + 1}/{total_items} items")
+        
         session.commit()
-        logging.info(f"Updated {updated_count} news items with summaries")
+        logging.info(f"Successfully updated {updated_count} news items with summaries")
     except Exception as e:
         logging.error(f"Error updating summaries: {str(e)}")
         session.rollback()
     finally:
         session.close()
 
+def process_publisher(publisher):
+    logging.info(f"Processing publisher: {publisher}")
+    
+    news_without_summary = get_news_without_summary(publisher)
+    if not news_without_summary:
+        logging.info(f"No news items without summaries found for {publisher}. Skipping.")
+        return
+    
+    news_df = news_to_dataframe(news_without_summary)
+    
+    logging.info(f"Enriching news items with summaries for {publisher}")
+    enriched_df = enrich_from_url(news_df)
+    
+    update_summaries(enriched_df)
+
 def main():
     start_time = time.time()
     logging.info("Starting summary enrichment task")
     
-    news_without_summary = get_news_without_summary()
-    if not news_without_summary:
-        logging.info("No news items without summaries found. Task completed.")
-        return
-    
-    news_df = news_to_dataframe(news_without_summary)
-    enriched_df = enrich_from_url(news_df)
-    update_summaries(enriched_df)
+    for publisher in PUBLISHERS:
+        process_publisher(publisher)
     
     end_time = time.time()
-    logging.info(f"Summary enrichment task completed. Duration: {end_time - start_time:.2f} seconds")
+    duration = end_time - start_time
+    logging.info(f"Summary enrichment task completed for all publishers. Duration: {duration:.2f} seconds")
 
 if __name__ == "__main__":
     main()

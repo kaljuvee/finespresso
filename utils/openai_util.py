@@ -11,7 +11,7 @@ cache.set_openai_key()
 
 # Load environment variables
 
-model_name = "gpt-4o-mini"  # Updated model name
+model_name = "gpt-4o"  # Updated model name
 
 def tag_news(news, tags):
     prompt = f'Answering with one tag only, pick up the best tag which describes the news "{news}" from the list: {tags}'
@@ -31,11 +31,11 @@ def summarize(news):
     summary = response.choices[0].message.content
     return summary
 
-def extract_ticker(news):
-    prompt = f'Extract the company or issuer ticker or symbol from this news text in Yahoo finance format, eg XXXX.YY or XXXX. If multiple are present, return the most relevant one. If none are present, return "N/A". News: "{news}"'
+def extract_ticker(company):
+    prompt = f'Extract the company or issuer ticker symbol corresponding to the company name provided. Return only the ticker symbol in uppercase, without any additional text. If you cannot assign a ticker symbol, return "N/A". Company name: "{company}"'
     response = client.chat.completions.create(
         model=model_name,
         messages=[{"role": "user", "content": prompt}]
     )
-    ticker = response.choices[0].message.content.strip()
+    ticker = response.choices[0].message.content.strip().upper()
     return ticker if ticker != "N/A" else None

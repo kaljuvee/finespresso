@@ -40,7 +40,18 @@ class News(Base):
     mw_ticker = Column(String(255))
     yf_ticker = Column(String(255))
     ticker = Column(String(16))
+    company_id = Column(Integer) # Foreign key to company table
 
+class Company(Base):
+    __tablename__ = 'company'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    ticker = Column(String(20))
+    yf_ticker = Column(String(20))
+    exchange = Column(String(50))
+    exchange_code = Column(String(50))
+    country = Column(String(50))
 
 class Signups(Base):
     __tablename__ = 'signups'
@@ -140,7 +151,7 @@ def get_news_df(publisher):
             'Date': item.published_date,  # Changed back to 'Publication Date'
             'Company': item.company,
             'Event': item.ai_topic,
-            'Why it Moves?': item.ai_summary
+            'Summary': item.ai_summary
         } for item in news_items]
         
         return pd.DataFrame(data)
