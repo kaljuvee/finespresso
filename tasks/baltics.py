@@ -2,13 +2,8 @@ import logging
 import feedparser
 import pandas as pd
 from datetime import datetime
-import sys
-import requests
-from requests.exceptions import Timeout
-from utils.openai_util import summarize, tag_news
 from utils.db_util import create_tables, add_news_items, map_to_db
 from utils.tag_util import tags
-from utils.web_util import fetch_url_content
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

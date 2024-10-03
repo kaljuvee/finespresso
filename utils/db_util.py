@@ -52,6 +52,9 @@ class Company(Base):
     exchange = Column(String(50))
     exchange_code = Column(String(50))
     country = Column(String(50))
+    mw_ticker = Column(String(255))
+    yf_url = Column(String(255))
+    mw_url = Column(String(255))
 
 class Signups(Base):
     __tablename__ = 'signups'
@@ -172,15 +175,6 @@ def save_email(email):
         return False
     finally:
         session.close()
-
-class Company(Base):
-    __tablename__ = 'company'
-
-    id = Column(Integer, primary_key=True)
-    yf_ticker = Column(String(255))
-    mw_ticker = Column(String(255))
-    yf_url = Column(String(255))
-    mw_url = Column(String(255))
 
 def save_company(df):
     session = Session()
