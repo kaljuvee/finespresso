@@ -25,7 +25,7 @@ def enrich_tag_from_url(df):
     logging.info(f"Enrichment completed for {len(df)} items")
     return df
 
-def enrich_from_url(df):
+def enrich_summary_from_url(df):
     logging.info("Starting enrichment process from URLs")
     def fetch_and_summarize(row):
         try:
@@ -79,7 +79,7 @@ def enrich_from_content(df):
 def enrich_all(df):
     logging.info("Starting full enrichment process")
     df = enrich_from_url(df)
-    df = enrich_from_content(df)
+    #df = enrich_from_content(df)
     logging.info(f"Full enrichment completed. DataFrame now has {len(df.columns)} columns")
     return df
 
@@ -90,12 +90,13 @@ def enrich_content_from_url(df):
         try:
             content = fetch_url_content(row['link'])
             ai_summary = summarize(content)
-            ai_topic = tag_news(content, tags)
+            #ai_topic = tag_news(content, tags)
             logging.info(f"Enriched content for: {row['link']}")
-            return pd.Series({'content': content, 'ai_summary': ai_summary, 'ai_topic': ai_topic})
+            print(f"Enriched content for: {row['link']}")
+            return pd.Series({'content': content, 'ai_summary': ai_summary})
         except Exception as e:
             logging.error(f"Error processing {row['link']}: {str(e)}")
-            return pd.Series({'content': None, 'ai_summary': None, 'ai_topic': None})
+            return pd.Series({'content': None, 'ai_summary': None})
     
     enriched = df.apply(fetch_and_enrich, axis=1)
     df = pd.concat([df, enriched], axis=1)

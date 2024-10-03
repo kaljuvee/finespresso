@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import select
-from utils.db_util import Session, News
+from utils.db_util import Session, News, update_news_status
 from utils.enrich_util import enrich_tag_from_url
 import pandas as pd
 import time
@@ -12,14 +12,18 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 PUBLISHERS = ['omx', 'baltics', 'euronext']
 
 def get_news_without_tags(publisher):
-    logging.info(f"Retrieving news items without AI topics for publisher: {publisher}")
+    logging.info(f"Retrieving clean news items without AI topics for publisher: {publisher}")
     session = Session()
     try:
-        query = select(News).where(News.ai_topic.is_(None), News.publisher == publisher)
+        query = select(News).where(
+            News.ai_topic.is_(None),
+            News.publisher == publisher,
+            News.status == 'clean'  # Add this condition
+        )
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        logging.info(f"Retrieved {count} news items without AI topics for {publisher}")
+        logging.info(f"Retrieved {count} clean news items without AI topics for {publisher}")
         return news_items
     finally:
         session.close()
@@ -40,13 +44,14 @@ def update_tags(enriched_df):
             news_item = session.get(News, row['id'])
             if news_item and 'ai_topic' in row:
                 news_item.ai_topic = row['ai_topic']
+                news_item.status = 'tagged'  # Update status to 'tagged'
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
                 logging.info(f"Updated {index + 1}/{total_items} items")
         
         session.commit()
-        logging.info(f"Successfully updated {updated_count} news items with tags")
+        logging.info(f"Successfully updated {updated_count} news items with tags and set status to 'tagged'")
     except Exception as e:
         logging.error(f"Error updating tags: {str(e)}")
         session.rollback()

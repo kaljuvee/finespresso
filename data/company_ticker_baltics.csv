@@ -1,75 +1,75 @@
-company,ticker
-"Punktid Technologies",N/A
-"SAF Tehnika",SAF1R
-"Saunum Group",SAUN
-"Frigate",N/A
-"BluOr Bank",N/A
-"CleanR Grupa",N/A
-"Enefit Green",EGR1T
-"DelfinGroup",DGR1R
-"Attīstības finanšu institūcija Altum",ALTM
-"Partnerystes projektai keturi",N/A
-"Nordecon",NCN1T
-"EfTEN Real Estate Fund",EFT1T
-"Novaturas",NTU1L
-"Baltic Horizon Fund / Northern Horizon Capital",NHCBHFFT
-"Amber Latvijas balzams",BAL1R
-"Robus Group",N/A
-"Merko Ehitus",MRK1T
-"Elmo Rent",ELMO
-"MADARA Cosmetics",MDARA
-"Eco Baltia",N/A
-"Tallinna Vesi",TVEAT
-"Panevezio Statybos Trestas",PTR1L
-"EfTEN United Property Fund / EfTEN Capital",N/A
-"Longo Group",N/A
-"INDEXO",IDX1R
-"Hestio",N/A
-"Rokiskio Suris",RSU1L
-"J.Molner",N/A
-"Pieno Zvaigzdes",PZV1L
-"Apranga",APG1L
-"Nter Asset Management",N/A
-"Eleving Group",N/A
-"Mainor Ülemiste",N/A
-"iCotton",N/A
-"Tuul Mobility",N/A
-"Capitalica Baltic Real Estate Fund I",N/A
-"K2 LT",N/A
-"Sostinės bokštai",N/A
-"Infortar",N/A
-"Legal Balance",N/A
-"Invalda INVL",IVL1L
-"Consilium optimum",N/A
-"Latvenergo",LEGR
-"Tallinna Sadam",TSM1T
-"CAPITALICA Z114 REAL ESTATE FUND",N/A
-"Estonian Japan Trading Company",N/A
-"NEO Finance",N/A
-"Utenos Trikotazas",UTR1L
-"Integre Trans",N/A
-"IuteCredit Finance S.a r.l",N/A
-"Amber Grid",AMG1L
-"KN Energies",KNF1L
-"Nasdaq Vilnius",N/A
-"Grab2Go",N/A
-"VIRŠI-A",VIRSI
-"INVL Baltic Farmland",INL1L
-"Zemaitijos Pienas",ZMP1L
-"East West Agro",N/A
-"INVL Baltic Real Estate",INR1L
-"EPSO-G",N/A
-"INVL Technology",INC1L
-"Siauliu Bankas",SAB1L
-"Amber Beverage Group Holding S.à r.l.",N/A
-"Bigbank AS",N/A
-"TKM Grupp",N/A
-"LITGRID",LGD1L
-"Sun Finance Treasury Limited",N/A
-"Nasdaq Tallinn",N/A
-"LHV Group",LHV1T
-"Kauno Energija",KNR1L
-"Vilniaus Baldai",VBL1L
-"Nasdaq Riga",N/A
-"Akola group",N/A
-"Civinity",N/A
+issuer,ticker,yf_ticker,asset_class,exchange,exchange_code,country,url
+Punktid Technologies,PNKTD,PNKTD.RG,,nasdaq_baltics,,EE,
+SAF Tehnika,SAF1R,SAF1R.RG,,nasdaq_baltics,,LV,
+Saunum Group,SAUNA,SAUNA.RG,,nasdaq_baltics,,EE,
+Frigate,FRGTE��,FRGTE.RG��,,nasdaq_baltics,,,
+BluOr Bank,N/A,N/A,,nasdaq_baltics,,,
+CleanR Grupa,N/A,N/A,,nasdaq_baltics,,,
+Enefit Green,EGR1T,EGR1T.TL,,nasdaq_baltics,,,
+DelfinGroup,DGR1R,DGR1R.RG,,nasdaq_baltics,,,
+Altum,ALTM,N/A,,nasdaq_baltics,,,
+Partnerystes projektai keturi,N/A,N/A,,nasdaq_baltics,,,
+Nordecon,NCN1T,NCN1T.TAL,,nasdaq_baltics,,EE,
+EfTEN Real Estate Fund,EFT1T,EFT1T.RG,,nasdaq_baltics,,,
+Novaturas,NTU1L,NTU1L.RG,,nasdaq_baltics,,,
+Baltic Horizon Fund / Northern Horizon Capital,NHCBHFFT,NHCBHFFT.RG,,nasdaq_baltics,,,
+Amber Latvijas balzams,BAL1R,BAL1R.RG,,nasdaq_baltics,RSE,,
+Robus Group,ROBUS,ROBUS.RG,,nasdaq_baltics,RSE,EE,
+Merko Ehitus,MRK1T,MRK1T.TL,,nasdaq_baltics,TAL,EE,
+Elmo Rent,ELMO,N/A,,nasdaq_baltics,,EE,
+MADARA Cosmetics,MDARA,MDARA.RG,,nasdaq_baltics,,,
+Eco Baltia,N/A,N/A,,nasdaq_baltics,,,
+Tallinna Vesi,TVEAT,TVEAT.RG,,nasdaq_baltics,,,
+Panevezio Statybos Trestas,PTR1L,PTR1L.RG,,nasdaq_baltics,,,
+EfTEN United Property Fund / EfTEN Capital,N/A,N/A,,nasdaq_baltics,,,
+Longo Group,N/A,N/A,,nasdaq_baltics,,,
+INDEXO,IDX1R,IDX1R.RG,,nasdaq_baltics,,,
+Hestio,N/A,N/A,,nasdaq_baltics,,,
+Rokiskio Suris,RSU1L,RSU1L.RG,,nasdaq_baltics,,,
+J.Molner,N/A,N/A,,nasdaq_baltics,,,
+Pieno Zvaigzdes,PZV1L,PZV1L.RG,,nasdaq_baltics,,,
+Apranga,APG1L,APG1L.RG,,nasdaq_baltics,,,
+Nter Asset Management,N/A,N/A,,nasdaq_baltics,,,
+Eleving Group,N/A,N/A,,nasdaq_baltics,,,
+Mainor Ülemiste,N/A,N/A,,nasdaq_baltics,,,
+iCotton,N/A,N/A,,nasdaq_baltics,,,
+Tuul Mobility,N/A,N/A,,nasdaq_baltics,,,
+Capitalica Baltic Real Estate Fund I,N/A,N/A,,nasdaq_baltics,,,
+K2 LT,N/A,N/A,,nasdaq_baltics,,,
+Sostinės bokštai,N/A,N/A,,nasdaq_baltics,,,
+Infortar,N/A,N/A,,nasdaq_baltics,,,
+Legal Balance,N/A,N/A,,nasdaq_baltics,,,
+Invalda INVL,IVL1L,IVL1L.RG,,nasdaq_baltics,,,
+Consilium optimum,N/A,N/A,,nasdaq_baltics,,,
+Latvenergo,LEGR,LEGR.RG,,nasdaq_baltics,,,
+Tallinna Sadam,TSM1T,TSM1T.RG,,nasdaq_baltics,,,
+CAPITALICA Z114 REAL ESTATE FUND,N/A,N/A,,nasdaq_baltics,,,
+Estonian Japan Trading Company,N/A,N/A,,nasdaq_baltics,,,
+NEO Finance,N/A,N/A,,nasdaq_baltics,,,
+Utenos Trikotazas,UTR1L,UTR1L.RG,,nasdaq_baltics,,,
+Integre Trans,N/A,N/A,,nasdaq_baltics,,,
+IuteCredit Finance S.a r.l,N/A,N/A,,nasdaq_baltics,,,
+Amber Grid,AMG1L,AMG1L.RG,,nasdaq_baltics,,,
+KN Energies,KNF1L,KNF1L.RG,,nasdaq_baltics,,,
+Nasdaq Vilnius,N/A,N/A,,nasdaq_baltics,,,
+Grab2Go,N/A,N/A,,nasdaq_baltics,,,
+VIRŠI-A,VIRSI,VIRSI.RG,,nasdaq_baltics,,,
+INVL Baltic Farmland,INL1L,INL1L.RG,,nasdaq_baltics,,,
+Zemaitijos Pienas,ZMP1L,ZMP1L.RG,,nasdaq_baltics,,,
+East West Agro,N/A,N/A,,nasdaq_baltics,,,
+INVL Baltic Real Estate,INR1L,INR1L.RG,,nasdaq_baltics,,,
+EPSO-G,N/A,N/A,,nasdaq_baltics,,,
+INVL Technology,INC1L,INC1L.RG,,nasdaq_baltics,,,
+Siauliu Bankas,SAB1L,SAB1L.RG,,nasdaq_baltics,,,
+Amber Beverage Group Holding S.à r.l.,N/A,N/A,,nasdaq_baltics,,,
+Bigbank AS,N/A,N/A,,nasdaq_baltics,,,
+TKM Grupp,N/A,N/A,,nasdaq_baltics,,,
+LITGRID,LGD1L,LGD1L.RG,,nasdaq_baltics,,,
+Sun Finance Treasury Limited,N/A,N/A,,nasdaq_baltics,,,
+Nasdaq Tallinn,N/A,N/A,,nasdaq_baltics,,,
+LHV Group,LHV1T,LHV1T.TL,,nasdaq_baltics,,,
+Kauno Energija,KNR1L,KNR1L.RG,,nasdaq_baltics,,,
+Vilniaus Baldai,VBL1L,VBL1L.RG,,nasdaq_baltics,,,
+Nasdaq Riga,N/A,N/A,,nasdaq_baltics,,,
+Akola group,N/A,N/A,,nasdaq_baltics,,,
+Civinity,N/A,N/A,,nasdaq_baltics,,,

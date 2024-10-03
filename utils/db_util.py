@@ -230,6 +230,21 @@ def update_news_tickers(news_items_with_tickers):
     finally:
         session.close()
 
+def update_news_status(news_ids, new_status):
+    logging.info(f"Updating status to '{new_status}' for {len(news_ids)} news items")
+    session = Session()
+    try:
+        updated_count = session.query(News).filter(News.id.in_(news_ids)).update({News.status: new_status}, synchronize_session='fetch')
+        session.commit()
+        logging.info(f"Successfully updated status for {updated_count} news items")
+        return updated_count
+    except Exception as e:
+        logging.error(f"An error occurred while updating news status: {e}")
+        session.rollback()
+        return 0
+    finally:
+        session.close()
+
 # Example usage:
 # df = pd.DataFrame({
 #     'yf_ticker': ['AAPL', 'GOOGL'],

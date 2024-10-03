@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import select
 from utils.db_util import Session, News
-from utils.enrich_util import enrich_from_url
+from utils.enrich_util import enrich_summary_from_url
 import pandas as pd
 import time
 
@@ -14,7 +14,11 @@ def get_news_without_summary(publisher):
     logging.info(f"Retrieving news items without summaries for publisher: {publisher}")
     session = Session()
     try:
-        query = select(News).where(News.ai_summary.is_(None), News.publisher == publisher)
+        query = select(News).where(
+            News.ai_summary.is_(None), 
+            News.publisher == publisher,
+            News.status == 'tagged'
+        )
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
@@ -39,13 +43,14 @@ def update_summaries(enriched_df):
             news_item = session.get(News, row['id'])
             if news_item and 'ai_summary' in row:
                 news_item.ai_summary = row['ai_summary']
+                news_item.status = 'summarized'  # Update status to 'summarized'
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
                 logging.info(f"Updated {index + 1}/{total_items} items")
         
         session.commit()
-        logging.info(f"Successfully updated {updated_count} news items with summaries")
+        logging.info(f"Successfully updated {updated_count} news items with summaries and set status to 'summarized'")
     except Exception as e:
         logging.error(f"Error updating summaries: {str(e)}")
         session.rollback()
@@ -63,7 +68,7 @@ def process_publisher(publisher):
     news_df = news_to_dataframe(news_without_summary)
     
     logging.info(f"Enriching news items with summaries for {publisher}")
-    enriched_df = enrich_from_url(news_df)
+    enriched_df = enrich_summary_from_url(news_df)
     
     update_summaries(enriched_df)
 
