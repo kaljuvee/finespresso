@@ -2,11 +2,14 @@ import logging
 import feedparser
 import pandas as pd
 from datetime import datetime
+import pytz
 from utils.db_util import create_tables, add_news_items, map_to_db
 from utils.tag_util import tags
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+TIMEZONE = "EET"
 
 def parse_date(date_string):
     logging.debug(f"Parsing date: {date_string}")
@@ -36,15 +39,30 @@ def parse_rss_feed(url, tags):
         link = item.link
         pub_date = parse_date(item.published)
         company = item.get('issuer', 'N/A')
+        
+        # Convert published_date to GMT
+        if pub_date:
+            gmt_dt = pub_date.astimezone(pytz.UTC)
+            pub_date_str = pub_date.strftime("%Y-%m-%d %H:%M:%S")
+            pub_date_gmt_str = gmt_dt.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            pub_date_str = pub_date_gmt_str = None
+        
         data.append({
             'title': title,
             'link': link,
             'company': company,
-            'published_date': pub_date,
+            'published_date': pub_date_str,
+            'published_date_gmt': pub_date_gmt_str,
             'publisher': 'baltics',
             'industry': '',
+            'content': '',
+            'ticker': '',
+            'ai_summary': '',
             'publisher_topic': '',
-            'status': 'raw'
+            'status': 'raw',
+            'timezone': TIMEZONE,
+            'publisher_summary': '',
         })
 
         logging.debug(f"Added news item to dataframe: {title}")

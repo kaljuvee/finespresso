@@ -8,20 +8,21 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define the list of publishers
-PUBLISHERS = ['omx', 'baltics', 'euronext']
+PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
 
 def get_news_without_summary(publisher):
     logging.info(f"Retrieving news items without summaries for publisher: {publisher}")
     session = Session()
     try:
         query = select(News).where(
-            News.ai_summary.is_(None), 
+            (News.ai_summary.is_(None) | (News.ai_summary == '')), 
             News.publisher == publisher,
             News.status == 'tagged'
         )
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
+        print(f"Retrieved {count} news items without AI summaries for {publisher}")
         logging.info(f"Retrieved {count} news items without summaries for {publisher}")
         return news_items
     finally:

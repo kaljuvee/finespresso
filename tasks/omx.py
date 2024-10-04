@@ -3,11 +3,14 @@ from playwright.async_api import async_playwright
 import pandas as pd
 import logging
 from utils.db_util import map_to_db, add_news_items
+from datetime import datetime
+import pytz
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 DEFAULT_URL = "https://www.nasdaqomxnordic.com/news/companynews"
 DEFAULT_BROWSER = "firefox"
+TIMEZONE = "CET"
 
 async def scrape_nasdaq_news():
     async with async_playwright() as p:
@@ -36,14 +39,27 @@ async def scrape_nasdaq_news():
                 headline = await headline_link.inner_text() if headline_link else "N/A"
                 link = await headline_link.get_attribute('href') if headline_link else "N/A"
                 
+                # Convert published_date to GMT
+                local_dt = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+                local_tz = pytz.timezone(TIMEZONE)
+                local_dt = local_tz.localize(local_dt)
+                gmt_dt = local_dt.astimezone(pytz.UTC)
+                
                 news_data.append({
                     'published_date': date,
+                    'published_date_gmt': gmt_dt.strftime("%Y-%m-%d %H:%M:%S"),
                     'company': company,
                     'title': headline,
                     'link': link,
                     'publisher_topic': category,
+                    'content': '',
+                    'ticker': '',
+                    'ai_summary': '',
+                    'industry': '',
                     'publisher': 'omx',
-                    'status': 'raw'
+                    'status': 'raw',
+                    'timezone': TIMEZONE,
+                    'publisher_summary': '',
                 })
 
         await browser.close()

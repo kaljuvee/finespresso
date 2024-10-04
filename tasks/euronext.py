@@ -3,11 +3,14 @@ from playwright.async_api import async_playwright
 import pandas as pd
 import logging
 from utils.db_util import map_to_db, add_news_items
+from datetime import datetime
+import pytz
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 URL_PREFIX = 'https://live.euronext.com'
 DEFAULT_URL = "https://live.euronext.com/en/products/equities/company-news"
 DEFAULT_BROWSER = "firefox"
+TIMEZONE = "CET"
 
 async def scrape_euronext():
     async with async_playwright() as p:
@@ -37,15 +40,38 @@ async def scrape_euronext():
                 industry = await columns[3].inner_text()
                 topic = await columns[4].inner_text()
                 
+                # Convert published_date to GMT
+                try:
+                    # Parse the new date format
+                    date_parts = date.split('\n')
+                    if len(date_parts) == 2:
+                        date_str = f"{date_parts[0]} {date_parts[1].replace(' CEST', '')}"
+                        local_dt = datetime.strptime(date_str, "%d %b %Y %H:%M")
+                    else:
+                        raise ValueError("Unexpected date format")
+                except ValueError as e:
+                    logging.error(f"Unable to parse date: {date}. Error: {str(e)}")
+                    continue
+
+                local_tz = pytz.timezone(TIMEZONE)
+                local_dt = local_tz.localize(local_dt)
+                gmt_dt = local_dt.astimezone(pytz.UTC)
+                
                 news_data.append({
                     'published_date': date,
+                    'published_date_gmt': gmt_dt.strftime("%Y-%m-%d %H:%M:%S"),
                     'company': company,
                     'title': title,
                     'link': URL_PREFIX + link,
                     'industry': industry,
                     'publisher_topic': topic,
                     'publisher': 'euronext',
-                    'status': 'raw'
+                    'content': '',
+                    'ticker': '',
+                    'ai_summary': '',
+                    'status': 'raw',
+                    'timezone': TIMEZONE,
+                    'publisher_summary': '',
                 })
 
         await browser.close()

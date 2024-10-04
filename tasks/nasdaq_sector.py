@@ -1,5 +1,5 @@
 import feedparser
-import yaml
+import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 import argparse
@@ -13,10 +13,10 @@ sector = 'biotech'
 rss_dict = {}
 
 def load_config(sector):
-    config_file = f"data/{sector}.yaml"
+    config_file = f"data/{sector}.json"
     try:
         with open(config_file, 'r') as file:
-            rss_dict = yaml.safe_load(file)
+            rss_dict = json.load(file)
     except Exception as e:
         print(f"Error loading {config_file}: {e}")
         return None
@@ -31,8 +31,15 @@ def fetch_news(rss_dict, sector):
 
     current_time = datetime.now()
     print(f"Starting news fetch at {current_time}")
-    for key, rss_url in rss_dict.items():
-        print(f"Fetching news for ticker: {key}")
+    for ticker, company_info in rss_dict.items():
+        if 'url' not in company_info:
+            print(f"Skipping ticker {ticker}: No RSS URL found")
+            continue
+        
+        rss_url = company_info['url']
+        company_name = company_info['company']
+        
+        print(f"Fetching news for ticker: {ticker} ({company_name})")
         feed = feedparser.parse(rss_url)
 
         for newsitem in feed['items']:
@@ -43,23 +50,25 @@ def fetch_news(rss_dict, sector):
                 est_tz = timezone('US/Eastern')
                 published_date_est = published_date_gmt.astimezone(est_tz)
             except ValueError:
-                print(f"Warning: Unable to parse date '{newsitem['published']}' for ticker {key}. Skipping this news item.")
+                print(f"Warning: Unable to parse date '{newsitem['published']}' for ticker {ticker}. Skipping this news item.")
                 continue
             all_news_items.append({
-                'ticker': key,
+                'ticker': ticker,
                 'title': newsitem['title'],
-                'ai_summary': clean_text(newsitem['summary']),
+                'publisher_summary': clean_text(newsitem['summary']),
                 'published_date_gmt': published_date_gmt,
-                'published_date': published_date_est,  # New field
+                'published_date': published_date_est,
                 'content': clean_text(newsitem['description']),
                 'link': newsitem['link'],
                 'language': newsitem.get('dc_language', None),
                 'publisher_topic': last_subject,
                 'industry': sector,
-                'company': '',  # Fixed typo: 'coompany' -> 'company'
+                'company': company_name,
                 'status': 'raw',
-                'publisher': 'globenewswire',  # Added 'publisher' field
-                'timezone': 'EST'  # New field
+                'publisher': f'globenewswire_{sector}',  # Updated this line
+                'timezone': 'EST',
+                'ai_summary': '',
+
             })
 
     return pd.DataFrame(all_news_items)

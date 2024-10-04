@@ -100,7 +100,8 @@ def map_to_db(df, source):
             industry=row['industry'],
             ticker=row['ticker'],
             timezone=row['timezone'],
-            ai_summary=row['ai_summary']
+            ai_summary=row['ai_summary'],
+            publisher_summary=row['publisher_summary']
         )
 
         # Map industry only if source is 'euronext'
@@ -157,9 +158,10 @@ def get_news_df(publisher):
         news_items = result.scalars().all()
         
         data = [{
+            'Ticker': item.ticker,  # Add this line to include the ticker
             'Title': item.title,
             'Link': item.link,
-            'Date': item.published_date,  # Changed back to 'Publication Date'
+            'Date': item.published_date,
             'Company': item.company,
             'Event': item.ai_topic,
             'Summary': item.ai_summary

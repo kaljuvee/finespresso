@@ -30,7 +30,8 @@ def display_news(df, page, items_per_page):
     start_idx = (page - 1) * items_per_page
     end_idx = start_idx + items_per_page
 
-    columns_to_display = ['Title', 'Date', 'Company', 'Event', 'Summary']
+    columns_to_display = ['Ticker', 'Title', 'Date', 'Company', 'Event', 'Summary']
+    
     # Only include columns that exist in the DataFrame
     existing_columns = [col for col in columns_to_display if col in df.columns]
     df_display = df[existing_columns][start_idx:end_idx]
