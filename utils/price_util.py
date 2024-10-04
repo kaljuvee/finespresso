@@ -57,7 +57,7 @@ def set_prices(row):
         row['index_end_price'] = None
     return row
 
-def create_returns(news_df):
+def create_price_moves(news_df):
     news_df = news_df.reset_index(drop=True)
     processed_rows = []  # List to store processed rows
 

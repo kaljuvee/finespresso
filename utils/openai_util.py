@@ -39,3 +39,12 @@ def extract_ticker(company):
     )
     ticker = response.choices[0].message.content.strip().upper()
     return ticker if ticker != "N/A" else None
+
+def extract_issuer(news):
+    prompt = f'Extract the company or issuer name corresponding to the text provided. Return concise entity name only. If you cannot assign a ticker symbol, return "N/A". News: "{news}"'
+    response = client.chat.completions.create(
+        model=model_name,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    ticker = response.choices[0].message.content.strip().upper()
+    return ticker if ticker != "N/A" else None

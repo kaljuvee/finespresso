@@ -29,6 +29,7 @@ class News(Base):
     link = Column(Text)
     company = Column(Text)
     published_date = Column(TIMESTAMP(timezone=True))
+    published_date_gmt = Column(TIMESTAMP(timezone=True))
     content = Column(Text)
     ai_summary = Column(Text)
     ai_topic = Column(Text)
@@ -40,7 +41,8 @@ class News(Base):
     mw_ticker = Column(String(255))
     yf_ticker = Column(String(255))
     ticker = Column(String(16))
-    company_id = Column(Integer) # Foreign key to company table
+    company_id = Column(Integer)
+    timezone = Column(String(10))  # Foreign key to company table
 
 class Company(Base):
     __tablename__ = 'company'
@@ -89,10 +91,16 @@ def map_to_db(df, source):
             link=row['link'],
             company=row['company'],
             published_date=row['published_date'],
+            published_date_gmt=row['published_date_gmt'],
             publisher_topic=row['publisher_topic'],
             publisher=row['publisher'],
             downloaded_at=datetime.utcnow(),
-            status=row['status']
+            status=row['status'],
+            content=row['content'],
+            industry=row['industry'],
+            ticker=row['ticker'],
+            timezone=row['timezone'],
+            ai_summary=row['ai_summary']
         )
 
         # Map industry only if source is 'euronext'
@@ -242,6 +250,45 @@ def update_news_status(news_ids, new_status):
         logging.error(f"An error occurred while updating news status: {e}")
         session.rollback()
         return 0
+    finally:
+        session.close()
+
+def get_news_without_company(publisher):
+    logging.info(f"Retrieving news items without company names for publisher: {publisher}")
+    session = Session()
+    try:
+        query = select(News).where(
+            News.company.is_(None), 
+            News.publisher == publisher
+        )
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        count = len(news_items)
+        logging.info(f"Retrieved {count} news items without company names for {publisher}")
+        return news_items
+    finally:
+        session.close()
+
+def update_companies(enriched_df):
+    logging.info("Updating database with enriched company names")
+    session = Session()
+    try:
+        updated_count = 0
+        total_items = len(enriched_df)
+        for index, row in enriched_df.iterrows():
+            news_item = session.get(News, row['id'])
+            if news_item and 'company' in row and row['company']:  # Check if company is not None or empty
+                news_item.company = row['company']
+                updated_count += 1
+            
+            if (index + 1) % 10 == 0 or index == total_items - 1:
+                logging.info(f"Updated {index + 1}/{total_items} items")
+        
+        session.commit()
+        logging.info(f"Successfully updated {updated_count} news items with company names")
+    except Exception as e:
+        logging.error(f"Error updating company names: {str(e)}")
+        session.rollback()
     finally:
         session.close()
 
