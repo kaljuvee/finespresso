@@ -1,6 +1,9 @@
 import streamlit as st
 from utils.display_util import get_cached_dataframe, display_news
 
+# Set page configuration to wide mode
+st.set_page_config(layout="wide")
+
 # Streamlit app title
 st.title("NASDAQ Nordic Market News")
 
