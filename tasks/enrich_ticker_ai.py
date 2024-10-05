@@ -1,6 +1,6 @@
 import logging
 import time
-from utils.db_util import Session, News
+from utils.news_db_util import Session, News
 from utils.openai_util import extract_ticker
 from sqlalchemy import select
 

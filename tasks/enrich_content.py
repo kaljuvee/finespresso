@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import select
-from utils.db_util import Session, News
+from utils.news_db_util import Session, News
 from utils.enrich_util import enrich_content_from_url
 import pandas as pd
 import time

@@ -2,7 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
 import logging
-from utils.db_util import map_to_db, add_news_items
+from utils.news_db_util import map_to_db, add_news_items
 from datetime import datetime
 import pytz
 

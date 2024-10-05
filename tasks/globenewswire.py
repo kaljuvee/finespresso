@@ -1,7 +1,7 @@
 import feedparser
 from datetime import datetime
 from bs4 import BeautifulSoup
-from utils.db_util import add_news_items, News
+from utils.news_db_util import add_news_items, News
 import logging
 
 # Configure logging

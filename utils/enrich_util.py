@@ -4,6 +4,11 @@ from utils.web_util import fetch_url_content
 from utils.openai_util import summarize, tag_news
 from utils.tag_util import tags
 
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+
 def enrich_tag_from_url(df):
     print("Starting enrichment process from URLs")
     logging.info("Starting enrichment process from URLs")

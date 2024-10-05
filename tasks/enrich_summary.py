@@ -1,11 +1,12 @@
 import logging
 from sqlalchemy import select
-from utils.db_util import Session, News
+from utils.news_db_util import Session, News
 from utils.enrich_util import enrich_summary_from_url
 import pandas as pd
 import time
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Define the list of publishers
 PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']

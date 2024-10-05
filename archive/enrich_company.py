@@ -1,5 +1,5 @@
 import logging
-from utils.db_util import get_news_without_company, update_companies
+from archive.db_util import get_news_without_company, update_companies
 from utils.openai_util import extract_issuer
 import pandas as pd
 import time

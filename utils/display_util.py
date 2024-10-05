@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.db_util import get_news_df
+from archive.db_util import get_news_df
 import re
 
 @st.cache_data(ttl=3600)

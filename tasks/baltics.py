@@ -3,7 +3,7 @@ import feedparser
 import pandas as pd
 from datetime import datetime
 import pytz
-from utils.db_util import create_tables, add_news_items, map_to_db
+from utils.news_db_util import create_tables, add_news_items, map_to_db
 from utils.tag_util import tags
 
 # Configure logging

@@ -2,8 +2,8 @@ import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
 import logging
-from utils.db_util import map_to_db, add_news_items
-from datetime import datetime
+from utils.news_db_util import map_to_db, add_news_items
+from datetime import datetime, timedelta
 import pytz
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -40,25 +40,36 @@ async def scrape_euronext():
                 industry = await columns[3].inner_text()
                 topic = await columns[4].inner_text()
                 
-                # Convert published_date to GMT
+                # Extract timezone and convert published_date to GMT
                 try:
-                    # Parse the new date format
                     date_parts = date.split('\n')
                     if len(date_parts) == 2:
-                        date_str = f"{date_parts[0]} {date_parts[1].replace(' CEST', '')}"
-                        local_dt = datetime.strptime(date_str, "%d %b %Y %H:%M")
+                        date_str, time_str = date_parts
+                        time_parts = time_str.split()
+                        if len(time_parts) == 2:
+                            time, extracted_timezone = time_parts
+                            date_str = f"{date_str} {time}"
+                            local_dt = datetime.strptime(date_str, "%d %b %Y %H:%M")
+                            timezone = extracted_timezone  # Use extracted timezone
+                        else:
+                            raise ValueError("Unexpected time format")
                     else:
                         raise ValueError("Unexpected date format")
                 except ValueError as e:
                     logging.error(f"Unable to parse date: {date}. Error: {str(e)}")
                     continue
 
-                local_tz = pytz.timezone(TIMEZONE)
+                local_tz = pytz.timezone(timezone)
                 local_dt = local_tz.localize(local_dt)
                 gmt_dt = local_dt.astimezone(pytz.UTC)
                 
+                # Adjust GMT date if it's a future date
+                current_time = datetime.now(pytz.UTC)
+                if gmt_dt > current_time:
+                    gmt_dt -= timedelta(days=1)
+                
                 news_data.append({
-                    'published_date': date,
+                    'published_date': local_dt.strftime("%Y-%m-%d %H:%M:%S"),
                     'published_date_gmt': gmt_dt.strftime("%Y-%m-%d %H:%M:%S"),
                     'company': company,
                     'title': title,
@@ -70,7 +81,7 @@ async def scrape_euronext():
                     'ticker': '',
                     'ai_summary': '',
                     'status': 'raw',
-                    'timezone': TIMEZONE,
+                    'timezone': timezone,
                     'publisher_summary': '',
                 })
 
