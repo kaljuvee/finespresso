@@ -9,8 +9,9 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define the list of publishers
-PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
+#PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
 #PUBLISHERS = ['globenewswire']
+PUBLISHERS = ['omx', 'baltics', 'euronext']
 
 def get_news_without_tags(publisher):
     logging.info(f"Retrieving clean news items without AI topics for publisher: {publisher}")

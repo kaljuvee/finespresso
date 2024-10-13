@@ -1,1 +1,0 @@
- python tests/restore_db.py tests/backup.sql.gz

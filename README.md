@@ -117,4 +117,8 @@ Once the application is running:
    python -m tasks.enrich_summary
    python -m tasks.enrich_content
    python -m tasks.enrich_ticker
-   ```
+ 
+ ### Run Unit Tests
+ ```
+python -m unittest discover tests
+```

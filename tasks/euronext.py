@@ -10,7 +10,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 URL_PREFIX = 'https://live.euronext.com'
 DEFAULT_URL = "https://live.euronext.com/en/products/equities/company-news"
 DEFAULT_BROWSER = "firefox"
-TIMEZONE = "CET"
+
+# Timezone mapping
+TIMEZONE_MAPPING = {
+    'CEST': 'Europe/Paris',
+    'CET': 'Europe/Paris',
+    'BST': 'Europe/London',
+    'GMT': 'GMT',
+}
 
 async def scrape_euronext():
     async with async_playwright() as p:
@@ -50,7 +57,7 @@ async def scrape_euronext():
                             time, extracted_timezone = time_parts
                             date_str = f"{date_str} {time}"
                             local_dt = datetime.strptime(date_str, "%d %b %Y %H:%M")
-                            timezone = extracted_timezone  # Use extracted timezone
+                            timezone = TIMEZONE_MAPPING.get(extracted_timezone, 'UTC')
                         else:
                             raise ValueError("Unexpected time format")
                     else:

@@ -45,7 +45,8 @@ class News(Base):
     yf_ticker = Column(String(255))
     ticker = Column(String(16))
     company_id = Column(Integer)
-    timezone = Column(String(10))
+    timezone = Column(String(50))
+    ticker_url = Column(String(500))
 
 def create_tables():
     Base.metadata.create_all(engine)
@@ -107,6 +108,7 @@ def map_to_db(df, source):
             content=row['content'],
             industry=row['industry'],
             ticker=row['ticker'],
+            ticker_url=row['ticker_url'],
             timezone=row['timezone'],
             ai_summary=row['ai_summary'],
             publisher_summary=row['publisher_summary']
@@ -168,11 +170,12 @@ def get_news_df(publishers, start_date, end_date):
         data = [{
             'news_id': item.id,
             'ticker': item.ticker,
+            'ticker_url': item.ticker_url,
             'title': item.title,
             'link': item.link,
             'published_date': item.published_date,
             'company': item.company,
-            'ai_topic': item.ai_topic,
+            'ai_topic': item.ai_topic,  # Ensure this is included
             'ai_summary': item.ai_summary,
             'publisher': item.publisher
         } for item in news_items]

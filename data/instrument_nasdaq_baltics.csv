@@ -1,0 +1,75 @@
+issuer,ticker,yf_ticker,isin,asset_class,exchange,exchange_code,country,url
+Punktid Technologies,PNKTD,PNKTD.RG,EE3100089160,equity,nasdaq_baltics,RSE,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100089160/trading
+SAF Tehnika,SAF1R,SAF1R.RG,LV0000101129,equity,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000101129/trading
+Saunum Group,SAUNA,SAUNA.RG,EE3100019753,equity,nasdaq_baltics,RSE,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100019753/trading
+Frigate,FRGTE,FRGTE.RG,LV0000101665,equity,nasdaq_baltics,RSE,LV,https://www.nasdaqbaltic.com/statistics/en/instrument/LV0000101665/trading
+BluOr Bank,BORA070029A,N/A,LV0000802569,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/en/instrument/LV0000802569/trading
+CleanR Grupa,CRGBFLOT25FA,N/A,LV0000802676,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/en/instrument/LV0000802676/trading
+Enefit Green,EGR1T,EGR1T.TL,EE3100137985,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100137985/trading
+DelfinGroup,DGR1R,DGR1R.RG,LV0000101806,equity,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000101806/trading
+Altum,ALTM,N/A,,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/en/instrument/LV0000880037/trading
+Partnerystes projektai keturi,PP4B090026A,N/A,,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/en/instrument/LT0000407561/trading
+Nordecon,NCN1T,NCN1T.TL,EE3100039496,equity,nasdaq_baltics,TAL,EE,https://www.nasdaqbaltic.com/statistics/en/instrument/EE3100039496/trading
+EfTEN Real Estate Fund,EFT1T,EFT1T.TL,EE3100127242,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100127242/trading
+Novaturas,NTU1L,NTU1L.VS,LT0000131872,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000131872/trading
+Baltic Horizon Fund / Northern Horizon Capital,NHCBHFFT,NHCBHFFT.TL,EE3500110244,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3500110244/trading?date=2024-10-07
+Amber Latvijas balzams,BAL1R,BAL1R.RG,LV0000100808,equity,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000100808/trading
+Robus Group,ROBUS,ROBUS.RG,EE3100096140,equity,nasdaq_baltics,RSE,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100096140/trading
+Merko Ehitus,MRK1T,MRK1T.TL,EE3100098328,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100098328/trading
+Elmo Rent,ELMO,ELMO.RG,EE3100075888,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100075888/trading
+MADARA Cosmetics,MDARA,MDARA.RG,LV0000101624,equity,nasdaq_baltics,RSE,LV,https://www.nasdaqbaltic.com/statistics/en/instrument/LV0000101624/trading
+Eco Baltia,ECOB080026FA,N/A,LV0000860120,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000860120/trading
+Tallinna Vesi,TVE1T,TVE1T.TL,EE3100026436,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100026436/trading
+Panevezio Statybos Trestas,PTR1L,PTR1L.VS,LT0000101446,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000101446/trading
+EfTEN United Property Fund / EfTEN Capital,EFCUPFFT,EFCUPFFT.TL,EE3500001609,funds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3500001609/trading
+Longo Group,LONGO060024FA,N/A,LV0000860062,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000860062/trading
+INDEXO,IDX1R,IDX1R.RG,LV0000101863,equity,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000101863/trading
+Hestio,HEST045027FA,N/A,LV0000802650,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/en/instrument/LV0000802650/trading
+Rokiskio Suris,RSU1L,RSU1L.VS,LT0000100372,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/en/instrument/LT0000100372/trading
+J.Molner,MOLNR,MOLNR.RG,EE3100109034,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/en/instrument/EE3100109034/trading
+Pieno Zvaigzdes,PZV1L,PZV1L.VS,LT0000111676,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000111676/trading
+Apranga,APG1L,APG1L.VS,LT0000102337,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000102337/trading?date=2024-10-08
+Nter Asset Management,OAMOBBF1L,OAMOBBF1L.VS,LT0000990012,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000990012/trading?date=2024-10-08
+Eleving Group,ELEV130028A,ELEV130028A.RG,DE000A3LL7M4,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/DE000A3LL7M4/trading
+Mainor Ulemiste,MAYB047526FA,N/A,EE3300002138,bonds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3300002138/trading
+iCotton,ICOTNFLOT27FA,ICOTNFLOT27FA.RG,LV0000802783,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000802783/trading
+Tuul Mobility,TUUL100027FA,N/A,EE3300002559,bonds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3300002559/trading
+Capitalica Baltic Real Estate Fund I,CAPTFLOT25FA,N/A,LT0000408247,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000408247/trading
+K2 LT,K2LT,K2LT.RG,LT0000129009,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000129009/trading
+Sostines bokstai,HEROBFLOT26FA,N/A,LT0000407629,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000407629/trading?date=2024-10-08
+Infortar,INF1T,INF1T.TL,EE3100149394,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100149394/trading
+Legal Balance,LEBA080025FA,N/A,LT0000407066,bonds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/LT0000407066/trading
+Invalda INVL,IVL1L,IVL1L.VS,LT0000102279,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000102279/trading
+Consilium optimum,FASTL120027FA,FASTL120027FA.RG,LT0000409047,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000409047/trading
+Latvenergo,ELEK024227A,N/A,LV0000870129,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000870129/trading
+Tallinna Sadam,TSM1T,TSM1T.TL,EE3100021635,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100021635/trading
+CAPITALICA Z114 REAL ESTATE FUND,CPTBFLO26FA,N/A,LT0000408551,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000408551/trading
+Estonian Japan Trading Company,EJTC,N/A,EE3100008996,equity,nasdaq_baltics,RSE,EE,https://nasdaqbaltic.com/statistics/en/instrument/EE3100008996/trading
+NEO Finance,NEOFI,NEOFI.RG,LT0000132953,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000132953/trading
+Utenos Trikotazas,UTR1L,UTR1L.VS,LT0000109324,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000109324/trading
+Integre Trans,INTRFLOT26FA,N/A,LT0000407553,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000407553/trading
+IuteCredit Finance S.a r.l,IUTE110026A,N/A,XS2378483494,bonds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/XS2378483494/trading?date=2024-10-08
+Amber Grid,AMG1L,AMG1L.VS,LT0000128696,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000128696/trading
+KN Energies,KNE1L,KNE1L.VS,LT0000111650,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000111650/trading
+Nasdaq Vilnius,N/A,N/A,,equity,nasdaq_baltics,,,
+Grab2Go,GRB2G,GRB2G.RG,EE3100107194,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100107194/trading
+VIRSI-A,VIRSI,VIRSI.RG,LV0000101848,equity,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000101848/trading
+INVL Baltic Farmland,INL1L,INL1L.VS,LT0000128753,equity,nasdaq_baltics,VSE,LT,https://www.nasdaqbaltic.com/statistics/en/instrument/LT0000128753/trading
+Zemaitijos Pienas,ZMP1L,ZMP1L.VS,LT0000121865,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000121865/trading
+East West Agro,EWA1L,EWA1L.RG,LT0000132060,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/en/instrument/LT0000132060/trading
+INVL Baltic Real Estate,INR1L,INR1L.VS,LT0000127151,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000127151/trading
+EPSO-G,EPSO0311727A,N/A,LT0000406530,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000406530/trading
+INVL Technology,INC1L,INC1L.VS,LT0000128860,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000128860/trading
+Siauliu Bankas,SAB1L,SAB1L.VS,LT0000102253,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000102253/trading
+Amber Beverage Group Holding S.Ã r.l.,AMBEFLOT27A,N/A,LV0000870137,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000870137/trading
+Bigbank AS,BIGB070034A,N/A,EE3300004340,bonds,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3300004340/trading
+TKM Grupp,TKM1T,TKM1T.TL,EE0000001105,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE0000001105/trading
+LITGRID,LGD1L,LGD1L.VS,LT0000128415,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000128415/trading
+Sun Finance Treasury Limited,SUNBFLOT26FA,SUNBFLOT26FA.RG,LV0000802692,bonds,nasdaq_baltics,RSE,LV,https://nasdaqbaltic.com/statistics/et/instrument/LV0000802692/trading
+Nasdaq Tallinn,N/A,N/A,,equity,nasdaq_baltics,,,
+LHV Group,LHV1T,LHV1T.TL,EE3100102203,equity,nasdaq_baltics,TAL,EE,https://nasdaqbaltic.com/statistics/et/instrument/EE3100102203/trading
+Kauno Energija,KNR1L,KNR1L.VS,LT0000123010,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000123010/trading
+Vilniaus Baldai,VBL1L,VBL1L.VS,LT0000104267,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000104267/trading
+Nasdaq Riga,N/A,N/A,,equity,nasdaq_baltics,,,
+Akola group,AKO1L,AKO1L.VS,LT0000128092,equity,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/et/instrument/LT0000128092/trading
+Civinity,CIVB110025FA,N/A,LT0000408197,bonds,nasdaq_baltics,VSE,LT,https://nasdaqbaltic.com/statistics/en/instrument/LT0000405748/trading

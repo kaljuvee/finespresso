@@ -15,6 +15,9 @@ def run_price_move_task(publishers, days_back=7):
     news_df = news_db_util.get_news_df(publishers, start_date, end_date)
     logger.info(f"Retrieved {len(news_df)} news items")
 
+    successful_processes = 0
+    failed_processes = 0
+
     for _, news_item in news_df.iterrows():
         try:
             news_id = news_item['news_id']
@@ -23,6 +26,7 @@ def run_price_move_task(publishers, days_back=7):
 
             if not all([news_id, ticker, published_date]):
                 logger.error(f"Missing required fields in news item: {news_item}")
+                failed_processes += 1
                 continue
 
             logger.info(f"Processing news item: {news_id}")
@@ -32,37 +36,37 @@ def run_price_move_task(publishers, days_back=7):
 
             if processed_row['begin_price'] is None or processed_row['end_price'] is None:
                 logger.warning(f"No price data available for {ticker} on {published_date}")
+                failed_processes += 1
                 continue
 
             # Create and store the PriceMove object
-            try:
-                price_move = price_move_util.create_price_move(
-                    news_id=news_id,
-                    ticker=ticker,
-                    published_date=published_date,
-                    begin_price=processed_row['begin_price'],
-                    end_price=processed_row['end_price'],
-                    index_begin_price=processed_row['index_begin_price'],
-                    index_end_price=processed_row['index_end_price'],
-                    volume=processed_row.get('Volume'),
-                    market=processed_row['market'],
-                    price_change=processed_row['price_change'],
-                    price_change_percentage=processed_row['price_change_percentage'],
-                    index_price_change=processed_row['index_price_change'],
-                    index_price_change_percentage=processed_row['index_price_change_percentage'],
-                    actual_side=processed_row['actual_side']
-                )
-                price_move_db_util.store_price_move(price_move)
-                logger.info(f"Processed and stored price move for news_id: {news_id}")
-            except Exception as e:
-                logger.error(f"Error creating or storing price move for news_id {news_id}: {str(e)}")
-                logger.exception("Detailed traceback:")
+            price_move = price_move_util.create_price_move(
+                news_id=news_id,
+                ticker=ticker,
+                published_date=published_date,
+                begin_price=processed_row['begin_price'],
+                end_price=processed_row['end_price'],
+                index_begin_price=processed_row['index_begin_price'],
+                index_end_price=processed_row['index_end_price'],
+                volume=processed_row.get('Volume'),
+                market=processed_row['market'],
+                price_change=processed_row['price_change'],
+                price_change_percentage=processed_row['price_change_percentage'],
+                index_price_change=processed_row['index_price_change'],
+                index_price_change_percentage=processed_row['index_price_change_percentage'],
+                actual_side=processed_row['actual_side']
+            )
+            price_move_db_util.store_price_move(price_move)
+            logger.info(f"Processed and stored price move for news_id: {news_id}")
+            successful_processes += 1
 
         except Exception as e:
             logger.error(f"Error processing news item: {e}")
             logger.exception("Detailed traceback:")
+            failed_processes += 1
 
-    logger.info("Price move task completed")
+    logger.info(f"Price move task completed. Successful: {successful_processes}, Failed: {failed_processes}")
+    logger.info(f"Total news items: {len(news_df)}, Processed: {successful_processes + failed_processes}")
 
 if __name__ == "__main__":
     publishers = ["globenewswire_biotech"]  # Add your list of publishers
