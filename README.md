@@ -1,4 +1,4 @@
-# Flask Scheduler Application
+# Finespresso
 
 This application is a Flask-based web service that schedules and runs data download tasks for Baltics, Euronext, and OMX markets.
 
