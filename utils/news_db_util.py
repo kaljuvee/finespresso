@@ -108,7 +108,7 @@ def map_to_db(df, source):
             content=row['content'],
             industry=row['industry'],
             ticker=row['ticker'],
-            ticker_url=row['ticker_url'],
+            ticker_url=row.get('ticker_url', ''),  # Use .get() method with a default value
             timezone=row['timezone'],
             ai_summary=row['ai_summary'],
             publisher_summary=row['publisher_summary']

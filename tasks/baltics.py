@@ -63,6 +63,7 @@ def parse_rss_feed(url, tags):
             'status': 'raw',
             'timezone': TIMEZONE,
             'publisher_summary': '',
+            'ticker_url': '',  # Add this line to include ticker_url
         })
 
         logging.debug(f"Added news item to dataframe: {title}")
