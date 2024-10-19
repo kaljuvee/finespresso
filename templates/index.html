@@ -3,113 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Download Scheduler</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Finesprosso News Scheduler</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
         h1, h2 { color: #333; }
         button, select { margin-right: 10px; padding: 10px; cursor: pointer; }
-        #status, .task-status { font-weight: bold; margin-top: 20px; }
-        #history { list-style-type: none; padding: 0; }
+        .status, .task-status { font-weight: bold; margin-top: 20px; }
+        #history { list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto; }
         #history li { background: #f4f4f4; margin: 5px 0; padding: 10px; border-radius: 5px; }
         .task-container { margin-bottom: 20px; }
+        form { display: inline; }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function updateStatus() {
+            $.getJSON('/scheduler_status', function(data) {
+                $('#scheduler-status').text(data.status);
+            });
+
+            $.getJSON('/task_info', function(data) {
+                for (let task in data) {
+                    $(`#${task}-status`).text(data[task].status);
+                }
+            });
+
+            $.getJSON('/get_logs', function(data) {
+                let historyHtml = '';
+                data.logs.forEach(function(log) {
+                    historyHtml += `<li>${log}</li>`;
+                });
+                $('#history').html(historyHtml);
+            });
+        }
+
+        $(document).ready(function() {
+            setInterval(updateStatus, 5000);  // Update every 5 seconds
+        });
+    </script>
 </head>
 <body>
-    <h1>Data Download Scheduler</h1>
+    <h1>Finesprosso News Scheduler</h1>
     
     <div>
-        <button onclick="startScheduler()">Start Scheduler</button>
-        <button onclick="stopScheduler()">Stop Scheduler</button>
+        <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
+            <button type="submit">Logout</button>
+        </form>
     </div>
 
-    <div id="status">Scheduler Status: <span id="schedulerStatus">Unknown</span></div>
+    <div class="status">Scheduler Status: <span id="scheduler-status">{{ scheduler_status }}</span></div>
 
     {% for task_name, info in task_info.items() %}
     <div class="task-container">
-        <h2>{{ task_name|capitalize }} Task</h2>
-        <button onclick="runTask('{{ task_name }}')">Run {{ task_name|capitalize }} Task</button>
-        <select id="{{ task_name }}Frequency" onchange="setFrequency('{{ task_name }}')">
-            {% for i in range(1, 13) %}
-            <option value="{{ i }}" {% if info.frequency == i %}selected{% endif %}>Every {{ i }} hour{% if i > 1 %}s{% endif %}</option>
-            {% endfor %}
-        </select>
-        <div class="task-status">Status: <span id="{{ task_name }}Status">{{ info.status }}</span></div>
+        <h2>{{ task_name|replace('_', ' ')|title }} Task</h2>
+        <form action="/run_task/{{ task_name }}" method="post" style="display: inline;">
+            <button type="submit">Run {{ task_name|replace('_', ' ')|title }} Task</button>
+        </form>
+        <form action="/set_frequency/{{ task_name }}" method="post" style="display: inline;">
+            <select name="frequency" onchange="this.form.submit()">
+                {% for i in range(1, 25) %}
+                <option value="{{ i }}" {% if info.frequency == i %}selected{% endif %}>Every {{ i }} hour{% if i > 1 %}s{% endif %}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <div class="task-status">Status: <span id="{{ task_name }}-status">{{ info.status }}</span></div>
     </div>
     {% endfor %}
 
     <h2>Run History</h2>
-    <ul id="history"></ul>
-
-    <script>
-        function startScheduler() {
-            axios.post('/start').then(response => {
-                alert(response.data.status);
-                updateSchedulerStatus();
-            });
-        }
-
-        function stopScheduler() {
-            axios.post('/stop').then(response => {
-                alert(response.data.status);
-                updateSchedulerStatus();
-            });
-        }
-
-        function runTask(taskName) {
-            axios.post(`/run_task/${taskName}`).then(response => {
-                alert(response.data.status);
-                updateTaskInfo();
-                updateLogs();
-            });
-        }
-
-        function setFrequency(taskName) {
-            const frequency = document.getElementById(`${taskName}Frequency`).value;
-            axios.post(`/set_frequency/${taskName}`, `frequency=${frequency}`).then(response => {
-                alert(response.data.status);
-                updateTaskInfo();
-            });
-        }
-
-        function updateLogs() {
-            axios.get('/get_logs').then(response => {
-                const historyList = document.getElementById('history');
-                historyList.innerHTML = '';
-                response.data.logs.forEach(log => {
-                    const li = document.createElement('li');
-                    li.textContent = log;
-                    historyList.appendChild(li);
-                });
-            });
-        }
-
-        function updateSchedulerStatus() {
-            axios.get('/scheduler_status').then(response => {
-                document.getElementById('schedulerStatus').textContent = response.data.status;
-            });
-        }
-
-        function updateTaskInfo() {
-            axios.get('/task_info').then(response => {
-                for (const [task, info] of Object.entries(response.data)) {
-                    document.getElementById(`${task}Status`).textContent = info.status;
-                    document.getElementById(`${task}Frequency`).value = info.frequency;
-                }
-            });
-        }
-
-        // Update logs, scheduler status, and task info every 5 seconds
-        setInterval(() => {
-            updateLogs();
-            updateSchedulerStatus();
-            updateTaskInfo();
-        }, 5000);
-
-        // Initial update
-        updateLogs();
-        updateSchedulerStatus();
-        updateTaskInfo();
-    </script>
+    <ul id="history">
+        {% for log in run_history %}
+        <li>{{ log }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
