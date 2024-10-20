@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import argparse
 import pandas as pd
-from utils import news_db_util
+from utils.db import news_db_util
 from dateutil import parser as date_parser
 import pytz
 import logging

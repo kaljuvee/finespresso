@@ -1,7 +1,7 @@
 import logging
 import time
-from utils.news_db_util import Session, News, update_news_tickers
-from utils.instrument_db_util import get_instrument_by_company_name
+from utils.db.news_db_util import Session, News, update_news_tickers
+from utils.db.instrument_db_util import get_instrument_by_company_name
 from sqlalchemy import select, or_
 
 # Configure logging

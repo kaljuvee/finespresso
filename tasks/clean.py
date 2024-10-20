@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import func, and_
-from utils.news_db_util import Session, News
+from utils.db.news_db_util import Session, News
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

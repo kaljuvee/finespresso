@@ -1,8 +1,10 @@
 import logging
 import os
-from utils import news_db_util, price_move_util, price_move_db_util
+from utils import price_move_util
 from datetime import datetime, timedelta
 import sys
+
+from utils.db import news_db_util, price_move_db_util
 # Create logs directory if it doesn't exist
 os.makedirs('logs', exist_ok=True)
 

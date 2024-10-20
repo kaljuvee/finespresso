@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Float
 from sqlalchemy.orm import sessionmaker
-from utils.news_db_util import Base, engine
+from utils.db.news_db_util import Base, engine
 import pandas as pd
 import logging
 

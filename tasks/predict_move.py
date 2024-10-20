@@ -1,4 +1,4 @@
-from tasks import predict
+from tasks.ai import predict
 
 if __name__ == '__main__':
     predict.main()

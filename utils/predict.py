@@ -33,22 +33,8 @@ def predict(df):
     side_vectorizers = {}
 
     for index, row in df.iterrows():
-        # Check if event is None or NaN
-        if pd.isna(row['event']):
-            logger.warning(f"Skipping prediction for row {index}: Event is None or NaN")
-            continue
-
         event = row['event'].lower().replace(' ', '_')
         
-        # Determine which column to use for prediction
-        if 'content' in row and pd.notna(row['content']):
-            text_for_prediction = row['content']
-        elif 'title' in row and pd.notna(row['title']):
-            text_for_prediction = row['title']
-        else:
-            logger.warning(f"Skipping prediction for row {index}: No content or title available")
-            continue
-
         # Predict move
         if pd.isnull(row['predicted_move']):
             if event not in move_models:
@@ -57,7 +43,7 @@ def predict(df):
             if move_models[event] and move_vectorizers[event]:
                 try:
                     logger.info(f"Predicting move for row {index}, event: {event}")
-                    transformed_content = move_vectorizers[event].transform([text_for_prediction])
+                    transformed_content = move_vectorizers[event].transform([row['content']])
                     prediction = move_models[event].predict(transformed_content)
                     df.at[index, 'predicted_move'] = prediction[0]
                     logger.info(f"Move prediction for row {index}: {prediction[0]}")
@@ -72,7 +58,7 @@ def predict(df):
             if side_models[event] and side_vectorizers[event]:
                 try:
                     logger.info(f"Predicting side for row {index}, event: {event}")
-                    transformed_content = side_vectorizers[event].transform([text_for_prediction])
+                    transformed_content = side_vectorizers[event].transform([row['content']])
                     prediction = side_models[event].predict(transformed_content)
                     df.at[index, 'predicted_side'] = 'UP' if prediction[0] == 1 else 'DOWN'
                     logger.info(f"Side prediction for row {index}: {df.at[index, 'predicted_side']}")

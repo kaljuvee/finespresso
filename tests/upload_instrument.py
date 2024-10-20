@@ -1,6 +1,6 @@
 import pandas as pd
 import logging
-from utils.instrument_db_util import save_instrument
+from utils.db.instrument_db_util import save_instrument
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

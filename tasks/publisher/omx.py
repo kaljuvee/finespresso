@@ -2,10 +2,10 @@ import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
 import logging
-from utils.news_db_util import map_to_db, add_news_items
+from utils.db.news_db_util import map_to_db, add_news_items
 from datetime import datetime
 import pytz
-from tasks.enrich_ticker import process_publisher
+from tasks.enrich.enrich_ticker import process_publisher
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 

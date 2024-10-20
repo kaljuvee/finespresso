@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
-from utils.price_move_db_util import PriceMove, store_price_move
+from utils.db.price_move_db_util import PriceMove, store_price_move
 
 class TestPriceMoveDbUtil(unittest.TestCase):
 

@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from utils.news_db_util import News, engine
+from utils.db.news_db_util import News, engine
 import pytz
 from datetime import datetime, timedelta
 import logging

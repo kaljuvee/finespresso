@@ -4,8 +4,8 @@ import logging
 import os
 from datetime import datetime, time
 import numpy as np
-from utils.price_move_db_util import store_price_move, PriceMove
-from utils.date_adjuster import get_previous_trading_day, get_next_trading_day
+from utils.db.price_move_db_util import store_price_move, PriceMove
+from utils.date.date_adjuster import get_previous_trading_day, get_next_trading_day
 import sys
 
 # Create logs directory if it doesn't exist

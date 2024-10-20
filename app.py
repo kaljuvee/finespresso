@@ -7,9 +7,9 @@ import asyncio
 import os
 import threading
 from collections import deque
-from tasks.baltics import main as baltics_main
-from tasks.euronext import main as euronext_main
-from tasks.omx import main as omx_main
+from tasks.publisher.baltics import main as baltics_main
+from tasks.publisher.euronext import main as euronext_main
+from tasks.publisher.omx import main as omx_main
 from tasks.clean import main as clean_main
 from tasks.enrich_all import enrich_all as enrich_main
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user

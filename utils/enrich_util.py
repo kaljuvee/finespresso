@@ -1,8 +1,8 @@
 import logging
 import pandas as pd
-from utils.web_util import fetch_url_content
-from utils.openai_util import enrich_reason, tag_news
-from utils.tag_util import tags
+from utils.scrape.web_util import fetch_url_content
+from utils.ai.openai_util import enrich_reason, tag_news
+from utils.static.tag_util import tags   
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

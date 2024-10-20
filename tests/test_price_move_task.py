@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import pandas as pd
-from tasks.price_move import run_price_move_task
+from tasks.prices.price_move import run_price_move_task
 
 class TestPriceMoveTask(unittest.TestCase):
 

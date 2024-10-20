@@ -149,7 +149,6 @@ def remove_duplicate_news():
     finally:
         session.close()
 
-@st.cache_data(ttl=3600)
 def get_news_df_date_range(publishers, start_date, end_date):
     session = Session()
     try:
@@ -335,7 +334,6 @@ def get_news_by_id(news_id):
     finally:
         session.close()
 
-@st.cache_data(ttl=3600)
 def get_news_df(publisher=None):
     logging.info(f"Retrieving all news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
     
@@ -378,7 +376,6 @@ def get_news_df(publisher=None):
     finally:
         session.close()
 
-@st.cache_data(ttl=3600)
 def get_news_latest_df(publisher=None):
     logging.info(f"Retrieving latest 1000 news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
     
@@ -446,6 +443,25 @@ def update_news_predictions(df):
         logging.info(f"Successfully updated {updated_count} news items with predictions")
     except Exception as e:
         logging.error(f"Error updating news predictions: {str(e)}")
+        session.rollback()
+    finally:
+        session.close()
+
+def update_records(df):
+    logging.info(f"Updating {len(df)} records in the database")
+    
+    session = Session()
+    try:
+        for index, row in df.iterrows():
+            stmt = update(News).where(News.id == row['news_id'])
+            update_values = {column: row[column] for column in row.index if column != 'news_id'}
+            stmt = stmt.values(**update_values)
+            session.execute(stmt)
+        
+        session.commit()
+        logging.info(f"Successfully updated {len(df)} records")
+    except Exception as e:
+        logging.error(f"Error updating records: {str(e)}")
         session.rollback()
     finally:
         session.close()

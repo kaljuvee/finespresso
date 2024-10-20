@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.news_db_util import get_news_df
+from utils.db.news_db_util import get_news_df
 import re
-from utils.instrument_db_util import get_instrument_by_company_name
+from utils.db.instrument_db_util import get_instrument_by_company_name
 import logging
 
 @st.cache_data(ttl=3600)

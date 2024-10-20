@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
-from utils.news_db_util import Base, engine
+from utils.db.news_db_util import Base, engine
 from datetime import datetime
 import logging
 

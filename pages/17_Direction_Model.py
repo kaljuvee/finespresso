@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from utils.model_db_util import get_results
-from utils.display_model_util import display_model_results
+from utils.db.model_db_util import get_results
+from utils.display.display_model_util import display_model_results
 
 # Set page config to wide layout
 st.set_page_config(layout="wide")

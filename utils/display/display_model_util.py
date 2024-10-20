@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import re
-from utils.model_db_util import get_results, get_regression_results
+from utils.db.model_db_util import get_results, get_regression_results
 
 def format_event(event):
     if event:

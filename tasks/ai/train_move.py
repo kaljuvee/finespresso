@@ -6,12 +6,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import joblib
 import time
-from utils.model_db_util import ModelResultsRegression, save_regression_results
+from utils.db.model_db_util import ModelResultsRegression, save_regression_results
 import logging
 import numpy as np
 import os
 import math
-from utils.price_move_db_util import get_news_price_moves
+from utils.db.price_move_db_util import get_news_price_moves
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

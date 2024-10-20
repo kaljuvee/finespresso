@@ -1,6 +1,6 @@
 import streamlit as st
-from utils.display_util import display_rate_move
-from utils.news_db_util import get_rate_move_df
+from utils.display.display_util import display_rate_move
+from utils.db.news_db_util import get_rate_move_df
 from utils.filter_util import publisher_whitelist
 
 # Set page configuration to wide mode

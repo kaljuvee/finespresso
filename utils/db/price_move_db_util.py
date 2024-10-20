@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 from sqlalchemy.exc import IntegrityError
 import pandas as pd
-from utils.news_db_util import News
+from utils.db.news_db_util import News
 
 logger = logging.getLogger(__name__)
 

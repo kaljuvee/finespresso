@@ -3,9 +3,9 @@ import feedparser
 import pandas as pd
 from datetime import datetime
 import pytz
-from utils.news_db_util import add_news_items, map_to_db
-from utils.tag_util import tags
-from tasks.enrich_ticker import process_publisher
+from utils.db.news_db_util import add_news_items, map_to_db
+from utils.static.tag_util import tags
+from tasks.enrich.enrich_ticker import process_publisher
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
