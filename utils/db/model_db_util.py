@@ -168,6 +168,3 @@ def get_accuracy(event: str) -> float:
         return None
     finally:
         session.close()
-
-# Initialize the database
-create_tables()

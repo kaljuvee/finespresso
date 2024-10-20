@@ -28,6 +28,10 @@ def display_publisher(publisher, page, items_per_page):
     df['Title'] = df.apply(lambda row: make_clickable(row['title'], row['link']), axis=1)
 
     # Format the event column: remove underscores and capitalize the first word
+    df['Probability % (Direction)'] = df['event'].apply(lambda x: get_accuracy(x))
+    df['Probability % (Direction)'] = df['Probability % (Direction)'].apply(
+        lambda x: f'{x*100:.2f}%' if pd.notnull(x) and not np.isnan(x) else ''
+    )
     # Handle None/null values safely
     df['event'] = df['event'].apply(lambda x: x.replace('_', ' ').capitalize() if isinstance(x, str) else '')
 
@@ -36,10 +40,6 @@ def display_publisher(publisher, page, items_per_page):
     df['Expected Move (%)'] = df['Expected Move (%)'].apply(format_percentage)
 
     # Add new column for Probability % (Direction)
-    df['Probability % (Direction)'] = df['event'].apply(lambda x: get_accuracy(x))
-    df['Probability % (Direction)'] = df['Probability % (Direction)'].apply(
-        lambda x: f'{x*100:.2f}%' if pd.notnull(x) and not np.isnan(x) else ''
-    )
 
     # Select columns to display, excluding 'predicted_side'
     columns_to_display = ['Ticker', 'Title', 'company', 'Expected Move (%)', 'Probability % (Direction)', 'event', 'reason', 'published_date']
