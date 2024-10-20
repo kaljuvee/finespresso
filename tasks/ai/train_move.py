@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import joblib
 import time
-from utils.db.model_db_util import ModelResultsRegression, save_regression_results
+from utils.db.model_db_util import save_regression_results
 import logging
 import numpy as np
 import os
@@ -36,7 +36,7 @@ def train_and_save_model_for_event(event, df):
         event_df['processed_content'] = event_df['text_to_process'].apply(preprocess)
         
         # Use daily_alpha as the target variable
-        y = event_df['daily_alpha']
+        y = event_df['price_change_percentage']
 
         tfidf = TfidfVectorizer(max_features=1000)
         X = tfidf.fit_transform(event_df['processed_content'])

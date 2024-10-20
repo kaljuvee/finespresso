@@ -72,12 +72,17 @@ def store_price_move(price_move):
         existing_price_move = session.query(PriceMove).filter_by(news_id=str(price_move.news_id)).first()
         
         if existing_price_move:
-            logger.info(f"Price move for news_id: {price_move.news_id} already exists. Skipping...")
-            return  # Skip the existing entry
+            # Update existing record
+            for key, value in price_move.__dict__.items():
+                if key != '_sa_instance_state':  # Skip SQLAlchemy internal attribute
+                    setattr(existing_price_move, key, value)
+            logger.info(f"Updated existing price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
         else:
+            # Add new record
             session.add(price_move)
-            session.commit()
-            logger.info(f"Successfully added price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
+            logger.info(f"Added new price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
+        
+        session.commit()
     except IntegrityError as ie:
         logger.error(f"IntegrityError storing price move for news_id {price_move.news_id}: {str(ie)}")
         session.rollback()
@@ -88,7 +93,7 @@ def store_price_move(price_move):
     finally:
         session.close()
 
-    # Verify that the price move was stored
+    # Verify that the price move was stored or updated
     try:
         verify_session = Session()
         # Convert news_id to string when querying
@@ -106,12 +111,12 @@ def get_news_price_moves():
     try:
         session = Session()
         
-        query = select(News.id, News.content, News.title, News.event, PriceMove.actual_side, PriceMove.daily_alpha).select_from(
+        query = select(News.id, News.content, News.title, News.event, PriceMove.actual_side, PriceMove.price_change_percentage, PriceMove.daily_alpha).select_from(
             join(News, PriceMove, News.id == PriceMove.news_id)
         )
         
         result = session.execute(query)
-        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 'actual_side', 'daily_alpha'])
+        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 'actual_side', 'price_change_percentage', 'daily_alpha'])
         
         logging.info(f"Retrieved {len(df)} rows from news and price_moves tables")
         return df

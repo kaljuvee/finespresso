@@ -9,8 +9,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def load_models(event, model_type):
-    model_filename = f'models/{event}_{model_type}.joblib'
-    vectorizer_filename = f'models/{event}_tfidf_vectorizer_{model_type}.joblib'
+    if model_type == 'classifier_binary':
+        model_filename = f'models/{event}_classifier_binary.joblib'
+        vectorizer_filename = f'models/{event}_tfidf_vectorizer_binary.joblib'
+    else:
+        model_filename = f'models/{event}_{model_type}.joblib'
+        vectorizer_filename = f'models/{event}_tfidf_vectorizer_{model_type}.joblib'
     
     logger.info(f"Looking for model file: {model_filename}")
     logger.info(f"Looking for vectorizer file: {vectorizer_filename}")
@@ -78,6 +82,10 @@ def predict(df):
                     logger.info(f"Side prediction for row {index}: {df.at[index, 'predicted_side']}")
                 except Exception as e:
                     logger.error(f"Error predicting side for row {index}: {e}", exc_info=True)
+            else:
+                logger.warning(f"Side model or vectorizer not available for event: {event}")
+        else:
+            logger.info(f"Skipping side prediction for row {index}: predicted_side is not null")
     
     return df
 
@@ -85,6 +93,14 @@ def main():
     # Get all news
     logger.info("Fetching all news data")
     news_df = news_db_util.get_news_df()
+    
+    # Commented out code to get DataFrame for a single news ID
+    # test_news_id = 123  # Replace with the actual news ID you want to test
+    # news_df = news_db_util.get_news_by_id(test_news_id)
+    # if news_df.empty:
+    #     logger.error(f"No news found with ID: {test_news_id}")
+    #     return
+    # logger.info(f"Testing prediction for news ID: {test_news_id}")
     
     # Make predictions
     logger.info("Starting predictions")

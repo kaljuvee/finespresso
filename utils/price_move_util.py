@@ -111,8 +111,8 @@ def set_prices(row):
         # Calculate derived values
         row['price_change'] = row['end_price'] - row['begin_price']
         row['index_price_change'] = row['index_end_price'] - row['index_begin_price']
-        row['price_change_percentage'] = row['price_change'] / row['begin_price']
-        row['index_price_change_percentage'] = row['index_price_change'] / row['index_begin_price']
+        row['price_change_percentage'] = (row['price_change'] / row['begin_price']) * 100  # Multiply by 100
+        row['index_price_change_percentage'] = (row['index_price_change'] / row['index_begin_price']) * 100  # Multiply by 100
         row['daily_alpha'] = row['price_change_percentage'] - row['index_price_change_percentage']
         row['actual_side'] = 'UP' if row['price_change_percentage'] >= 0 else 'DOWN'
         row['Volume'] = data.loc[yf_today_date, 'Volume']

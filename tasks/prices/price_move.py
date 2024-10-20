@@ -19,9 +19,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 # List of publishers moved to the top
-#PUBLISHERS = ["omx", "baltics", "euronext"]
-PUBLISHERS = ["globenewswire_biotech"]
-DAYS_BACK = 365
+PUBLISHERS = ["omx", "baltics", "euronext", "globenewswire_biotech"]
+#PUBLISHERS = ["globenewswire_biotech"]
 
 def test_price_move_task(news_id):
     logger.info(f"Starting test price move task for news_id: {news_id}")
@@ -80,15 +79,12 @@ def test_price_move_task(news_id):
         logger.error(f"Error processing news item: {e}")
         logger.exception("Detailed traceback:")
 
-def run_price_move_task(publishers=PUBLISHERS, days_back=DAYS_BACK):
-    logger.info(f"Starting price move task for publishers: {publishers}")
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=DAYS_BACK)
-    logger.info(f"Date range: {start_date} to {end_date}")
+def run_price_move_task(publisher):
+    logger.info(f"Starting price move task for publisher: {publisher}")
 
-    # Get news data for the specified publishers
-    news_df = news_db_util.get_news_df(publishers, start_date, end_date)
-    logger.info(f"Retrieved {len(news_df)} news items")
+    # Get news data for the specified publisher
+    news_df = news_db_util.get_news_df(publisher)
+    logger.info(f"Retrieved {len(news_df)} news items for {publisher}")
 
     successful_processes = 0
     failed_processes = 0
@@ -143,13 +139,13 @@ def run_price_move_task(publishers=PUBLISHERS, days_back=DAYS_BACK):
             logger.exception("Detailed traceback:")
             failed_processes += 1
 
-    logger.info(f"Price move task completed. Successful: {successful_processes}, Failed: {failed_processes}")
+    logger.info(f"Price move task completed for {publisher}. Successful: {successful_processes}, Failed: {failed_processes}")
     logger.info(f"Total news items: {len(news_df)}, Processed: {successful_processes + failed_processes}")
 
 if __name__ == "__main__":
-    # Comment out the following line during testing:
-    run_price_move_task()
+    for publisher in PUBLISHERS:
+        run_price_move_task(publisher)
     
-    # Uncomment the following line and replace NEWS_ID with the actual news_id you want to test:
-    #news_id = 15820
-    #test_price_move_task(news_id)
+    # Uncomment the following lines and replace NEWS_ID with the actual news_id you want to test:
+    # news_id = 15820
+    # test_price_move_task(news_id)

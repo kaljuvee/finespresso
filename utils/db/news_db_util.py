@@ -432,9 +432,17 @@ def update_news_predictions(df):
             if news_item:
                 if pd.notnull(row['predicted_side']):
                     news_item.predicted_side = row['predicted_side']
+                    logging.info(f"Updating predicted_side for news_id {row['news_id']}: {row['predicted_side']}")
+                else:
+                    logging.warning(f"Null predicted_side for news_id {row['news_id']}")
                 if pd.notnull(row['predicted_move']):
                     news_item.predicted_move = row['predicted_move']
+                    logging.info(f"Updating predicted_move for news_id {row['news_id']}: {row['predicted_move']}")
+                else:
+                    logging.warning(f"Null predicted_move for news_id {row['news_id']}")
                 updated_count += 1
+            else:
+                logging.warning(f"No news item found for news_id {row['news_id']}")
             
             if (index + 1) % 100 == 0 or index == total_items - 1:
                 session.commit()
@@ -482,3 +490,4 @@ def update_records(df):
         return 0
     finally:
         session.close()
+
