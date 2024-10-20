@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import joblib
-from utils import rate_db_util
 import time
 from utils.model_db_util import ModelResultsRegression, save_regression_results
 import logging

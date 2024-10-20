@@ -106,12 +106,12 @@ def get_news_price_moves():
     try:
         session = Session()
         
-        query = select(News.id, News.content, News.title, PriceMove.actual_side, PriceMove.daily_alpha).select_from(
+        query = select(News.id, News.content, News.title, News.event, PriceMove.actual_side, PriceMove.daily_alpha).select_from(
             join(News, PriceMove, News.id == PriceMove.news_id)
         )
         
         result = session.execute(query)
-        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'actual_side', 'daily_alpha'])
+        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 'actual_side', 'daily_alpha'])
         
         logging.info(f"Retrieved {len(df)} rows from news and price_moves tables")
         return df

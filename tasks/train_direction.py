@@ -5,13 +5,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import joblib
-from utils import price_move_db_util
 import time
 from utils.model_db_util import save_results
 import logging
 import numpy as np
 import os
-
+from utils.price_move_db_util import get_news_price_moves
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Load spaCy model

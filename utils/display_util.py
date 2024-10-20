@@ -4,6 +4,7 @@ from datetime import datetime
 from utils.news_db_util import get_news_df
 import re
 from utils.instrument_db_util import get_instrument_by_company_name
+import logging
 
 @st.cache_data(ttl=3600)
 def get_cached_dataframe(publisher):
@@ -57,6 +58,7 @@ def display_news(df, page, items_per_page):
     return total_pages
 
 def format_baltics(df):
+    logging.info(f"Input DataFrame columns: {df.columns.tolist()}")
     """Format the Baltic news dataframe for display."""
     df_display = df.copy()
 
@@ -92,6 +94,7 @@ def format_baltics(df):
     if 'Date' in df_display.columns:
         df_display['Date'] = pd.to_datetime(df_display['Date']).dt.strftime('%Y-%m-%d %H:%M:%S')
 
+    logging.info(f"Output DataFrame columns: {df_display.columns.tolist()}")
     return df_display
 
 def display_baltics(df, page, items_per_page):
