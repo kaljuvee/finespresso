@@ -12,19 +12,19 @@ logger = logging.getLogger(__name__)
 PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
 
 def get_news_without_summary(publisher):
-    logging.info(f"Retrieving news items without summaries for publisher: {publisher}")
+    logging.info(f"Retrieving news items without reasons for publisher: {publisher}")
     session = Session()
     try:
         query = select(News).where(
-            (News.ai_summary.is_(None) | (News.ai_summary == '')), 
+            (News.reason.is_(None) | (News.reason == '')), 
             News.publisher == publisher,
             News.status == 'tagged'
         )
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        print(f"Retrieved {count} news items without AI summaries for {publisher}")
-        logging.info(f"Retrieved {count} news items without summaries for {publisher}")
+        print(f"Retrieved {count} news items without reasons for {publisher}")
+        logging.info(f"Retrieved {count} news items without reasons for {publisher}")
         return news_items
     finally:
         session.close()
@@ -36,25 +36,25 @@ def news_to_dataframe(news_items):
     return df
 
 def update_summaries(enriched_df):
-    logging.info("Updating database with enriched summaries")
+    logging.info("Updating database with enriched reasons")
     session = Session()
     try:
         updated_count = 0
         total_items = len(enriched_df)
         for index, row in enriched_df.iterrows():
             news_item = session.get(News, row['id'])
-            if news_item and 'ai_summary' in row:
-                news_item.ai_summary = row['ai_summary']
-                news_item.status = 'summarized'  # Update status to 'summarized'
+            if news_item and 'reason' in row:
+                news_item.reason = row['reason']
+                news_item.status = 'reasoned'  # Update status to 'reasoned'
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
                 logging.info(f"Updated {index + 1}/{total_items} items")
         
         session.commit()
-        logging.info(f"Successfully updated {updated_count} news items with summaries and set status to 'summarized'")
+        logging.info(f"Successfully updated {updated_count} news items with reasons and set status to 'reasoned'")
     except Exception as e:
-        logging.error(f"Error updating summaries: {str(e)}")
+        logging.error(f"Error updating reasons: {str(e)}")
         session.rollback()
     finally:
         session.close()
@@ -64,12 +64,12 @@ def process_publisher(publisher):
     
     news_without_summary = get_news_without_summary(publisher)
     if not news_without_summary:
-        logging.info(f"No news items without summaries found for {publisher}. Skipping.")
+        logging.info(f"No news items without reasons found for {publisher}. Skipping.")
         return
     
     news_df = news_to_dataframe(news_without_summary)
     
-    logging.info(f"Enriching news items with summaries for {publisher}")
+    logging.info(f"Enriching news items with reasons for {publisher}")
     enriched_df = enrich_summary_from_url(news_df)
     
     update_summaries(enriched_df)

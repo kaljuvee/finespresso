@@ -1,0 +1,87 @@
+issuer,ticker,yf_ticker,isin,asset_class,exchange,exchange_code,country,url
+Alma Media,ALMA,ALMA.HE,FI0009013114,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/shares/microsite?Instrument=HEX29471
+Amaroq Minerals Ltd.,AMRQ,AMRQ.IC,IS0000034569,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE273304&name=Amaroq%20Minerals%20Ltd.&ISIN=IS0000034569
+AQ Group AB,AQ,N/A,,,,,,
+Arion banki hf.,ARION,ARION.IC,IS0000028157,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE156438&name=Arion%20banki&ISIN=IS0000028157
+Atrium Ljungberg AB,ATRLJ,ATRLJ-B.ST,SE0000191827,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE1011&name=Atrium%20Ljungberg%20B&ISIN=SE0000191827
+Bactiguard Holding B,BACTI B,BACTBS.XD,SE0005878741,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE101601&name=Bactiguard%20Holding%20B&ISIN=SE0005878741
+Baltic Horizon Fund / Northern Horizon Capital,NHCBFLO28A,N/A,EE3300003235,bonds,nasdaq_nordics,,,https://www.nasdaqomxnordic.com/bonds/sweden/microsite2?Instrument=XTALNHCBFLO28A
+Bavarian Nordic A/S,BAVA,BAVA.CO,DK0015998017,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3333&name=Bavarian%20Nordic&ISIN=DK0015998017
+Bong AB,BONG,BONG.ST,SE0000396061,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE892&name=Bong&ISIN=SE0000396061
+Brd. Klee A/S,KLEE B,KLEE-B.CO,DK0010129089,equity,nasdaq_nordics,XCSE,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3420&name=Brd.%20Klee%20B&ISIN=DK0010129089
+Cantargia AB,CANTA,CANTA.ST,SE0006371126,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE107644&name=Cantargia&ISIN=SE0006371126
+Cargotec,CGCBV,CGCBV.HE,FI4000571013,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX29983&name=Cargotec%20Oyj&ISIN=FI4000571013
+CoinShares International Ltd,CS,N/A,,,,,,
+Consti Oyj,CONSTI,CONSTI.HE,FI4000178256,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX115965&name=Consti%20Oyj&ISIN=FI4000178256
+C WORLDWIDE EMERGING MARKETS KL,CWIEMMKL,CWIEMMKL.CO,DK0015945166,funds,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/fonder/microsite?Instrument=CSE23855&name=C%20WorldWide%20Emerging%20Markets%20KL
+DANSKE INVEST SELECT KOMMUNER 4,DSIKOM4,DSIKOM4.CO,DK0016205685,funds,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/fonder/microsite?Instrument=CSE39013&name=Danske%20Invest%20Select%20Kommuner%204
+DLR Kredit A/S,N/A,DLR Kredit/0.00/ SNP July,DK0006361183,bonds,nasdaq_nordics,NA,DK,https://www.nasdaqomxnordic.com/bonds/denmark/microsite?Instrument=XCSEDLR_KREDIT/0.00/_SNP_JULY&name=DLR%20Kredit%2F0.00%2F%20SNP%20July
+Doro,DORO,DORO.ST,SE0000215493,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE896&name=DORO&ISIN=SE0000215493
+DSV A/S,DSV,DSV.CO,DK0060079531,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3415&name=DSV&ISIN=DK0060079531
+Duroc AB,DURC B,DURC-B.ST,SE0000331266,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE4005&name=Duroc%20B&ISIN=SE0000331266
+Eezy Oyj,EEZY,EEZY.HE,FI4000322326,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX156200&name=Eezy%20Oyj&ISIN=FI4000322326
+Egetis Therapeutics AB,EGTX,EGTX.ST,SE0003815604,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE81313&name=Egetis%20Therapeutics&ISIN=SE0003815604
+Endomines Finland Oyj,PAMPALO,PAMPALO.HE,FI4000508023,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX278081&name=Endomines%20Finland%20Oyj&ISIN=FI4000508023
+Enea AB,ENEA,ENEA.ST,SE0009697220,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE1149&name=Enea&ISIN=SE0009697220
+Flerie AB,FLERIE,FLERIE.ST,SE0022447348,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE127479&name=Flerie&ISIN=SE0022447348
+Gofore Oyj,GOFORE,GOFORE.HE,FI4000283130,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX145875&name=Gofore%20Oyj&ISIN=FI4000283130
+Hagar hf.,HAGA,HAGA.IC,IS0000020121,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE85677&name=Hagar&ISIN=IS0000020121
+HKFoods Oyj,HKFOODS,HKFOODS.HE,FI0009006308,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24273&name=HKFoods%20Oyj%20A&ISIN=FI0009006308
+HMS Networks AB,HMS,HMS.ST,SE0009997018,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE43302&name=HMS%20Networks&ISIN=SE0009997018
+Holmen AB,HOLM B,HOLM-B.ST,SE0011090018,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE222&name=Holmen%20B&ISIN=SE0011090018
+Investment AB Öresund,ORES,0RGB.L,SE0008321608,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE863&name=Öresund&ISIN=SE0008321608
+ITAB Shop Concept AB,ITAB,ITAB.ST,SE0015962097,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE56940&name=ITAB%20Shop%20Concept&ISIN=SE0015962097
+Jetpak Top Holding AB,JETPAK,JETPAK.ST,SE0012012508,equity,nasdaq_nordics,SSME,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE164293&name=Jetpak%20Top%20Holding&ISIN=SE0012012508
+Jyske Bank A/S,JYSK,JYSK.CO,DK0010307958,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE1587&name=Jyske%20Bank&ISIN=DK0010307958
+Keskisuomalainen Oyj,KSL,KSL.HE,FI0009007546,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24294&name=Keskisuomalainen%20Oyj&ISIN=FI0009007546
+Kesko Oyj,KESKOB,KESKOB.HE,FI0009000202,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24288&name=Kesko%20Oyj%20B&ISIN=FI0009000202
+Kinnevik Investment AB,KINV B,KINV-B.ST,SE0022060521,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE999&name=Kinnevik%20B&ISIN=SE0022060521
+Kuntarahoitus Oyj.,N/A,N/A,,,,,,
+LÃ¡namÃ¡l rÃ­kisins,N/A,N/A,,,,,,
+LKAB Luossavaara-Kiirunavaara AB,N/A,N/A,,,,,,
+Martela Oyj,MARAS,MARAS.HE,FI0009900385,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24301&name=Martela%20Oyj%20A&ISIN=FI0009900385
+Metsä Board Oyj,METSB,METSB.HE,FI0009000665,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24307&name=Metsä%20Board%20Oyj%20B&ISIN=FI0009000665
+MÃ­la Holding hf.,N/A,N/A,,,,,,
+Millicom Int. Cellular SDB,TIGO SDB,MLCMF,SE0001174970,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE24507&name=Millicom%20Int.%20Cellular%20SDB&ISIN=SE0001174970
+Nanologica AB,NICA,NICA.ST,SE0005454873,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE252995&name=Nanologica&ISIN=SE0005454873
+NAXS AB,NAXS,NAXS.ST,SE0001965369,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE40342&name=NAXS&ISIN=SE0001965369
+Netcompany Group A/S,NETC,NETC.CO,DK0060952919,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE154904&name=Netcompany%20Group&ISIN=DK0060952919
+Nokia,NOKIA,NOKIA.HE,FI0009000681,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24311&name=Nokia%20Oyj&ISIN=FI0009000681
+Novedo Holding AB,N/A,N/A,,,,,,
+Nyfosa AB,NYF,NYF.ST,SE0011426428,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE162997&name=Nyfosa&ISIN=SE0011426428
+Nykredit Realkredit A/S,9NYK 4.25 BB,N/A,DK0009720104,bonds,nasdaq_nordics,N/A,DK,https://www.nasdaqomxnordic.com/bonds/denmark/microsite?Instrument=XCSE9NYK_4.25_BB&name=Nykredit
+Open Infra AB (publ),N/A,N/A,,,,,,
+Optomed Oyj,OPTOMED,OPTOMED.HE,FI4000410881,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX185117&name=Optomed%20Oyj&ISIN=FI4000410881
+Orkuveita ReykjavÃ­kur,OR280845 GB,N/A,IS0000036648,bonds,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/bonds/iceland/microsite?Instrument=OR280845_GB
+Orphazyme A/S,ORPHA,ORPHA.CO,DK0062502894,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE145804&name=Orphazyme&ISIN=DK0062502894
+OVARO KIINTEISTÖSIJOITUS OYJ,OVARO,OVARO.HE,FI4000349113,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX97068&name=Ovaro%20Kiinteistösijoitus%20Oyj&ISIN=FI4000349113
+Puuilo Oyj,PUUILO,PUUILO.HE,FI4000507124,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX227473&name=Puuilo%20Oyj&ISIN=FI4000507124
+REITIR FASTEIGNAFÉLAG,REITIR,REITIR.IC,IS0000020352,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE107988&name=Reitir%20fasteignafélag&ISIN=IS0000020352
+Relais Group Oyj,RELAIS,RELAIS.HE,FI4000391487,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX181961&name=Relais%20Group%20Oyj&ISIN=FI4000391487
+Remedy Entertainment Oyj,REMEDY,REMEDY.HE,FI4000251897,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX137987&name=Remedy%20Entertainment%20Oyj&ISIN=FI4000251897
+Rockwool A/S,ROCK-B,ROCK-B.CO,DK0010219153,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3456&name=Rockwool%20B&ISIN=DK0010219153
+Sampo,SAMPO,SAMPO.HE,FI4000552500,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24346&name=Sampo%20Oyj%20A&ISIN=FI4000552500
+Scandic Hotels Group AB,SHOT,SHOT.ST,SE0007640156,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE115964&name=Scandic%20Hotels%20Group&ISIN=SE0007640156
+Scandinavian Investment Group A/S,SIG,SIG.CO,DK0060038933,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3414&name=Scandinavian%20Investment%20Group&ISIN=DK0060038933
+Senzime AB,SEZI,SEZI.ST,SE0002478776,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE56147&name=Senzime&ISIN=SE0002478776
+SÍLDARVINNSLAN hf,SVN,SVN.IC,IS0000000479,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE226422&name=Síldarvinnslan&ISIN=IS0000000479
+Sparinvest,,N/A,,,,,,
+Sparinvest SICAV,SSISCBIGEURR,SSISCBIGEURR.CO,LU0264925727,funds,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/fonder/microsite?Instrument=CSE38136&name=Sparinvest%20SICAV%20Sust%20CorpBonds%20IG%20EUR%20R
+Storskogen Group AB,STOR B,STOR-B.ST,SE0016797732,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE236754&name=Storskogen%20Group%20B&ISIN=SE0016797732
+Swedbank AB,SWED A,SWED-A.ST,SE0000242455,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE120&name=Swedbank%20A&ISIN=SE0000242455
+Sydbank A/S,SYDB,SYDB.CO,DK0010311471,equity,nasdaq_nordics,XCSE,DK,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=CSE3366&name=Sydbank&ISIN=DK0010311471
+Tele2 AB,TEL2 B,TEL2-B.ST,SE0005190238,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE1027&name=Tele2%20B&ISIN=SE0005190238
+Terveystalo Oyj,TTALO,TTALO.HE,FI4000252127,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX144124&name=Terveystalo%20Oyj&ISIN=FI4000252127
+Tornator Oyj,N/A,N/A,,,,,,
+United Bankers Oyj,UNITED,UNITED.HE,FI4000081427,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX103563&name=United%20Bankers%20Oyj&ISIN=FI4000081427
+Vaerdipapirfonden Sparindex,N/A,N/A,,funds,,,,
+Valmet Corporation,VALMT,VALMT.HE,FI4000074984,equity,nasdaq_nordics,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX98819&name=Valmet%20Oyj&ISIN=FI4000074984
+Valoe Oyj,VALOE,VALOE.HE,FI4000561576,equity,Suspended,XHEL,FI,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=HEX24329&name=Valoe%20Oyj&ISIN=FI4000561576
+Wästbygg Gruppen AB,WBGR B,WBGR-B.ST,SE0014453874,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE204364&name=Wästbygg%20Gruppen%20B&ISIN=SE0014453874
+Xbrane Biopharma AB,XBRANE,XBRANE.ST,SE0007789409,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE118813&name=Xbrane%20Biopharma&ISIN=SE0007789409
+XBRANE BIOPHARMA AB TO 1,XBRANE TO 1,XBRANE-TO-1.ST,SE0021515087,equity,nasdaq_nordics,SSME,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE329544&name=Xbrane%20Biopharma%20AB%20TO%201
+ARION BANKI SDB,ARION SDB,ARION-SDB.ST,SE0010413567,equity,nasdaq_nordics,XSTO,SWE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=SSE156393&name=Arion%20Banki%20SDB&ISIN=SE0010413567
+Cargotec Oyj,CGCBVH.XD,CGCBVH.XD,,,,,,https://finance.yahoo.com/quote/CGCBVH.XD/
+Cargotec Corporation,CGCBVH.XC,CGCBVH.XC,,,,,,https://finance.yahoo.com/quote/CGCBVH.XC/
+Consti Oyj,CONSTH.XD,CONSTH.XD,,,,,,https://finance.yahoo.com/quote/CONSTH.XD/
+Arion banki hf.,ARION,ARION.IC,IS0000028157,equity,nasdaq_nordics,XICE,ICE,https://www.nasdaqomxnordic.com/aktier/microsite?Instrument=ICE156438&name=Arion%20banki&ISIN=IS0000028157

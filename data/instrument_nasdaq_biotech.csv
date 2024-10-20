@@ -1,0 +1,118 @@
+issuer,ticker,yf_ticker,isin,asset_class,exchange,exchange_code,country,url
+Fortress Biotech,FBIO,FBIO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/FBIO:NASDAQ
+Kineta,KA,KA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/KA:NASDAQ
+QIAGEN,QGEN,QGEN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/QGEN:NASDAQ
+Dyadic International,DYAI,DYAI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/DYAI:NASDAQ
+Jasper Therapeutics,JSPR,JSPR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/JSPR:NASDAQ
+AnaptysBio,ANAB,ANAB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ANAB:NASDAQ
+electroCore,ECOR,ECOR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ECOR:NASDAQ
+Eloxx Pharmaceuticals,ELOX,ELOX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ELOX:NASDAQ
+MediWound,MDWD,MDWD,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MDWD:NASDAQ
+Radiopharm Theranostics,RAD.AX,RAD.AX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RAD.AX:NASDAQ
+Eyenovia,EYEN,EYEN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/EYEN:NASDAQ
+PolyPid,PYPD,PYPD,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PYPD:NASDAQ
+Scilex Holding Company,SCLX,SCLX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SCLX:NASDAQ
+Talaris Therapeutics,TALS,TALS,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TALS:NASDAQ
+Science 37,SNCE,SNCE,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SNCE:NASDAQ
+ORIC Pharmaceuticals,ORIC,ORIC,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ORIC:NASDAQ
+T2 Biosystems,TTOO,TTOO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TTOO:NASDAQ
+Addex Therapeutics,ADXN,ADXN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ADXN:NASDAQ
+ARS Pharmaceuticals,SPRY,SPRY,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SPRY:NASDAQ
+Imunon,IMNN,IMNN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IMNN:NASDAQ
+Aditxt,ADTX,ADTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ADTX:NASDAQ
+Ocuphire Pharma,OCUP,OCUP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OCUP:NASDAQ
+Arcutis Biotherapeutics,ARQT,ARQT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ARQT:NASDAQ
+Immunocore,IMCR,IMCR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IMCR:NASDAQ
+Orphazyme,ORPHA.CO,ORPHA.CO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ORPHA.CO:NASDAQ
+Vir Biotechnology,VIR,VIR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/VIR:NASDAQ
+DBV Technologies,DBVT,DBVT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/DBVT:NASDAQ
+ImmuCell Corporation,ICCC,ICCC,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ICCC:NASDAQ
+Oncternal Therapeutics,ONCT,ONCT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ONCT:NASDAQ
+Alvotech,ALVO,ALVO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALVO:NASDAQ
+Evaxion Biotech,EVAX,EVAX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/EVAX:NASDAQ
+Coherus BioSciences,CHRS,CHRS,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CHRS:NASDAQ
+Mainz Biomed,MYNZ,MYNZ,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MYNZ:NASDAQ
+scPharmaceuticals,SCPH,SCPH,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SCPH:NASDAQ
+Medi-Adapt Innovations,MDAI,MDAI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MDAI:NASDAQ
+Biora Therapeutics,BIOR,BIOR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BIOR:NASDAQ
+Mineralys Therapeutics,MLYS,MLYS,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MLYS:NASDAQ
+Longeveron,LGVN,LGVN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/LGVN:NASDAQ
+Biomerica,BMRA,BMRA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BMRA:NASDAQ
+Kronos Bio,KRON,KRON,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/KRON:NASDAQ
+Cidara Therapeutics,CDTX,CDTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CDTX:NASDAQ
+Intellia Therapeutics,NTLA,NTLA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NTLA:NASDAQ
+Tiziana Life Sciences,TLSA,TLSA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TLSA:NASDAQ
+PCI Biotech Holding,PCIB.OL,PCIB.OL,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PCIB.OL:NASDAQ
+Santhera Pharmaceuticals,SANN.SW,SANN.SW,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SANN.SW:NASDAQ
+Immuneering,IMRX,IMRX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IMRX:NASDAQ
+OpGen,OPGN,OPGN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OPGN:NASDAQ
+TG Therapeutics,TGTX,TGTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TGTX:NASDAQ
+Vascular Biogenics,VBLT,VBLT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/VBLT:NASDAQ
+Annovis Bio,ANVS,ANVS,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ANVS:NASDAQ
+Adagene,ADAG,ADAG,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ADAG:NASDAQ
+IN8bio,INAB,INAB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/INAB:NASDAQ
+Pacira BioSciences,PCRX,PCRX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PCRX:NASDAQ
+BioAtla,BCAB,BCAB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BCAB:NASDAQ
+Windtree Therapeutics,WINT,WINT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/WINT:NASDAQ
+Kraig Biocraft Laboratories,KBLB,KBLB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/KBLB:NASDAQ
+PepGen,PEPG,PEPG,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PEPG:NASDAQ
+InspireMD,NSPR,NSPR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NSPR:NASDAQ
+Novozymes,NZYM-B.CO,NZYM-B.CO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NZYM-B.CO:NASDAQ
+Mydecine Innovations Group,MYCO.CN,MYCO.CN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MYCO.CN:NASDAQ
+Nanobiotix,NANO.PA,NANO.PA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NANO.PA:NASDAQ
+Certara,CERT,CERT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CERT:NASDAQ
+Akoya Biosciences,AKYA,AKYA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AKYA:NASDAQ
+Alers,ALERS.PA,ALERS.PA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALERS.PA:NASDAQ
+Valneva,VALN,VALN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/VALN:NASDAQ
+MoonLake Immunotherapeutics,MLTX,MLTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MLTX:NASDAQ
+Renovacor,RENB,RENB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RENB:NASDAQ
+Revive Therapeutics,RVVTF,RVVTF,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RVVTF:NASDAQ
+Yield10 Bioscience,YTEN,YTEN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/YTEN:NASDAQ
+Rezolute,RZLT,RZLT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RZLT:NASDAQ
+Elicio Therapeutics,ELTX,ELTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ELTX:NASDAQ
+NKGen Biotech,NKGN,NKGN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NKGN:NASDAQ
+Faron Pharmaceuticals,FARON.HE,FARON.HE,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/FARON.HE:NASDAQ
+C4 Therapeutics,CCCC,CCCC,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CCCC:NASDAQ
+BioCardia,BCDA,BCDA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BCDA:NASDAQ
+MediciNova,MNOV,MNOV,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MNOV:NASDAQ
+Oxurion,OXUR.BR,OXUR.BR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OXUR.BR:NASDAQ
+Capricor Therapeutics,CAPR,CAPR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CAPR:NASDAQ
+Ovid Therapeutics,OVID,OVID,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OVID:NASDAQ
+Taysha Gene Therapies,TSHA,TSHA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TSHA:NASDAQ
+BioXcel Therapeutics,BTAI,BTAI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BTAI:NASDAQ
+Akero Therapeutics,AKRO,AKRO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AKRO:NASDAQ
+Ocugen,OCGN,OCGN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OCGN:NASDAQ
+Centogene,CNTG,CNTG,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CNTG:NASDAQ
+Oculis,OCS,OCS,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/OCS:NASDAQ
+Annexon Biosciences,ANNX,ANNX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ANNX:NASDAQ
+Mydecine Innovations Group,MYCOF,MYCOF,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MYCOF:NASDAQ
+Harpoon Therapeutics,HARP,HARP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/HARP:NASDAQ
+MDxHealth,MDXH,MDXH,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MDXH:NASDAQ
+Vaxart,VXRT,VXRT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/VXRT:NASDAQ
+Immix Biopharma,IMMX,IMMX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IMMX:NASDAQ
+G1 Therapeutics,GTHX,GTHX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/GTHX:NASDAQ
+INmune Bio,INMB,INMB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/INMB:NASDAQ
+Humacyte,HUMA,HUMA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/HUMA:NASDAQ
+PharmaNutra,PHIL.MI,PHIL.MI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PHIL.MI:NASDAQ
+Iovance Biotherapeutics,IOVA,IOVA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IOVA:NASDAQ
+CRISPR Therapeutics,CRSP,CRSP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CRSP:NASDAQ
+Theriva Biologics,TOVX,TOVX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TOVX:NASDAQ
+Editas Medicine,EDIT,EDIT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/EDIT:NASDAQ
+Rain Therapeutics,RAIN,RAIN,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RAIN:NASDAQ
+ContraFect,CFRX,CFRX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CFRX:NASDAQ
+Vaxcyte,PCVX,PCVX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PCVX:NASDAQ
+TransCode Therapeutics,RNAZ,RNAZ,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RNAZ:NASDAQ
+Inotiv,NOTV,NOTV,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NOTV:NASDAQ
+Corbus Pharmaceuticals,CRBP,CRBP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CRBP:NASDAQ
+Immutep,IMMP,IMMP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IMMP:NASDAQ
+Entera Bio,ENTX,ENTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ENTX:NASDAQ
+Bionomics,BNOX,BNOX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BNOX:NASDAQ
+Medigene,MDG1.DE,MDG1.DE,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MDG1.DE:NASDAQ
+BioNTech,BNTX,BNTX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BNTX:NASDAQ
+NexImmune,NEXI,NEXI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NEXI:NASDAQ
+Candel Therapeutics,CADL,CADL,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CADL:NASDAQ
+Celularity,CELU,CELU,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CELU:NASDAQ
+RAPT Therapeutics,RAPT,RAPT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/RAPT:NASDAQ
+Checkpoint Therapeutics,CKPT,CKPT,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/CKPT:NASDAQ
+X4 Pharmaceuticals,XFOR,XFOR,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/XFOR:NASDAQ
+BioXcel Therapeutics,BXRX,BXRX,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BXRX:NASDAQ

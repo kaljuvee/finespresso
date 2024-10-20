@@ -5,6 +5,7 @@ from datetime import datetime
 import pytz
 from utils.news_db_util import create_tables, add_news_items, map_to_db
 from utils.tag_util import tags
+from tasks.enrich_ticker import process_publisher
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -58,12 +59,13 @@ def parse_rss_feed(url, tags):
             'industry': '',
             'content': '',
             'ticker': '',
-            'ai_summary': '',
+            'reason': '',  # Changed from ai_summary
             'publisher_topic': '',
             'status': 'raw',
             'timezone': TIMEZONE,
             'publisher_summary': '',
             'ticker_url': '',  # Add this line to include ticker_url
+            'event': '',  # Changed from ai_summary
         })
 
         logging.debug(f"Added news item to dataframe: {title}")
@@ -91,9 +93,14 @@ def main():
         # Map dataframe to News objects
         news_items = map_to_db(news_df, 'baltics')
 
+        # Store news in the database
+        added_count, duplicate_count = add_news_items(news_items)
+        logging.info(f"Nasdaq Baltics: added {added_count} news items to the database, {duplicate_count} duplicates skipped")
 
-        add_news_items(news_items)                # Store news in the database
-        logging.info(f"Nasdal Baltics: added {len(news_items)} news items to the database")
+        # Call process_publisher after adding news items
+        if added_count > 0:
+            updated, skipped = process_publisher('baltics')
+            logging.info(f"Nasdaq Baltics: Enriched {updated} items, skipped {skipped} items")
 
     except Exception as e:
         logging.critical(f"An unexpected error occurred: {e}", exc_info=True)

@@ -50,11 +50,7 @@ def fetch_news(rss_dict, sector):
             last_subject = newsitem['tags'][-1]['term'] if 'tags' in newsitem and newsitem['tags'] else None
             try:
                 published_date_gmt = date_parser.parse(newsitem['published'])
-                #print(f"Published date GMT: {published_date_gmt}")
-                # Use the new utility function to adjust the date
                 adjusted_date = adjust_date_to_est(published_date_gmt)
-                #print(f"Adjusted date: {adjusted_date}")
-
             except ValueError:
                 print(f"Warning: Unable to parse date '{newsitem['published']}' for ticker {ticker}. Skipping this news item.")
                 continue
@@ -64,17 +60,21 @@ def fetch_news(rss_dict, sector):
                 'title': newsitem['title'],
                 'publisher_summary': clean_text(newsitem['summary']),
                 'published_date_gmt': published_date_gmt,
-                'published_date': adjusted_date,  # Both dates are now the same adjusted time
+                'published_date': adjusted_date,  
                 'content': clean_text(newsitem['description']),
                 'link': newsitem['link'],
-                'language': newsitem.get('dc_language', None),
-                'publisher_topic': last_subject,
-                'industry': sector,
                 'company': company_name,
-                'status': 'raw',
+                'reason': '',  # Changed from ai_summary
+                'industry': sector,
+                'publisher_topic': last_subject,
+                'event': '',  # Changed from ai_topic
                 'publisher': f'globenewswire_{sector}',
+                'downloaded_at': datetime.now(pytz.utc),
+                'status': 'raw',
+                'instrument_id': None,
+                'yf_ticker': ticker,
                 'timezone': 'US/Eastern',
-                'ai_summary': '',
+                'ticker_url': '',
             })
 
     return pd.DataFrame(all_news_items)
@@ -92,12 +92,13 @@ def main(sector):
     news_df = fetch_news(rss_dict, sector)
     
     # Map DataFrame to News objects
-    news_items = news_db_util.map_to_db(news_df, 'globenewswire')
+    news_items = news_db_util.map_to_db(news_df, f'globenewswire_{sector}')
     
-    # Add news items to the database
-    news_db_util.add_news_items(news_items)
+    # Check for duplicates and add news items to the database
+    added_count, duplicate_count = news_db_util.add_news_items(news_items)
     
-    print(f"Added {len(news_items)} news items to the database.")
+    print(f"Added {added_count} news items to the database.")
+    print(f"Skipped {duplicate_count} duplicate items.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch news for a specific sector.")

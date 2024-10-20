@@ -26,3 +26,34 @@ CREATE TABLE price_moves (
     predicted_side VARCHAR(10),
     predicted_move FLOAT
 );
+
+-- Create eq_model_results_binary table
+CREATE TABLE eq_model_results_binary (
+    id SERIAL PRIMARY KEY,
+    run_id UUID NOT NULL DEFAULT gen_random_uuid(),
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    event VARCHAR(255) NOT NULL,
+    accuracy FLOAT NOT NULL,
+    precision FLOAT,
+    recall FLOAT,
+    f1_score FLOAT,
+    auc_roc FLOAT,
+    test_sample INTEGER NOT NULL,
+    training_sample INTEGER NOT NULL,
+    total_sample INTEGER NOT NULL
+);
+
+-- Create eq_model_results_regression table
+CREATE TABLE eq_model_results_regression (
+    id SERIAL PRIMARY KEY,
+    run_id UUID NOT NULL DEFAULT gen_random_uuid(),
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    event VARCHAR(255) NOT NULL,
+    mse FLOAT NOT NULL,
+    r2 FLOAT NOT NULL,
+    mae FLOAT NOT NULL,
+    rmse FLOAT NOT NULL,
+    test_sample INTEGER NOT NULL,
+    training_sample INTEGER NOT NULL,
+    total_sample INTEGER NOT NULL
+);

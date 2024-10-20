@@ -9,23 +9,22 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define the list of publishers
-#PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
+PUBLISHERS = ['omx', 'baltics', 'euronext', 'globenewswire_biotech']
 #PUBLISHERS = ['globenewswire']
-PUBLISHERS = ['omx', 'baltics', 'euronext']
+#UBLISHERS = ['omx', 'baltics', 'euronext']
 
 def get_news_without_tags(publisher):
-    logging.info(f"Retrieving clean news items without AI topics for publisher: {publisher}")
+    logging.info(f"Retrieving clean news items without events for publisher: {publisher}")
     session = Session()
     try:
         query = select(News).where(
-            News.ai_topic.is_(None),
-            News.publisher == publisher,
-            News.status == 'clean'  # Add this condition
+            News.event.is_(None),  # Changed from ai_topic
+            News.publisher == publisher
         )
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        logging.info(f"Retrieved {count} clean news items without AI topics for {publisher}")
+        logging.info(f"Retrieved {count} clean news items without events for {publisher}")
         return news_items
     finally:
         session.close()
@@ -44,9 +43,9 @@ def update_tags(enriched_df):
         total_items = len(enriched_df)
         for index, row in enriched_df.iterrows():
             news_item = session.get(News, row['id'])
-            if news_item and 'ai_topic' in row:
-                news_item.ai_topic = row['ai_topic']
-                news_item.status = 'tagged'  # Update status to 'tagged'
+            if news_item and 'event' in row:  # Changed from ai_topic
+                news_item.event = row['event']  # Changed from ai_topic
+                news_item.status = 'tagged'
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
@@ -65,7 +64,7 @@ def process_publisher(publisher):
     
     news_without_tags = get_news_without_tags(publisher)
     if not news_without_tags:
-        logging.info(f"No news items without AI topics found for {publisher}. Skipping.")
+        logging.info(f"No news items without events found for {publisher}. Skipping.")
         return
     
     news_df = news_to_dataframe(news_without_tags)

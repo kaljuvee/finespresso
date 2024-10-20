@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime, time
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, text
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, text, select, join
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from sqlalchemy.exc import IntegrityError
+import pandas as pd
+from utils.news_db_util import News
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ class PriceMove(Base):
     __tablename__ = 'price_moves'
 
     id = Column(Integer, primary_key=True)
-    news_id = Column(String, nullable=False)
+    news_id = Column(Integer, nullable=False)
     ticker = Column(String, nullable=False)
     published_date = Column(DateTime, nullable=False)
     begin_price = Column(Float, nullable=False)
@@ -99,6 +101,25 @@ def store_price_move(price_move):
         logger.error(f"Error verifying price move storage: {str(e)}")
     finally:
         verify_session.close()
+
+def get_news_price_moves():
+    try:
+        session = Session()
+        
+        query = select(News.id, News.content, News.title, PriceMove.actual_side, PriceMove.daily_alpha).select_from(
+            join(News, PriceMove, News.id == PriceMove.news_id)
+        )
+        
+        result = session.execute(query)
+        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'actual_side', 'daily_alpha'])
+        
+        logging.info(f"Retrieved {len(df)} rows from news and price_moves tables")
+        return df
+    except Exception as e:
+        logging.error(f"Error retrieving news and price moves: {str(e)}")
+        return pd.DataFrame()
+    finally:
+        session.close()
 
 # Create tables
 Base.metadata.create_all(engine)

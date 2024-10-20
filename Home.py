@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import random
-from archive.db_util import save_email
+from utils.signup_db_util import save_email
 
 # Function to generate random data
 def generate_random_data(n=100):

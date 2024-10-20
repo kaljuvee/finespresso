@@ -2,6 +2,9 @@ from sqlalchemy import Column, Integer, String, Text, Float
 from sqlalchemy.orm import sessionmaker
 from utils.news_db_util import Base, engine
 import pandas as pd
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 Session = sessionmaker(bind=engine)
 
@@ -22,6 +25,7 @@ class Instrument(Base):
 def save_instrument(df):
     session = Session()
     try:
+        logging.info(f"Starting to save {len(df)} instruments")
         for _, row in df.iterrows():
             instrument = Instrument(
                 issuer=None if pd.isna(row['issuer']) else str(row['issuer']),
@@ -36,15 +40,17 @@ def save_instrument(df):
             )
             session.add(instrument)
         session.commit()
+        logging.info("All instruments saved successfully")
     except Exception as e:
         session.rollback()
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred while saving instruments: {e}")
     finally:
         session.close()
 
 def get_instrument_by_ticker(ticker):
     session = Session()
     try:
+        logging.info(f"Fetching instrument by ticker: {ticker}")
         return session.query(Instrument).filter_by(ticker=ticker).first()
     finally:
         session.close()
@@ -52,7 +58,7 @@ def get_instrument_by_ticker(ticker):
 def get_instrument_by_company_name(company_name):
     session = Session()
     try:
-        # Assuming the 'issuer' field in the Instrument table corresponds to the company name
+        logging.info(f"Fetching instrument by company name: {company_name}")
         return session.query(Instrument).filter(Instrument.issuer.ilike(f"%{company_name}%")).first()
     finally:
         session.close()
@@ -61,6 +67,7 @@ def get_instrument_by_company_name(company_name):
 
 # Add this at the end of the file to recreate the table if needed
 if __name__ == "__main__":
+    logging.info("Recreating Instrument table")
     Base.metadata.drop_all(engine, tables=[Instrument.__table__])
     Base.metadata.create_all(engine, tables=[Instrument.__table__])
-    print("Instrument table recreated.")
+    logging.info("Instrument table recreated successfully")

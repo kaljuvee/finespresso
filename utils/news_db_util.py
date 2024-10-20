@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, func, and_, select, update
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, func, and_, select, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import TIMESTAMP
@@ -31,25 +31,23 @@ class News(Base):
     link = Column(Text)
     company = Column(Text)
     published_date = Column(TIMESTAMP(timezone=True))
-    published_date_gmt = Column(TIMESTAMP(timezone=True))
     content = Column(Text)
-    ai_summary = Column(Text)
-    publisher_summary = Column(Text)
-    ai_topic = Column(Text)
+    reason = Column(Text)
     industry = Column(Text)
     publisher_topic = Column(Text)
-    publisher = Column(Text)
+    event = Column(String(255))
+    publisher = Column(String(255))
     downloaded_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     status = Column(String(255))
-    mw_ticker = Column(String(255))
+    instrument_id = Column(Integer)
     yf_ticker = Column(String(255))
     ticker = Column(String(16))
-    company_id = Column(Integer)
+    published_date_gmt = Column(TIMESTAMP(timezone=True))
     timezone = Column(String(50))
+    publisher_summary = Column(Text)
     ticker_url = Column(String(500))
-
-def create_tables():
-    Base.metadata.create_all(engine)
+    predicted_side = Column(String(10))
+    predicted_move = Column(Float)
 
 def add_news_items(news_items):
     session = Session()
@@ -96,31 +94,28 @@ def map_to_db(df, source):
     news_items = []
     for _, row in df.iterrows():
         news_item = News(
-            title=row['title'],
-            link=row['link'],
-            company=row['company'],
-            published_date=row['published_date'],
-            published_date_gmt=row['published_date_gmt'],
-            publisher_topic=row['publisher_topic'],
-            publisher=row['publisher'],
+            title=row.get('title', ''),
+            link=row.get('link', ''),
+            company=row.get('company', ''),
+            published_date=row.get('published_date'),
+            content=row.get('content', ''),
+            reason=row.get('reason', ''),
+            industry=row.get('industry', ''),
+            publisher_topic=row.get('publisher_topic', ''),
+            event=row.get('event', ''),
+            publisher=row.get('publisher', source),
             downloaded_at=datetime.utcnow(),
-            status=row['status'],
-            content=row['content'],
-            industry=row['industry'],
-            ticker=row['ticker'],
-            ticker_url=row.get('ticker_url', ''),  # Use .get() method with a default value
-            timezone=row['timezone'],
-            ai_summary=row['ai_summary'],
-            publisher_summary=row['publisher_summary']
+            status=row.get('status', 'raw'),
+            instrument_id=row.get('instrument_id'),
+            yf_ticker=row.get('yf_ticker', ''),
+            ticker=row.get('ticker', ''),
+            published_date_gmt=row.get('published_date_gmt'),
+            timezone=row.get('timezone', ''),
+            publisher_summary=row.get('publisher_summary', ''),
+            ticker_url=row.get('ticker_url', ''),
+            predicted_side=row.get('predicted_side', None),
+            predicted_move=row.get('predicted_move', None)
         )
-
-        if source == 'euronext':
-            news_item.industry = row['industry']
-
-        if row['publisher'] == 'ai':
-            news_item.ai_summary = row['ai_summary']
-            news_item.ai_topic = row['ai_topic']
-
         news_items.append(news_item)
     
     logging.info(f"Created {len(news_items)} News objects")
@@ -155,7 +150,7 @@ def remove_duplicate_news():
         session.close()
 
 @st.cache_data(ttl=3600)
-def get_news_df(publishers, start_date, end_date):
+def get_news_df_date_range(publishers, start_date, end_date):
     session = Session()
     try:
         query = select(News).where(
@@ -175,9 +170,19 @@ def get_news_df(publishers, start_date, end_date):
             'link': item.link,
             'published_date': item.published_date,
             'company': item.company,
-            'ai_topic': item.ai_topic,  # Ensure this is included
-            'ai_summary': item.ai_summary,
-            'publisher': item.publisher
+            'event': item.event,
+            'reason': item.reason,
+            'publisher': item.publisher,
+            'industry': item.industry,
+            'publisher_topic': item.publisher_topic,
+            'instrument_id': item.instrument_id,
+            'yf_ticker': item.yf_ticker,
+            'published_date_gmt': item.published_date_gmt,
+            'timezone': item.timezone,
+            'publisher_summary': item.publisher_summary,
+            'predicted_side': item.predicted_side,
+            'predicted_move': item.predicted_move,
+            'event': item.event
         } for item in news_items]
         
         return pd.DataFrame(data)
@@ -185,30 +190,40 @@ def get_news_df(publishers, start_date, end_date):
         session.close()
 
 def get_news_without_tickers():
-    logging.info("Retrieving news items without MW tickers from database")
+    logging.info("Retrieving news items without tickers from database")
     
     session = Session()
     try:
-        query = select(News).where(News.mw_ticker.is_(None))
+        query = select(News).where(News.ticker.is_(None))
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        logging.info(f"Retrieved {count} news items without MW tickers")
+        logging.info(f"Retrieved {count} news items without tickers")
         
         return news_items
     finally:
         session.close()
 
-def update_news_tickers(news_items_with_tickers):
-    logging.info("Updating database with extracted tickers")
+def update_news_tickers(news_items_with_data):
+    logging.info("Updating database with extracted tickers, yf_tickers, and instrument IDs")
     
     session = Session()
     try:
         updated_count = 0
-        total_items = len(news_items_with_tickers)
-        for index, (news_id, ticker) in enumerate(news_items_with_tickers):
+        total_items = len(news_items_with_data)
+        for index, (news_id, ticker, yf_ticker, instrument_id, ticker_url) in enumerate(news_items_with_data):
+            update_values = {}
             if ticker:
-                stmt = update(News).where(News.id == news_id).values(mw_ticker=ticker)
+                update_values['ticker'] = ticker
+            if yf_ticker:
+                update_values['yf_ticker'] = yf_ticker
+            if instrument_id:
+                update_values['instrument_id'] = instrument_id
+            if ticker_url:
+                update_values['ticker_url'] = ticker_url
+            
+            if update_values:
+                stmt = update(News).where(News.id == news_id).values(**update_values)
                 session.execute(stmt)
                 updated_count += 1
             
@@ -216,9 +231,9 @@ def update_news_tickers(news_items_with_tickers):
                 session.commit()
                 logging.info(f"Processed {index + 1}/{total_items} items")
         
-        logging.info(f"Successfully updated {updated_count} news items with tickers")
+        logging.info(f"Successfully updated {updated_count} news items with tickers, yf_tickers, and instrument IDs")
     except Exception as e:
-        logging.error(f"Error updating tickers: {str(e)}")
+        logging.error(f"Error updating news items: {str(e)}")
         session.rollback()
     finally:
         session.close()
@@ -281,3 +296,130 @@ def update_companies(enriched_df):
         session.rollback()
     finally:
         session.close()
+
+def get_news_by_id(news_id):
+    logging.info(f"Retrieving news item with id: {news_id}")
+    
+    session = Session()
+    try:
+        query = select(News).where(News.id == news_id)
+        result = session.execute(query)
+        news_item = result.scalars().first()
+        
+        if news_item:
+            return pd.DataFrame([{
+                'news_id': news_item.id,
+                'ticker': news_item.ticker,
+                'ticker_url': news_item.ticker_url,
+                'title': news_item.title,
+                'link': news_item.link,
+                'published_date': news_item.published_date,
+                'company': news_item.company,
+                'event': news_item.event,
+                'reason': news_item.reason,
+                'publisher': news_item.publisher,
+                'industry': news_item.industry,
+                'publisher_topic': news_item.publisher_topic,
+                'instrument_id': news_item.instrument_id,
+                'yf_ticker': news_item.yf_ticker,
+                'published_date_gmt': news_item.published_date_gmt,
+                'timezone': news_item.timezone,
+                'publisher_summary': news_item.publisher_summary,
+                'predicted_side': news_item.predicted_side,
+                'predicted_move': news_item.predicted_move,
+                'event': news_item.event
+            }])
+        else:
+            logging.warning(f"No news item found with id: {news_id}")
+            return pd.DataFrame()
+    finally:
+        session.close()
+
+@st.cache_data(ttl=3600)
+def get_news_df(publisher=None):
+    logging.info(f"Retrieving all news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
+    
+    session = Session()
+    try:
+        query = select(News).order_by(News.published_date.asc())
+        
+        if publisher:
+            query = query.filter(News.publisher == publisher)
+        
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        
+        data = [{
+            'news_id': item.id,
+            'ticker': item.ticker,
+            'ticker_url': item.ticker_url,
+            'title': item.title,
+            'link': item.link,
+            'published_date': item.published_date,
+            'company': item.company,
+            'event': item.event,
+            'reason': item.reason,
+            'publisher': item.publisher,
+            'industry': item.industry,
+            'publisher_topic': item.publisher_topic,
+            'instrument_id': item.instrument_id,
+            'yf_ticker': item.yf_ticker,
+            'published_date_gmt': item.published_date_gmt,
+            'timezone': item.timezone,
+            'publisher_summary': item.publisher_summary,
+            'predicted_side': item.predicted_side,
+            'predicted_move': item.predicted_move,
+            'event': item.event
+        } for item in news_items]
+        
+        df = pd.DataFrame(data)
+        logging.info(f"Retrieved {len(df)} news items")
+        return df
+    finally:
+        session.close()
+
+@st.cache_data(ttl=3600)
+def get_news_latest_df(publisher=None):
+    logging.info(f"Retrieving latest 1000 news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
+    
+    session = Session()
+    try:
+        query = select(News).order_by(News.published_date.asc())
+        
+        if publisher:
+            query = query.filter(News.publisher == publisher)
+        
+        query = query.limit(1000)
+        
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        
+        data = [{
+            'news_id': item.id,
+            'ticker': item.ticker,
+            'ticker_url': item.ticker_url,
+            'title': item.title,
+            'link': item.link,
+            'published_date': item.published_date,
+            'company': item.company,
+            'event': item.event,
+            'reason': item.reason,
+            'publisher': item.publisher,
+            'industry': item.industry,
+            'publisher_topic': item.publisher_topic,
+            'instrument_id': item.instrument_id,
+            'yf_ticker': item.yf_ticker,
+            'published_date_gmt': item.published_date_gmt,
+            'timezone': item.timezone,
+            'publisher_summary': item.publisher_summary,
+            'predicted_side': item.predicted_side,
+            'predicted_move': item.predicted_move,
+            'event': item.event
+        } for item in news_items]
+        
+        df = pd.DataFrame(data)
+        logging.info(f"Retrieved {len(df)} latest news items")
+        return df
+    finally:
+        session.close()
+

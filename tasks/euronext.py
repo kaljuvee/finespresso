@@ -5,6 +5,7 @@ import logging
 from utils.news_db_util import map_to_db, add_news_items
 from datetime import datetime, timedelta
 import pytz
+from tasks.enrich_ticker import process_publisher
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 URL_PREFIX = 'https://live.euronext.com'
@@ -86,7 +87,7 @@ async def scrape_euronext():
                     'publisher': 'euronext',
                     'content': '',
                     'ticker': '',
-                    'ai_summary': '',
+                    'reason': '',  # Changed from ai_summary
                     'status': 'raw',
                     'timezone': timezone,
                     'publisher_summary': '',
@@ -109,8 +110,13 @@ async def main():
 
         # Store news in the database
         logging.info(f"Adding {len(news_items)} news items to the database")
-        add_news_items(news_items)
-        logging.info("Euronext: added news items to the database")
+        added_count, duplicate_count = add_news_items(news_items)
+        logging.info(f"Euronext: added {added_count} news items to the database, {duplicate_count} duplicates skipped")
+
+        # Call process_publisher after adding news items
+        if added_count > 0:
+            updated, skipped = process_publisher('euronext')
+            logging.info(f"Euronext: Enriched {updated} items, skipped {skipped} items")
     except Exception as e:
         logging.error(f"Euronext: An error occurred: {str(e)}")
 

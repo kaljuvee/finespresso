@@ -1,14 +1,25 @@
 import pandas as pd
 import yfinance as yf
 import logging
-from datetime import datetime
+import os
+from datetime import datetime, time
 import numpy as np
-from pandas_market_calendars import get_calendar
 from utils.price_move_db_util import store_price_move, PriceMove
-from datetime import time
+from utils.date_adjuster import get_previous_trading_day, get_next_trading_day
+import sys
+
+# Create logs directory if it doesn't exist
+os.makedirs('logs', exist_ok=True)
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/info.log'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 logger = logging.getLogger(__name__)
 
 index_symbol = 'SPY'
@@ -24,7 +35,10 @@ def get_price_data(ticker, published_date):
         return None
 
 def set_prices(row):
-    symbol = row['ticker']
+    # Convert the input row to a copy to avoid SettingWithCopyWarning
+    row = row.copy()
+    
+    symbol = row['yf_ticker']
     logger.info(f"Processing price data for {symbol}")
 
     if isinstance(row['published_date'], pd.Timestamp):
@@ -43,24 +57,25 @@ def set_prices(row):
         market = 'pre_market'
     logger.info(f"Determined market for {symbol}: {market}")
 
-    # Get the exchange calendar
-    exchange_calendar = get_calendar(EXCHANGE)
-
     # Find the previous and next trading days
-    valid_trading_days = exchange_calendar.valid_days(start_date=today_date - pd.Timedelta(days=30), end_date=today_date + pd.Timedelta(days=30))
-    previous_trading_day = valid_trading_days[valid_trading_days < today_date][-1].date()
-    next_trading_day = valid_trading_days[valid_trading_days > today_date][0].date()
-    logger.info(f"Adjusted dates for {symbol}: Previous: {previous_trading_day}, Next: {next_trading_day}")
+    today_date_only = today_date.date()
+    previous_trading_day = get_previous_trading_day(today_date_only)
+    next_trading_day = get_next_trading_day(today_date_only)
+
+    logger.info(f"Adjusted dates for {symbol}: Previous: {previous_trading_day}, Today: {today_date_only}, Next: {next_trading_day}")
     
     yf_previous_date = previous_trading_day.strftime('%Y-%m-%d')
-    yf_today_date = today_date.strftime('%Y-%m-%d')
+    yf_today_date = today_date_only.strftime('%Y-%m-%d')
     yf_next_date = next_trading_day.strftime('%Y-%m-%d')
 
     try:
         logger.info(f"Fetching stock data for {symbol}")
         data = yf.download(symbol, yf_previous_date, yf_next_date)
+        logger.info(f"Fetched data for {symbol}:\n{data}")
+        
         logger.info(f"Fetching index data for {index_symbol}")
         index_data = yf.download(index_symbol, yf_previous_date, yf_next_date)
+        logger.info(f"Fetched index data:\n{index_data}")
         
         if data.empty or index_data.empty:
             logger.warning(f"No data available for {symbol} or index in the specified date range")
@@ -68,51 +83,49 @@ def set_prices(row):
 
         logger.info(f"Determining prices for {symbol} based on market: {market}")
 
-        if market == 'regular_market':
-            row['begin_price'] = data.loc[yf_today_date]['Open']
-            row['end_price'] = data.loc[yf_today_date]['Close']
-            row['index_begin_price'] = index_data.loc[yf_today_date]['Open']
-            row['index_end_price'] = index_data.loc[yf_today_date]['Close']
+        if market == 'pre_market':
+            row['begin_price'] = data.loc[yf_previous_date, 'Close']
+            row['end_price'] = data.loc[yf_today_date, 'Open']
+            row['index_begin_price'] = index_data.loc[yf_previous_date, 'Close']
+            row['index_end_price'] = index_data.loc[yf_today_date, 'Open']
+            logger.info(f"Pre-market prices for {symbol}: Begin: {row['begin_price']}, End: {row['end_price']}")
+            logger.info(f"Pre-market index prices: Begin: {row['index_begin_price']}, End: {row['index_end_price']}")
+
+        elif market == 'regular_market':
+            row['begin_price'] = data.loc[yf_today_date, 'Open']
+            row['end_price'] = data.loc[yf_today_date, 'Close']
+            row['index_begin_price'] = index_data.loc[yf_today_date, 'Open']
+            row['index_end_price'] = index_data.loc[yf_today_date, 'Close']
         elif market == 'after_market':
-            row['begin_price'] = data.loc[yf_today_date]['Close']
-            row['end_price'] = data.loc[yf_next_date]['Open']
-            row['index_begin_price'] = index_data.loc[yf_today_date]['Close']
-            row['index_end_price'] = index_data.loc[yf_next_date]['Open']
-        elif market == 'pre_market':
-            row['begin_price'] = data.loc[yf_previous_date]['Close']
-            row['end_price'] = data.loc[yf_today_date]['Open']
-            row['index_begin_price'] = index_data.loc[yf_previous_date]['Close']
-            row['index_end_price'] = index_data.loc[yf_today_date]['Open']
+            row['begin_price'] = data.loc[yf_today_date, 'Close']
+            row['end_price'] = data.loc[yf_next_date, 'Open']
+            row['index_begin_price'] = index_data.loc[yf_today_date, 'Close']
+            row['index_end_price'] = index_data.loc[yf_next_date, 'Open']
         else:
             logger.warning(f"Unknown market type: {market}. Defaulting to regular_market.")
-            row['begin_price'] = data.loc[yf_today_date]['Open']
-            row['end_price'] = data.loc[yf_today_date]['Close']
-            row['index_begin_price'] = index_data.loc[yf_today_date]['Open']
-            row['index_end_price'] = index_data.loc[yf_today_date]['Close']
+            row['begin_price'] = data.loc[yf_today_date, 'Open']
+            row['end_price'] = data.loc[yf_today_date, 'Close']
+            row['index_begin_price'] = index_data.loc[yf_today_date, 'Open']
+            row['index_end_price'] = index_data.loc[yf_today_date, 'Close']
 
+        # Calculate derived values
         row['price_change'] = row['end_price'] - row['begin_price']
         row['index_price_change'] = row['index_end_price'] - row['index_begin_price']
         row['price_change_percentage'] = row['price_change'] / row['begin_price']
         row['index_price_change_percentage'] = row['index_price_change'] / row['index_begin_price']
         row['daily_alpha'] = row['price_change_percentage'] - row['index_price_change_percentage']
-        row['actual_side'] = 'LONG' if row['price_change_percentage'] >= 0 else 'SHORT'
-        row['Volume'] = data.loc[yf_today_date]['Volume']
+        row['actual_side'] = 'UP' if row['price_change_percentage'] >= 0 else 'DOWN'
+        row['Volume'] = data.loc[yf_today_date, 'Volume']
         row['market'] = market
         logger.info(f"Successfully set prices for {symbol}")
     except Exception as e:
         logger.error(f"Error processing {symbol}: {e}")
         logger.exception("Detailed traceback:")
-        row['begin_price'] = None
-        row['end_price'] = None
-        row['index_begin_price'] = None
-        row['index_end_price'] = None
-        row['price_change'] = None
-        row['index_price_change'] = None
-        row['price_change_percentage'] = None
-        row['index_price_change_percentage'] = None
-        row['daily_alpha'] = None
-        row['actual_side'] = None
-        row['Volume'] = None
+        # Set all relevant fields to None in case of an error
+        for field in ['begin_price', 'end_price', 'index_begin_price', 'index_end_price', 
+                      'price_change', 'index_price_change', 'price_change_percentage', 
+                      'index_price_change_percentage', 'daily_alpha', 'actual_side', 'Volume']:
+            row[field] = None
         row['market'] = market
 
     logger.info(f"Processed row for {symbol}: {row}")
@@ -125,11 +138,11 @@ def create_price_moves(news_df):
 
     for index, row in news_df.iterrows():
         try:
-            logger.info(f"Processing row {index} for ticker {row['ticker']}")
+            logger.info(f"Processing row {index} for ticker {row['yf_ticker']}")  # Changed from 'ticker' to 'yf_ticker'
             processed_row = set_prices(row)
             processed_rows.append(processed_row)
         except Exception as e:
-            logger.error(f"Error processing row {index} for ticker {row['ticker']}: {e}")
+            logger.error(f"Error processing row {index} for ticker {row['yf_ticker']}: {e}")  # Changed from 'ticker' to 'yf_ticker'
             logger.exception("Detailed traceback:")
             continue
 
@@ -149,7 +162,7 @@ def create_price_moves(news_df):
     try:
         logger.info("Calculating alpha and setting actual side")
         processed_df['daily_alpha'] = processed_df['price_change_percentage'] - processed_df['index_price_change_percentage']
-        processed_df['actual_side'] = np.where(processed_df['price_change_percentage'] >= 0, 'LONG', 'SHORT')
+        processed_df['actual_side'] = np.where(processed_df['price_change_percentage'] >= 0, 'UP', 'DOWN')
         logger.info("Successfully calculated alpha and set actual side")
     except Exception as e:
         logger.error(f"Error in calculations: {e}")
@@ -161,7 +174,7 @@ def create_price_moves(news_df):
         try:
             price_move = create_price_move(
                 news_id=row['news_id'],
-                ticker=row['ticker'],
+                ticker=row['yf_ticker'],  # Changed from 'ticker' to 'yf_ticker'
                 published_date=row['published_date'],
                 begin_price=row['begin_price'],
                 end_price=row['end_price'],

@@ -19,3 +19,9 @@ holidays
 pandas_market_calendars
 pytz==2023.3
 flask-login
+holidays
+psycopg2-binary
+scikit-learn
+joblib
+spacy
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl

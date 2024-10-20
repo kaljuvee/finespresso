@@ -5,6 +5,7 @@ import logging
 from utils.news_db_util import map_to_db, add_news_items
 from datetime import datetime
 import pytz
+from tasks.enrich_ticker import process_publisher
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -54,7 +55,7 @@ async def scrape_nasdaq_news():
                     'publisher_topic': category,
                     'content': '',
                     'ticker': '',
-                    'ai_summary': '',
+                    'reason': '',  # Changed from ai_summary
                     'industry': '',
                     'publisher': 'omx',
                     'status': 'raw',
@@ -76,8 +77,13 @@ async def main():
         
         news_items = map_to_db(df, 'omx')
 
-        add_news_items(news_items)
-        logging.info(f"OMX: added {len(news_items)} news items to the database")
+        added_count, duplicate_count = add_news_items(news_items)
+        logging.info(f"OMX: added {added_count} news items to the database, {duplicate_count} duplicates skipped")
+
+        # Call process_publisher after adding news items
+        if added_count > 0:
+            updated, skipped = process_publisher('omx')
+            logging.info(f"OMX: Enriched {updated} items, skipped {skipped} items")
     except Exception as e:
         logging.error(f"OMX: An error occurred: {str(e)}")
 

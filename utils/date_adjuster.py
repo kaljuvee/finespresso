@@ -5,8 +5,25 @@ from utils.news_db_util import News, engine
 import pytz
 from datetime import datetime, timedelta
 import logging
+from holidays import US as US_holidays
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def get_previous_trading_day(date):
+    us_holidays = US_holidays()
+    current_date = date
+    while True:
+        current_date -= timedelta(days=1)
+        if current_date.weekday() < 5 and current_date not in us_holidays:
+            return current_date
+
+def get_next_trading_day(date):
+    us_holidays = US_holidays()
+    current_date = date
+    while True:
+        current_date += timedelta(days=1)
+        if current_date.weekday() < 5 and current_date not in us_holidays:
+            return current_date
 
 def adjust_published_date(publisher: str, target_timezone: str):
     """

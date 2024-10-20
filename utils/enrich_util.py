@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 from utils.web_util import fetch_url_content
-from utils.openai_util import summarize, tag_news
+from utils.openai_util import enrich_reason, tag_news
 from utils.tag_util import tags
 
 
@@ -30,19 +30,19 @@ def enrich_tag_from_url(df):
     logging.info(f"Enrichment completed for {len(df)} items")
     return df
 
-def enrich_summary_from_url(df):
+def enrich_reason_from_url(df):
     logging.info("Starting enrichment process from URLs")
     def fetch_and_summarize(row):
         try:
             content = fetch_url_content(row['link'])
-            ai_summary = summarize(content)
-            logging.info(f"Generated summary for: {row['link']} (first 50 chars): {ai_summary[:50]}...")
-            return ai_summary
+            reason = enrich_reason(content, row['predicted_move'])  # Changed from ai_summary
+            logging.info(f"Generated reason for: {row['link']} (first 50 chars): {reason[:50]}...")
+            return reason
         except Exception as e:
             logging.error(f"Error processing {row['link']}: {str(e)}")
             return None
     
-    df['ai_summary'] = df.apply(fetch_and_summarize, axis=1)
+    df['reason'] = df.apply(fetch_and_summarize, axis=1)  # Changed from ai_summary
     logging.info(f"Enrichment completed for {len(df)} items")
     return df
 
@@ -65,9 +65,9 @@ def enrich_from_content(df):
     def apply_summary(row):
         try:
             if pd.notna(row['content']) and row['content']:
-                ai_summary = summarize(row['content'])
-                logging.info(f"Generated AI summary for {row['link']} (first 50 chars): {ai_summary[:50]}...")
-                return ai_summary
+                reason = enrich_reason(row['content'], row['predicted_move'])  # Changed from ai_summary
+                logging.info(f"Generated reason for {row['link']} (first 50 chars): {reason[:50]}...")
+                return reason
             else:
                 logging.warning(f"No content available for summarization: {row['link']}")
                 return "No content available for summarization"
@@ -76,16 +76,8 @@ def enrich_from_content(df):
             return f"Error in summarization: {str(e)}"
 
     df['ai_topic'] = df.apply(apply_tag, axis=1)
-    df['ai_summary'] = df.apply(apply_summary, axis=1)
-    
+    df['reason'] = df.apply(apply_summary, axis=1)  # Changed from ai_summary
     logging.info(f"Enrichment from content completed for {len(df)} items")
-    return df
-
-def enrich_all(df):
-    logging.info("Starting full enrichment process")
-    df = enrich_from_url(df)
-    #df = enrich_from_content(df)
-    logging.info(f"Full enrichment completed. DataFrame now has {len(df.columns)} columns")
     return df
 
 def enrich_content_from_url(df):
@@ -94,14 +86,12 @@ def enrich_content_from_url(df):
     def fetch_and_enrich(row):
         try:
             content = fetch_url_content(row['link'])
-            ai_summary = summarize(content)
-            #ai_topic = tag_news(content, tags)
             logging.info(f"Enriched content for: {row['link']}")
             print(f"Enriched content for: {row['link']}")
-            return pd.Series({'content': content, 'ai_summary': ai_summary})
+            return pd.Series({'content': content})  # Changed from ai_summary
         except Exception as e:
             logging.error(f"Error processing {row['link']}: {str(e)}")
-            return pd.Series({'content': None, 'ai_summary': None})
+            return pd.Series({'content': None, 'reason': None})  # Changed from ai_summary
     
     enriched = df.apply(fetch_and_enrich, axis=1)
     df = pd.concat([df, enriched], axis=1)
