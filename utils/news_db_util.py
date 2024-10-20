@@ -423,3 +423,29 @@ def get_news_latest_df(publisher=None):
     finally:
         session.close()
 
+def update_news_predictions(df):
+    logging.info("Updating news table with predictions")
+    
+    session = Session()
+    try:
+        updated_count = 0
+        total_items = len(df)
+        for index, row in df.iterrows():
+            news_item = session.get(News, row['news_id'])
+            if news_item:
+                if pd.notnull(row['predicted_side']):
+                    news_item.predicted_side = row['predicted_side']
+                if pd.notnull(row['predicted_move']):
+                    news_item.predicted_move = row['predicted_move']
+                updated_count += 1
+            
+            if (index + 1) % 100 == 0 or index == total_items - 1:
+                session.commit()
+                logging.info(f"Updated {index + 1}/{total_items} items")
+        
+        logging.info(f"Successfully updated {updated_count} news items with predictions")
+    except Exception as e:
+        logging.error(f"Error updating news predictions: {str(e)}")
+        session.rollback()
+    finally:
+        session.close()

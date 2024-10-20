@@ -3,7 +3,7 @@ import feedparser
 import pandas as pd
 from datetime import datetime
 import pytz
-from utils.news_db_util import create_tables, add_news_items, map_to_db
+from utils.news_db_util import add_news_items, map_to_db
 from utils.tag_util import tags
 from tasks.enrich_ticker import process_publisher
 
@@ -78,10 +78,6 @@ def main():
     logging.info("Starting main function")
     
     try:
-        # Create tables
-        logging.info("Creating tables")
-        create_tables()
-        
         # RSS feed URL
         rss_url = 'https://nasdaqbaltic.com/statistics/en/news?rss=1&num=100'
         logging.info(f"Using RSS feed URL: {rss_url}")

@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.display_util import get_cached_dataframe, display_baltics
+from utils.display.display_publisher import display_publisher
 
 # Set page configuration to wide mode
 st.set_page_config(layout="wide")
@@ -12,19 +12,14 @@ if st.button("Refresh Data"):
     st.cache_data.clear()
     st.rerun()
 
-df = get_cached_dataframe('baltics')
-
 # Pagination
 items_per_page = 25
 
-# Calculate total pages
-total_pages = len(df) // items_per_page + (1 if len(df) % items_per_page > 0 else 0)
-
 # Add a select box for page selection
-page = st.selectbox("Select Page", options=range(1, total_pages + 1))
+page = st.selectbox("Select Page", options=range(1, 101))  # Assuming max 100 pages
 
-# Display the news using the new display_baltics function
-actual_total_pages = display_baltics(df, page, items_per_page)
+# Display the news
+total_pages = display_publisher('baltics', page, items_per_page)
 
 # Display pagination information
-st.write(f"Page {page} of {actual_total_pages}")
+st.write(f"Page {page} of {total_pages}")
