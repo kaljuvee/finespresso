@@ -10,6 +10,7 @@ from collections import deque
 from tasks.publisher.baltics import main as baltics_main
 from tasks.publisher.euronext import main as euronext_main
 from tasks.publisher.omx import main as omx_main
+from tasks.publisher.globenewswire_sector import main as globenewswire_main
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -34,7 +35,8 @@ run_history = deque(maxlen=max_history_length)
 task_info = {
     'baltics': {'status': 'Not run', 'frequency': 6},
     'euronext': {'status': 'Not run', 'frequency': 1},
-    'omx': {'status': 'Not run', 'frequency': 1}
+    'omx': {'status': 'Not run', 'frequency': 1},
+    'globenewswire': {'status': 'Not run', 'frequency': 1}
 }
 
 # User model
@@ -89,7 +91,8 @@ def init_schedules():
     task_functions = {
         'baltics': baltics_main,
         'euronext': euronext_main,
-        'omx': omx_main
+        'omx': omx_main,
+        'globenewswire': globenewswire_main
     }
     for task_name, info in task_info.items():
         schedule_task(task_name, task_functions[task_name], info['frequency'])
@@ -141,7 +144,8 @@ def run_task_manually(task_name):
     task_functions = {
         'baltics': baltics_main,
         'euronext': euronext_main,
-        'omx': omx_main
+        'omx': omx_main,
+        'globenewswire': globenewswire_main
     }
     if task_name in task_functions:
         task_info[task_name]['status'] = 'Running'  # Set status to Running immediately
@@ -156,7 +160,8 @@ def set_task_frequency(task_name):
     task_functions = {
         'baltics': baltics_main,
         'euronext': euronext_main,
-        'omx': omx_main
+        'omx': omx_main,
+        'globenewswire': globenewswire_main
     }
     schedule_task(task_name, task_functions[task_name], frequency)
     return redirect(url_for('index'))

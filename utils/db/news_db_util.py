@@ -356,7 +356,7 @@ def get_news_df(publisher=None):
             'published_date': item.published_date,
             'company': item.company,
             'event': item.event,
-            'reason': item.reason,
+            'reason': item.reason,  # Make sure 'reason' is included here
             'publisher': item.publisher,
             'industry': item.industry,
             'publisher_topic': item.publisher_topic,
@@ -367,7 +367,7 @@ def get_news_df(publisher=None):
             'publisher_summary': item.publisher_summary,
             'predicted_side': item.predicted_side,
             'predicted_move': item.predicted_move,
-            'event': item.event
+            'content': item.content  # Include 'content' as it's used in enrich_reason
         } for item in news_items]
         
         df = pd.DataFrame(data)
@@ -452,16 +452,33 @@ def update_records(df):
     
     session = Session()
     try:
+        updated_count = 0
         for index, row in df.iterrows():
             stmt = update(News).where(News.id == row['news_id'])
-            update_values = {column: row[column] for column in row.index if column != 'news_id'}
-            stmt = stmt.values(**update_values)
-            session.execute(stmt)
+            update_values = {}
+            for column in row.index:
+                if column != 'news_id':
+                    value = row[column]
+                    if pd.notnull(value):
+                        if isinstance(value, pd.Timestamp):
+                            value = value.to_pydatetime()
+                        update_values[column] = value
+            
+            if update_values:
+                stmt = stmt.values(**update_values)
+                result = session.execute(stmt)
+                if result.rowcount > 0:
+                    updated_count += 1
+            
+            if (index + 1) % 100 == 0 or index == len(df) - 1:
+                session.commit()
+                logging.info(f"Updated {updated_count}/{index + 1} records")
         
-        session.commit()
-        logging.info(f"Successfully updated {len(df)} records")
+        logging.info(f"Successfully updated {updated_count} records")
+        return updated_count
     except Exception as e:
         logging.error(f"Error updating records: {str(e)}")
         session.rollback()
+        return 0
     finally:
         session.close()

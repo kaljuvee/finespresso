@@ -20,7 +20,8 @@ def display_publisher(publisher, page, items_per_page):
     df['Title'] = df.apply(lambda row: make_clickable(row['title'], row['link']), axis=1)
 
     # Format the event column: remove underscores and capitalize the first word
-    df['event'] = df['event'].apply(lambda x: x.replace('_', ' ').capitalize())
+    # Handle None/null values safely
+    df['event'] = df['event'].apply(lambda x: x.replace('_', ' ').capitalize() if isinstance(x, str) else '')
 
     # Select columns to display, including the 'reason' column
     columns_to_display = ['Ticker', 'Title', 'company', 'predicted_move', 'predicted_side', 'event', 'reason', 'published_date']
@@ -38,8 +39,8 @@ def display_publisher(publisher, page, items_per_page):
         {'selector': 'th', 'props': [('text-align', 'left')]}
     ])
 
-    # Display the styled dataframe for the current page
-    st.write(styled_df.to_html(escape=False, index=False), unsafe_allow_html=True)
+    # Display the styled dataframe for the current page without index
+    st.write(styled_df.hide(axis="index").to_html(escape=False), unsafe_allow_html=True)
 
     # Calculate total pages
     total_pages = len(df_display) // items_per_page + (1 if len(df_display) % items_per_page > 0 else 0)

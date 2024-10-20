@@ -6,6 +6,9 @@ from utils.db.news_db_util import map_to_db, add_news_items
 from datetime import datetime, timedelta
 import pytz
 from tasks.enrich.enrich_ticker import process_publisher
+from tasks.enrich.enrich_event import enrich_tag_from_url
+from tasks.ai.predict import predict
+from tasks.enrich.enrich_reason import enrich_reason
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 URL_PREFIX = 'https://live.euronext.com'
@@ -105,6 +108,28 @@ async def main():
         logging.info(f"Got {len(df)} rows from Euronext")
         logging.info(f"Sample data:\n{df.head()}")
         
+        # 1. Enrich event
+        try:
+            df['event'] = None  # Ensure 'event' column exists
+            df = enrich_tag_from_url(df)
+            logging.info("Event enrichment completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during event enrichment: {str(e)}", exc_info=True)
+        
+        # 2. Perform predictions
+        try:
+            df = predict(df)
+            logging.info("Predictions completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during predictions: {str(e)}", exc_info=True)
+        
+        # 3. Enrich reason
+        try:
+            df = enrich_reason(df)
+            logging.info("Reason enrichment completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during reason enrichment: {str(e)}", exc_info=True)
+        
         # Map dataframe to News objects
         news_items = map_to_db(df, 'euronext')
 
@@ -118,7 +143,7 @@ async def main():
             updated, skipped = process_publisher('euronext')
             logging.info(f"Euronext: Enriched {updated} items, skipped {skipped} items")
     except Exception as e:
-        logging.error(f"Euronext: An error occurred: {str(e)}")
+        logging.error(f"Euronext: An error occurred: {str(e)}", exc_info=True)
 
 if __name__ == "__main__":
     asyncio.run(main())

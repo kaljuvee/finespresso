@@ -6,6 +6,9 @@ import pytz
 from utils.db.news_db_util import add_news_items, map_to_db
 from utils.static.tag_util import tags
 from tasks.enrich.enrich_ticker import process_publisher
+from tasks.enrich.enrich_event import enrich_tag_from_url
+from tasks.ai.predict import predict
+from tasks.enrich.enrich_reason import enrich_reason
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -86,6 +89,29 @@ def main():
         logging.info("Fetching and parsing news items")
         news_df = parse_rss_feed(rss_url, tags)
         logging.info(f"Created dataframe with {len(news_df)} rows")
+        
+        # 1. Enrich event
+        try:
+            news_df['event'] = None  # Ensure 'event' column exists
+            news_df = enrich_tag_from_url(news_df)
+            logging.info("Event enrichment completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during event enrichment: {str(e)}", exc_info=True)
+        
+        # 2. Perform predictions
+        try:
+            news_df = predict(news_df)
+            logging.info("Predictions completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during predictions: {str(e)}", exc_info=True)
+        
+        # 3. Enrich reason
+        try:
+            news_df = enrich_reason(news_df)
+            logging.info("Reason enrichment completed successfully.")
+        except Exception as e:
+            logging.error(f"Error during reason enrichment: {str(e)}", exc_info=True)
+        
         # Map dataframe to News objects
         news_items = map_to_db(news_df, 'baltics')
 

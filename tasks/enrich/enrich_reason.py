@@ -3,6 +3,8 @@ import pandas as pd
 from utils.ai.openai_util import enrich_reason as openai_enrich_reason
 from utils.db.news_db_util import get_news_df, update_records
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def enrich_reason(df):
     logging.info("Starting summary enrichment process")
     def apply_summary(row):
@@ -12,7 +14,7 @@ def enrich_reason(df):
                 logging.warning(f"Skipping record for {row.get('link', 'unknown link')}: No content or title found")
                 return None
             
-            reason = openai_enrich_reason(text, row.get('predicted_move'))
+            reason = openai_enrich_reason(text, row['predicted_move'])
             logging.info(f"Generated AI summary for {row['link']} (first 50 chars): {reason[:50]}...")
             return reason
         except Exception as e:
@@ -30,7 +32,7 @@ def main():
     df = get_news_df()
     
     # Filter for rows without a reason
-    df_to_enrich = df[df['predicted_move'].isnull()]
+    df_to_enrich = df[df['predicted_move'].notna()]
     
     enriched_df = enrich_reason(df_to_enrich)
     

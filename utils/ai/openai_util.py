@@ -2,6 +2,7 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 from gptcache import cache
+import logging
 
 load_dotenv()
 
@@ -10,6 +11,7 @@ cache.init()
 cache.set_openai_key()
 
 # Load environment variables
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 model_name = "gpt-4o"  # Updated model name
 
