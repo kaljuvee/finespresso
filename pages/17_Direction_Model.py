@@ -6,7 +6,7 @@ from utils.display.display_model_util import display_model_results
 # Set page config to wide layout
 st.set_page_config(layout="wide")
 
-st.title("Macro Hive Morning Sales Copilot")
+st.title("Finespresso - Why is it Moving?")
 st.subheader("Direction Prediction Model Results")
 
 results_df = get_results()
