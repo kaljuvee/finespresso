@@ -2,7 +2,8 @@ import logging
 import pandas as pd
 from utils.scrape.web_util import fetch_url_content
 from utils.ai.openai_util import enrich_reason, tag_news
-from utils.static.tag_util import tags   
+from utils.static.tag_util import tags, tag_list
+import re
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -97,3 +98,14 @@ def enrich_content_from_url(df):
     df = pd.concat([df, enriched], axis=1)
     logging.info(f"Content enrichment completed for {len(df)} items")
     return df
+
+def determine_event_from_content(content):
+    content = content.lower()
+    
+    for event in tag_list:
+        # Convert event to lowercase and replace underscores with spaces for matching
+        event_keywords = event.lower().replace('_', ' ').split()
+        if all(keyword in content for keyword in event_keywords):
+            return event
+    
+    return None  # If no event is detected

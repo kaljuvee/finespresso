@@ -54,7 +54,7 @@ def predict(df):
             continue
 
         # Predict move
-        if pd.isnull(row['predicted_move']):
+        if 'predicted_move' not in df.columns or pd.isnull(row['predicted_move']):
             if event not in move_models:
                 move_models[event], move_vectorizers[event] = load_models(event, 'regression')
             
@@ -67,9 +67,13 @@ def predict(df):
                     logger.info(f"Move prediction for row {index}: {prediction[0]}")
                 except Exception as e:
                     logger.error(f"Error predicting move for row {index}: {e}", exc_info=True)
+                    df.at[index, 'predicted_move'] = None
+            else:
+                logger.warning(f"Move model or vectorizer not available for event: {event}")
+                df.at[index, 'predicted_move'] = None
         
         # Predict side
-        if pd.isnull(row['predicted_side']):
+        if 'predicted_side' not in df.columns or pd.isnull(row['predicted_side']):
             if event not in side_models:
                 side_models[event], side_vectorizers[event] = load_models(event, 'classifier_binary')
             
@@ -82,8 +86,10 @@ def predict(df):
                     logger.info(f"Side prediction for row {index}: {df.at[index, 'predicted_side']}")
                 except Exception as e:
                     logger.error(f"Error predicting side for row {index}: {e}", exc_info=True)
+                    df.at[index, 'predicted_side'] = None
             else:
                 logger.warning(f"Side model or vectorizer not available for event: {event}")
+                df.at[index, 'predicted_side'] = None
         else:
             logger.info(f"Skipping side prediction for row {index}: predicted_side is not null")
     
@@ -93,14 +99,6 @@ def main():
     # Get all news
     logger.info("Fetching all news data")
     news_df = news_db_util.get_news_df()
-    
-    # Commented out code to get DataFrame for a single news ID
-    # test_news_id = 123  # Replace with the actual news ID you want to test
-    # news_df = news_db_util.get_news_by_id(test_news_id)
-    # if news_df.empty:
-    #     logger.error(f"No news found with ID: {test_news_id}")
-    #     return
-    # logger.info(f"Testing prediction for news ID: {test_news_id}")
     
     # Make predictions
     logger.info("Starting predictions")

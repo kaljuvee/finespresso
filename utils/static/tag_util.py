@@ -53,4 +53,5 @@ tag_list = [
 "voting_rights",
 "warrants_and_certificates"
 ]
+
 tags = ",".join(tag_list)
