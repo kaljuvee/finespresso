@@ -6,7 +6,7 @@ from utils.display.display_model_util import display_regression_model_results
 # Set page config to wide layout
 st.set_page_config(layout="wide")
 
-st.title("Macro Hive Morning Sales Copilot")
+st.title("Finespresso - Why is it Moving?")
 st.subheader("Percentage Move Prediction Model Results")    
 
 results_df = get_regression_results()
