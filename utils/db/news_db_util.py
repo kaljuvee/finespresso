@@ -491,3 +491,23 @@ def update_records(df):
     finally:
         session.close()
 
+def get_news_by_event(event):
+    logging.info(f"Retrieving news items for event: {event}")
+    
+    session = Session()
+    try:
+        query = select(News).where(News.event == event).limit(100)
+        result = session.execute(query)
+        news_items = result.scalars().all()
+        
+        data = [{
+            'news_id': item.id,
+            'title': item.title,
+            'link': item.link,
+            'content': item.content,
+            'event': item.event
+        } for item in news_items if item.content]
+        
+        return pd.DataFrame(data)
+    finally:
+        session.close()

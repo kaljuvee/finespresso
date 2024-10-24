@@ -5,6 +5,10 @@ from tasks.ai.predict import predict
 import re
 from utils.enrich_util import determine_event_from_content
 from utils.static.tag_util import tag_list
+from utils.db.news_db_util import get_news_by_event
+from utils.db.price_move_db_util import get_news_price_moves
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 def strip_html(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -77,3 +81,46 @@ if st.button("Predict"):
             st.error("No predictions available for this event. Models might be missing.")
     else:
         st.warning("Please detect an event and select it before predicting.")
+
+# New Step: Show Similar News
+if st.button("Show Similar"):
+    if st.session_state.selected_event:
+        # Strip HTML and clean the text (in case it wasn't done before)
+        cleaned_content = clean_text(strip_html(news_content))
+
+        # Retrieve similar news and price changes
+        news_df = get_news_by_event(st.session_state.selected_event)
+        if not news_df.empty:
+            # Vectorize and compute cosine similarity
+            vectorizer = TfidfVectorizer()
+            tfidf_matrix = vectorizer.fit_transform(news_df['content'])
+            query_vector = vectorizer.transform([cleaned_content])
+            similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
+
+            # Add similarity scores to DataFrame
+            news_df['similarity_score'] = similarity_scores
+
+            # Sort by similarity score and take top 10
+            top_news_df = news_df.sort_values(by='similarity_score', ascending=False).head(10)
+
+            # Get price moves
+            price_moves_df = get_news_price_moves()
+
+            # Merge dataframes on news_id
+            final_df = pd.merge(top_news_df, price_moves_df, left_on='news_id', right_on='id', how='left')
+
+            # Filter out rows where price_change_percentage is NaN
+            final_df = final_df[pd.notna(final_df['price_change_percentage'])]
+
+            # Sort by similarity score and take top 10
+            final_df = final_df.sort_values(by='similarity_score', ascending=False).head(10)
+
+            # Create clickable links for titles
+            final_df['title'] = final_df.apply(lambda row: f'<a href="{row["link"]}" target="_blank">{row["title"]}</a>', axis=1)
+
+            # Display results as a DataFrame with clickable links
+            st.write(final_df[['title', 'event', 'similarity_score', 'price_change_percentage']].to_html(escape=False, index=False), unsafe_allow_html=True)
+        else:
+            st.warning("No similar news found for this event.")
+    else:
+        st.warning("Please detect an event and select it before showing similar news.")
