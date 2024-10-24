@@ -129,8 +129,8 @@ def main(sector):
     print(f"Skipped {duplicate_count} duplicate items.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fetch news for a specific sector.")
-    parser.add_argument("-s", "--sector", default="biotech", help="Name of the sector. Default is 'biotech'")
-    args = parser.parse_args()
-
-    main(args.sector)
+    #parser = argparse.ArgumentParser(description="Fetch news for a specific sector.")
+    #parser.add_argument("-s", "--sector", default="biotech", help="Name of the sector. Default is 'biotech'")
+    #args = parser.parse_args()
+    sector = 'biotech'
+    main(sector)

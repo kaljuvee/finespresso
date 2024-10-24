@@ -28,6 +28,7 @@ tag_list = [
 "geographic_expansion",
 "government_news",
 "initial_public_offerings",
+"insider_trades",
 "interim_information",
 "joint_venture",
 "law_legal_issues",
