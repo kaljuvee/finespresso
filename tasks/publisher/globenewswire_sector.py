@@ -94,43 +94,62 @@ def main(sector):
         
     news_df = fetch_news(rss_dict, sector)
     
-    # 1. Enrich event
-    try:
-        news_df['event'] = None  # Ensure 'event' column exists
-        news_df = enrich_tag_from_url(news_df)
-        print("Event enrichment completed successfully.")
-    except Exception as e:
-        print(f"Error during event enrichment: {str(e)}")
-        logging.error(f"Event enrichment failed: {str(e)}", exc_info=True)
-    
-    # 2. Perform predictions
-    try:
-        news_df = predict(news_df)
-        print("Predictions completed successfully.")
-    except Exception as e:
-        print(f"Error during predictions: {str(e)}")
-        logging.error(f"Predictions failed: {str(e)}", exc_info=True)
-    
-    # 3. Enrich reason
-    try:
-        news_df = enrich_reason(news_df)
-        print("Reason enrichment completed successfully.")
-    except Exception as e:
-        print(f"Error during reason enrichment: {str(e)}")
-        logging.error(f"Reason enrichment failed: {str(e)}", exc_info=True)
-    
-    # Map DataFrame to News objects
+    # Check for duplicates before enrichment
     news_items = news_db_util.map_to_db(news_df, f'globenewswire_{sector}')
     
-    # Check for duplicates and add news items to the database
-    added_count, duplicate_count = news_db_util.add_news_items(news_items)
-    
-    print(f"Added {added_count} news items to the database.")
-    print(f"Skipped {duplicate_count} duplicate items.")
+    session = news_db_util.Session()
+    try:
+        unique_news_items, duplicate_count = news_db_util.remove_duplicates(session, news_items)
+        
+        if not unique_news_items:
+            print("No new news items found. Exiting.")
+            return
+        
+        # Convert News objects back to a DataFrame
+        unique_news_df = pd.DataFrame([
+            {column.name: getattr(item, column.name) for column in news_db_util.News.__table__.columns}
+            for item in unique_news_items
+        ])
+        
+        # Proceed with enrichment only for unique items
+        try:
+            unique_news_df['event'] = None  # Ensure 'event' column exists
+            unique_news_df = enrich_tag_from_url(unique_news_df)
+            print("Event enrichment completed successfully.")
+        except Exception as e:
+            print(f"Error during event enrichment: {str(e)}")
+            logging.error(f"Event enrichment failed: {str(e)}", exc_info=True)
+        
+        try:
+            unique_news_df = predict(unique_news_df)
+            print("Predictions completed successfully.")
+        except Exception as e:
+            print(f"Error during predictions: {str(e)}")
+            logging.error(f"Predictions failed: {str(e)}", exc_info=True)
+        
+        try:
+            unique_news_df = enrich_reason(unique_news_df)
+            print("Reason enrichment completed successfully.")
+        except Exception as e:
+            print(f"Error during reason enrichment: {str(e)}")
+            logging.error(f"Reason enrichment failed: {str(e)}", exc_info=True)
+        
+        # Map enriched DataFrame back to News objects
+        enriched_news_items = news_db_util.map_to_db(unique_news_df, f'globenewswire_{sector}')
+        
+        # Add enriched news items to the database
+        session.add_all(enriched_news_items)
+        session.commit()
+        
+        print(f"Added {len(enriched_news_items)} news items to the database.")
+        print(f"Skipped {duplicate_count} duplicate items.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        logging.error(f"An error occurred: {str(e)}", exc_info=True)
+        session.rollback()
+    finally:
+        session.close()
 
 if __name__ == "__main__":
-    #parser = argparse.ArgumentParser(description="Fetch news for a specific sector.")
-    #parser.add_argument("-s", "--sector", default="biotech", help="Name of the sector. Default is 'biotech'")
-    #args = parser.parse_args()
     sector = 'biotech'
     main(sector)
