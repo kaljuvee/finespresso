@@ -511,3 +511,18 @@ def get_news_by_event(event):
         return pd.DataFrame(data)
     finally:
         session.close()
+
+def remove_duplicates(news_items):
+    # Example implementation: remove duplicates based on 'link'
+    unique_items = []
+    seen_links = set()
+    duplicate_count = 0
+
+    for item in news_items:
+        if item['link'] not in seen_links:
+            unique_items.append(item)
+            seen_links.add(item['link'])
+        else:
+            duplicate_count += 1
+
+    return unique_items, duplicate_count

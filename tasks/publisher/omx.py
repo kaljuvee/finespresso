@@ -2,7 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
 import logging
-from utils.db.news_db_util import map_to_db, add_news_items
+from utils.db.news_db_util import map_to_db, add_news_items, remove_duplicates
 from datetime import datetime
 import pytz
 from tasks.enrich.enrich_ticker import process_publisher
@@ -78,6 +78,35 @@ async def main():
         logging.info(f"Got OMX dataframe with {len(df)} rows")
         logging.info(f"Sample data:\n{df.head()}")
         
+        # Perform duplicate removal directly on the DataFrame
+        news_items = map_to_db(df, 'omx')
+        unique_items, duplicate_count = remove_duplicates(news_items)
+        logging.info(f"OMX: {duplicate_count} duplicate news items removed")
+
+        # Convert unique_items back to DataFrame for further processing
+        df = pd.DataFrame([{
+            'title': item.title,
+            'link': item.link,
+            'company': item.company,
+            'published_date': item.published_date,
+            'content': item.content,
+            'reason': item.reason,
+            'industry': item.industry,
+            'publisher_topic': item.publisher_topic,
+            'event': item.event,
+            'publisher': item.publisher,
+            'status': item.status,
+            'instrument_id': item.instrument_id,
+            'yf_ticker': item.yf_ticker,
+            'ticker': item.ticker,
+            'published_date_gmt': item.published_date_gmt,
+            'timezone': item.timezone,
+            'publisher_summary': item.publisher_summary,
+            'ticker_url': item.ticker_url,
+            'predicted_side': item.predicted_side,
+            'predicted_move': item.predicted_move
+        } for item in unique_items])
+
         # 1. Enrich event
         try:
             df['event'] = None  # Ensure 'event' column exists
@@ -100,9 +129,10 @@ async def main():
         except Exception as e:
             logging.error(f"Error during reason enrichment: {str(e)}", exc_info=True)
         
-        news_items = map_to_db(df, 'omx')
+        # Map enriched DataFrame back to news items
+        enriched_news_items = map_to_db(df, 'omx')
 
-        added_count, duplicate_count = add_news_items(news_items)
+        added_count, duplicate_count = add_news_items(enriched_news_items)
         logging.info(f"OMX: added {added_count} news items to the database, {duplicate_count} duplicates skipped")
 
         # Call process_publisher after adding news items
