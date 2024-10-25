@@ -118,6 +118,13 @@ def process_results(results, df):
         results_df['total_sample'] = results_df['event'].map(event_counts)
         results_df = results_df.sort_values(by='accuracy', ascending=False)
         
+        # Ensure all required columns are present
+        required_columns = ['event', 'accuracy', 'precision', 'recall', 'f1_score', 'auc_roc', 'test_sample', 'training_sample', 'total_sample']
+        missing_columns = [col for col in required_columns if col not in results_df.columns]
+        if missing_columns:
+            logger.error(f"Missing required columns in results_df: {missing_columns}")
+            return
+        
         # Ensure correct data types
         results_df['event'] = results_df['event'].astype(str)
         results_df['accuracy'] = results_df['accuracy'].astype(float)
@@ -137,9 +144,9 @@ def process_results(results, df):
         logger.info('Successfully wrote results to CSV file')
         
         # Save results to the database
-        success, run_id = save_results(results_df)
+        success = save_results(results_df)
         if success:
-            logger.info(f'Successfully wrote results to database with run_id: {run_id}')
+            logger.info('Successfully wrote results to database')
         else:
             logger.error('Failed to write results to database')
         
