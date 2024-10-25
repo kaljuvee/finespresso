@@ -24,7 +24,6 @@ class ModelResultsBinary(Base):
     __tablename__ = 'eq_model_results_binary'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    run_id = Column(UUID(as_uuid=True), default=uuid.uuid4, nullable=False)
     timestamp = Column(DateTime, default=func.now(), nullable=False)
     event = Column(String(255), nullable=False)
     accuracy = Column(Float, nullable=False)
@@ -40,7 +39,6 @@ class ModelResultsRegression(Base):
     __tablename__ = 'eq_model_results_regression'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    run_id = Column(UUID(as_uuid=True), default=uuid.uuid4, nullable=False)
     timestamp = Column(DateTime, default=func.now(), nullable=False)
     event = Column(String(255), nullable=False)
     mse = Column(Float, nullable=False)
@@ -56,11 +54,9 @@ def create_tables():
 
 def save_results(results_df):
     session = Session()
-    run_id = uuid.uuid4()
     try:
         for _, row in results_df.iterrows():
             result = ModelResultsBinary(
-                run_id=run_id,
                 event=row['event'],
                 accuracy=row['accuracy'],
                 precision=row['precision'],
@@ -73,22 +69,20 @@ def save_results(results_df):
             )
             session.add(result)
         session.commit()
-        logging.info(f'Successfully saved results to database with run_id: {run_id}')
-        return True, run_id
+        logging.info(f'Successfully saved results to database')
+        return True
     except Exception as e:
         logging.error(f'An error occurred while saving model results: {str(e)}')
         session.rollback()
-        return False, None
+        return False
     finally:
         session.close()
 
 def save_regression_results(results_df):
     session = Session()
-    run_id = uuid.uuid4()
     try:
         for _, row in results_df.iterrows():
             result = ModelResultsRegression(
-                run_id=run_id,
                 event=row['event'],
                 mse=row['mse'],
                 r2=row['r2'],
@@ -100,24 +94,23 @@ def save_regression_results(results_df):
             )
             session.add(result)
         session.commit()
-        logging.info(f'Successfully saved regression results to database with run_id: {run_id}')
-        return True, run_id
+        logging.info(f'Successfully saved regression results to database')
+        return True
     except Exception as e:
         logging.error(f'An error occurred while saving regression model results: {str(e)}')
         session.rollback()
-        return False, None
+        return False
     finally:
         session.close()
 
-def get_results(run_id: str = None) -> pd.DataFrame:
+def get_results(timestamp: str = None) -> pd.DataFrame:
     session = Session()
     try:
         query = session.query(ModelResultsBinary)
-        if run_id:
-            query = query.filter(ModelResultsBinary.run_id == uuid.UUID(run_id))
+        if timestamp:
+            query = query.filter(ModelResultsBinary.timestamp == timestamp)
         results = query.all()
         data = [{
-            'run_id': str(result.run_id),
             'timestamp': result.timestamp,
             'event': result.event,
             'accuracy': result.accuracy,
@@ -133,15 +126,14 @@ def get_results(run_id: str = None) -> pd.DataFrame:
     finally:
         session.close()
 
-def get_regression_results(run_id: str = None) -> pd.DataFrame:
+def get_regression_results(timestamp: str = None) -> pd.DataFrame:
     session = Session()
     try:
         query = session.query(ModelResultsRegression)
-        if run_id:
-            query = query.filter(ModelResultsRegression.run_id == uuid.UUID(run_id))
+        if timestamp:
+            query = query.filter(ModelResultsRegression.timestamp == timestamp)
         results = query.all()
         data = [{
-            'run_id': str(result.run_id),
             'timestamp': result.timestamp,
             'event': result.event,
             'mse': result.mse,

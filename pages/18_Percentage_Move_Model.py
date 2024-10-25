@@ -11,13 +11,16 @@ st.subheader("Percentage Move Prediction Model Results")
 
 results_df = get_regression_results()
 
-st.write("Filter by Run ID:")
-selected_run_id = st.selectbox("Select a Run ID", options=["All"] + list(results_df['run_id'].unique()))
+# Sort the dataframe by timestamp in descending order
+results_df_sorted = results_df.sort_values('timestamp', ascending=False)
 
-if selected_run_id != "All":
-    filtered_df = results_df[results_df['run_id'] == selected_run_id]
-else:
-    filtered_df = results_df
+# Get unique timestamps
+timestamps = results_df_sorted['timestamp'].unique()
+
+# Select the latest timestamp by default
+selected_timestamp = st.selectbox("Select a Timestamp", options=timestamps)
+
+filtered_df = results_df[results_df['timestamp'] == selected_timestamp]
 
 # Use the display_regression_model_results function to show the full table
 display_regression_model_results(filtered_df)

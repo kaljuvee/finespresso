@@ -14,84 +14,35 @@ def format_date(date_string):
     date_obj = pd.to_datetime(date_string)
     return date_obj.strftime('%Y-%m-%d %H:%M (GMT)')
 
-def display_model_results():
-    results = get_results()
-    if not results.empty:
-        st.write("Model Results:")
-        
-        # Format the event column
-        results['event'] = results['event'].apply(format_event)
-        
-        # Format numeric columns
-        numeric_columns = ['accuracy', 'precision', 'recall', 'f1_score', 'auc_roc', 'test_sample', 'training_sample', 'total_sample']
-        for col in numeric_columns:
-            if col == 'accuracy':
-                results[col] = results[col].apply(lambda x: f"{x*100:.2f}%" if pd.notnull(x) else "")
-            elif col in ['total_sample', 'training_sample', 'test_sample']:
-                results[col] = results[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "")
-            else:
-                results[col] = results[col].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else "")
-        
-        # Reorder columns as requested
-        columns_order = ['event', 'accuracy', 'total_sample', 'training_sample', 'test_sample', 'precision', 'recall', 'f1_score', 'auc_roc', 'run_id']
-        results = results[columns_order]
-        
-        # Rename columns for display
-        column_names = ['Event', 'Accuracy (%)', 'Total Sample', 'Training Sample', 'Inference Sample', 'Precision', 'Recall', 'F1 Score', 'AUC ROC', 'Run ID']
-        results.columns = column_names
-        
-        # Display the dataframe as an HTML table
-        st.markdown(results.to_html(escape=False, index=False), unsafe_allow_html=True)
-
-        # Add custom CSS to style the table
-        st.markdown("""
-        <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-    else:
-        st.write("No model results available.")
-
-def display_regression_model_results(results_df=None):
+def display_model_results(results_df=None):
     if results_df is None:
-        results_df = get_regression_results()
+        results_df = get_results()
     
     if not results_df.empty:
-        st.write("Regression Model Results:")
+        st.write("Model Results:")
         
         # Format the event column
         results_df['event'] = results_df['event'].apply(format_event)
         
         # Format numeric columns
-        numeric_columns = ['mse', 'r2', 'mae', 'rmse', 'test_sample', 'training_sample', 'total_sample']
+        numeric_columns = ['accuracy', 'precision', 'recall', 'f1_score', 'auc_roc', 'test_sample', 'training_sample', 'total_sample']
         for col in numeric_columns:
-            if col == 'r2':
+            if col == 'accuracy':
                 results_df[col] = results_df[col].apply(lambda x: f"{x*100:.2f}%" if pd.notnull(x) else "")
             elif col in ['total_sample', 'training_sample', 'test_sample']:
                 results_df[col] = results_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "")
             else:
                 results_df[col] = results_df[col].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else "")
         
-        # Reorder columns
-        columns_order = ['event', 'r2', 'mse', 'mae', 'rmse', 'total_sample', 'training_sample', 'test_sample', 'run_id']
+        # Format the timestamp column
+        results_df['timestamp'] = results_df['timestamp'].apply(format_date)
+        
+        # Reorder columns as requested
+        columns_order = ['event', 'accuracy', 'total_sample', 'training_sample', 'test_sample', 'precision', 'recall', 'f1_score', 'auc_roc', 'timestamp']
         results_df = results_df[columns_order]
         
         # Rename columns for display
-        column_names = ['Event', 'R² Score', 'MSE', 'MAE', 'RMSE', 'Total Sample', 'Training Sample', 'Inference Sample', 'Run ID']
+        column_names = ['Event', 'Accuracy (%)', 'Total Sample', 'Training Sample', 'Inference Sample', 'Precision', 'Recall', 'F1 Score', 'AUC ROC', 'Timestamp']
         results_df.columns = column_names
         
         # Display the dataframe as an HTML table
@@ -117,6 +68,69 @@ def display_regression_model_results(results_df=None):
         }
         </style>
         """, unsafe_allow_html=True)
+        
+        # Display the total number of models
+        st.write(f"Total number of models displayed: {len(results_df)}")
+    else:
+        st.write("No model results available.")
+
+def display_regression_model_results(results_df=None):
+    if results_df is None:
+        results_df = get_regression_results()
+    
+    if not results_df.empty:
+        st.write("Regression Model Results:")
+        
+        # Format the event column
+        results_df['event'] = results_df['event'].apply(format_event)
+        
+        # Format numeric columns
+        numeric_columns = ['mse', 'r2', 'mae', 'rmse', 'test_sample', 'training_sample', 'total_sample']
+        for col in numeric_columns:
+            if col == 'r2':
+                results_df[col] = results_df[col].apply(lambda x: f"{x*100:.2f}%" if pd.notnull(x) else "")
+            elif col in ['total_sample', 'training_sample', 'test_sample']:
+                results_df[col] = results_df[col].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else "")
+            else:
+                results_df[col] = results_df[col].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else "")
+        
+        # Format the timestamp column
+        results_df['timestamp'] = results_df['timestamp'].apply(format_date)
+        
+        # Reorder columns
+        columns_order = ['event', 'r2', 'mse', 'mae', 'rmse', 'total_sample', 'training_sample', 'test_sample', 'timestamp']
+        results_df = results_df[columns_order]
+        
+        # Rename columns for display
+        column_names = ['Event', 'R² Score', 'MSE', 'MAE', 'RMSE', 'Total Sample', 'Training Sample', 'Inference Sample', 'Timestamp']
+        results_df.columns = column_names
+        
+        # Display the dataframe as an HTML table
+        st.markdown(results_df.to_html(escape=False, index=False), unsafe_allow_html=True)
+
+        # Add custom CSS to style the table
+        st.markdown("""
+        <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Display the total number of models
+        st.write(f"Total number of models displayed: {len(results_df)}")
     else:
         st.write("No regression model results available.")
 

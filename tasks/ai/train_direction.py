@@ -7,11 +7,12 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import joblib
 import time
 from utils.db.model_db_util import save_results
-import logging
 import numpy as np
 import os
 from utils.db.price_move_db_util import get_news_price_moves
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from utils.logging.log_util import get_logger
+
+logger = get_logger(__name__)
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -23,15 +24,15 @@ def preprocess(text):
 def train_and_save_model_for_event(event, df):
     try:
         event_df = df[df['event'] == event].copy()
-        logging.info(f"Processing event: {event}, Number of samples: {len(event_df)}")
+        logger.info(f"Processing event: {event}, Number of samples: {len(event_df)}")
         
         # Filter out 'unknown' values
         event_df = event_df[event_df['actual_side'].isin(['UP', 'DOWN'])]
         
-        logging.info(f"Value counts of actual_side after filtering: {event_df['actual_side'].value_counts().to_dict()}")
+        logger.info(f"Value counts of actual_side after filtering: {event_df['actual_side'].value_counts().to_dict()}")
         
         if len(event_df) < 10:  # Arbitrary minimum number of samples
-            logging.warning(f"Not enough data for event {event} after filtering. Skipping.")
+            logger.warning(f"Not enough data for event {event} after filtering. Skipping.")
             return None
 
         # Check if 'content' is null or empty, use 'title' if so
@@ -42,14 +43,14 @@ def train_and_save_model_for_event(event, df):
         y = event_df['actual_side'].map({'UP': 1, 'DOWN': 0})
         
         if len(y.unique()) < 2:
-            logging.warning(f"Only one class present in the target variable for event {event}. Skipping.")
+            logger.warning(f"Only one class present in the target variable for event {event}. Skipping.")
             return None
 
         tfidf = TfidfVectorizer(max_features=1000)
         X = tfidf.fit_transform(event_df['processed_content'])
 
-        logging.info(f"Shape of X: {X.shape}, Shape of y: {y.shape}")
-        logging.info(f"Value counts of y: {y.value_counts().to_dict()}")
+        logger.info(f"Shape of X: {X.shape}, Shape of y: {y.shape}")
+        logger.info(f"Value counts of y: {y.value_counts().to_dict()}")
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -75,8 +76,8 @@ def train_and_save_model_for_event(event, df):
         f1 = f1_score(y_test, y_pred, zero_division=0)
         auc_roc = roc_auc_score(y_test, y_pred_proba) if len(np.unique(y_test)) > 1 else 0
 
-        logging.info(f"Model trained successfully for event: {event}")
-        logging.info(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}, AUC-ROC: {auc_roc}")
+        logger.info(f"Model trained successfully for event: {event}")
+        logger.info(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}, AUC-ROC: {auc_roc}")
 
         return {
             'event': event,
@@ -93,8 +94,8 @@ def train_and_save_model_for_event(event, df):
         }
 
     except Exception as e:
-        logging.error(f"Error processing event {event}: {str(e)}")
-        logging.exception("Detailed traceback:")
+        logger.error(f"Error processing event {event}: {str(e)}")
+        logger.exception("Detailed traceback:")
         return None
 
 def train_models_per_event(df):
@@ -105,7 +106,7 @@ def train_models_per_event(df):
             if result is not None:
                 results.append(result)
         except Exception as e:
-            logging.error(f"Error training/saving model for event '{event}': {e}")
+            logger.error(f"Error training/saving model for event '{event}': {e}")
     return results
 
 def process_results(results, df):
@@ -133,82 +134,82 @@ def process_results(results, df):
         
         # Save to CSV
         results_df.to_csv('data/model_results_binary.csv', index=False)
-        logging.info('Successfully wrote results to CSV file')
+        logger.info('Successfully wrote results to CSV file')
         
         # Save results to the database
         success, run_id = save_results(results_df)
         if success:
-            logging.info(f'Successfully wrote results to database with run_id: {run_id}')
+            logger.info(f'Successfully wrote results to database with run_id: {run_id}')
         else:
-            logging.error('Failed to write results to database')
+            logger.error('Failed to write results to database')
         
-        logging.info(f'Average accuracy score: {results_df["accuracy"].mean()}')
+        logger.info(f'Average accuracy score: {results_df["accuracy"].mean()}')
     except Exception as e:
-        logging.error(f"Error processing/saving results: {e}")
-        logging.exception("Detailed traceback:")
+        logger.error(f"Error processing/saving results: {e}")
+        logger.exception("Detailed traceback:")
 
 def main():
-    logging.info("Starting main function")
+    logger.info("Starting main function")
     
     # Get all news and price moves
-    logging.info("Calling get_news_price_moves")
+    logger.info("Calling get_news_price_moves")
     merged_df = get_news_price_moves()
     
-    logging.info(f"Shape of merged_df: {merged_df.shape}")
-    logging.info(f"Columns in merged_df: {merged_df.columns.tolist()}")
+    logger.info(f"Shape of merged_df: {merged_df.shape}")
+    logger.info(f"Columns in merged_df: {merged_df.columns.tolist()}")
     
     if merged_df.empty:
-        logging.error("No data retrieved from the database. Please check the SQL query and database connection.")
+        logger.error("No data retrieved from the database. Please check the SQL query and database connection.")
         return
     
-    logging.info(f"Value counts of actual_side: {merged_df['actual_side'].value_counts(dropna=False).to_dict()}")
-    logging.info(f"Number of non-null actual_side values: {merged_df['actual_side'].notnull().sum()}")
-    logging.info(f"Number of null actual_side values: {merged_df['actual_side'].isnull().sum()}")
+    logger.info(f"Value counts of actual_side: {merged_df['actual_side'].value_counts(dropna=False).to_dict()}")
+    logger.info(f"Number of non-null actual_side values: {merged_df['actual_side'].notnull().sum()}")
+    logger.info(f"Number of null actual_side values: {merged_df['actual_side'].isnull().sum()}")
     
     # Print out counts for each unique value in actual_side
     for value in merged_df['actual_side'].unique():
         count = (merged_df['actual_side'] == value).sum()
-        logging.info(f"Count of '{value}' in actual_side: {count}")
+        logger.info(f"Count of '{value}' in actual_side: {count}")
     
     # Ensure all required columns are present
     required_columns = ['id', 'content', 'actual_side']
     missing_columns = [col for col in required_columns if col not in merged_df.columns]
     
     if missing_columns:
-        logging.error(f"Missing required columns: {missing_columns}")
-        logging.info(f"Available columns: {merged_df.columns.tolist()}")
+        logger.error(f"Missing required columns: {missing_columns}")
+        logger.info(f"Available columns: {merged_df.columns.tolist()}")
         return
     
-    logging.info("All required columns are present")
+    logger.info("All required columns are present")
     
     # Remove rows with null values in required columns
     merged_df = merged_df.dropna(subset=required_columns)
-    logging.info(f"Shape after removing null values: {merged_df.shape}")
+    logger.info(f"Shape after removing null values: {merged_df.shape}")
     
     # Print some statistics about the data
-    logging.info(f"Number of unique events: {merged_df['event'].nunique()}")
-    logging.info(f"Event value counts:\n{merged_df['event'].value_counts()}")   
-    logging.info(f"Actual side value counts:\n{merged_df['actual_side'].value_counts()}")
-    logging.info(f"Number of rows with actual_side as 'UP' or 'DOWN': {merged_df['actual_side'].isin(['UP', 'DOWN']).sum()}")
+    logger.info(f"Number of unique events: {merged_df['event'].nunique()}")
+    logger.info(f"Event value counts:\n{merged_df['event'].value_counts()}")   
+    logger.info(f"Actual side value counts:\n{merged_df['actual_side'].value_counts()}")
+    logger.info(f"Number of rows with actual_side as 'UP' or 'DOWN': {merged_df['actual_side'].isin(['UP', 'DOWN']).sum()}")
     
     if merged_df['actual_side'].isin(['UP', 'DOWN']).sum() == 0:
-        logging.error("No valid 'UP' or 'DOWN' values in actual_side column. Cannot train models.")
+        logger.error("No valid 'UP' or 'DOWN' values in actual_side column. Cannot train models.")
         return
     
-    logging.info("Starting to train models for each event")
+    logger.info("Starting to train models for each event")
     # Train models for each event and save them
     results = train_models_per_event(merged_df)
-    logging.info(f"Number of events processed: {len(results)}")
+    logger.info(f"Number of events processed: {len(results)}")
 
     if not results:
-        logging.warning("No models were trained. Check the data and event filtering.")
+        logger.warning("No models were trained. Check the data and event filtering.")
         return
 
-    logging.info("Processing and saving results")
+    logger.info("Processing and saving results")
     # Process the results and save to a file and database
     process_results(results, merged_df)
 
-    logging.info("Main function completed")
+    logger.info("Main function completed")
 
 if __name__ == '__main__':
     main()

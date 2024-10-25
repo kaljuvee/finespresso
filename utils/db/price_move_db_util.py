@@ -8,8 +8,9 @@ import os
 from sqlalchemy.exc import IntegrityError
 import pandas as pd
 from utils.db.news_db_util import News
+from utils.logging.log_util import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -111,17 +112,17 @@ def get_news_price_moves():
     try:
         session = Session()
         
-        query = select(News.id, PriceMove.price_change_percentage).select_from(
+        query = select(News.id, News.content, News.title, News.event, PriceMove.price_change_percentage, PriceMove.daily_alpha).select_from(
             join(News, PriceMove, News.id == PriceMove.news_id)
         )
         
         result = session.execute(query)
-        df = pd.DataFrame(result.fetchall(), columns=['id', 'price_change_percentage'])
+        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 'price_change_percentage', 'daily_alpha'])
         
-        logging.info(f"Retrieved {len(df)} rows from news and price_moves tables")
+        logger.info(f"Retrieved {len(df)} rows from news and price_moves tables")
         return df
     except Exception as e:
-        logging.error(f"Error retrieving news and price moves: {str(e)}")
+        logger.error(f"Error retrieving news and price moves: {str(e)}")
         return pd.DataFrame()
     finally:
         session.close()
