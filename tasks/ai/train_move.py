@@ -106,15 +106,18 @@ def process_results(results, df):
         results_df['total_sample'] = results_df['event'].map(event_counts)
         results_df = results_df.sort_values(by='r2', ascending=False)
         
-        # Ensure correct data types
+        # Ensure correct data types with safeguards
         results_df['event'] = results_df['event'].astype(str)
-        results_df['mse'] = results_df['mse'].astype(float)
-        results_df['r2'] = results_df['r2'].astype(float)
-        results_df['mae'] = results_df['mae'].astype(float)
-        results_df['rmse'] = results_df['rmse'].astype(float)
-        results_df['test_sample'] = results_df['test_sample'].astype(int)
-        results_df['training_sample'] = results_df['training_sample'].astype(int)
-        results_df['total_sample'] = results_df['total_sample'].astype(int)
+        
+        # Handle potential non-finite values for float columns
+        float_columns = ['mse', 'r2', 'mae', 'rmse']
+        for col in float_columns:
+            results_df[col] = pd.to_numeric(results_df[col], errors='coerce').fillna(0).astype(float)
+        
+        # Handle potential non-finite values for integer columns
+        int_columns = ['test_sample', 'training_sample', 'total_sample']
+        for col in int_columns:
+            results_df[col] = pd.to_numeric(results_df[col], errors='coerce').fillna(0).astype(int)
         
         # Replace NaN values with None for database compatibility
         results_df = results_df.replace({np.nan: None})
@@ -124,9 +127,9 @@ def process_results(results, df):
         logger.info('Successfully wrote results to CSV file')
         
         # Save results to the database
-        success, run_id = save_regression_results(results_df)
+        success = save_regression_results(results_df)
         if success:
-            logger.info(f'Successfully wrote results to database with run_id: {run_id}')
+            logger.info('Successfully wrote results to database')
         else:
             logger.error('Failed to write results to database')
         
@@ -134,6 +137,67 @@ def process_results(results, df):
     except Exception as e:
         logger.error(f"Error processing/saving results: {e}")
         logger.exception("Detailed traceback:")
+
+# Add this new function after the existing train_and_save_model_for_event function
+
+def train_and_save_all_events_model(df):
+    try:
+        logger.info(f"Processing all events model, Number of samples: {len(df)}")
+        
+        # Check if 'content' is null or empty, use 'title' if so
+        df['text_to_process'] = df.apply(lambda row: row['title'] if pd.isnull(row['content']) or row['content'] == '' else row['content'], axis=1)
+        df['processed_content'] = df['text_to_process'].apply(preprocess)
+        
+        # Use price_change_percentage as the target variable
+        y = df['price_change_percentage']
+
+        tfidf = TfidfVectorizer(max_features=1000)
+        X = tfidf.fit_transform(df['processed_content'])
+
+        logger.info(f"Shape of X: {X.shape}, Shape of y: {y.shape}")
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        model = RandomForestRegressor()
+        model.fit(X_train, y_train)
+
+        # Create a directory for models if it doesn't exist
+        os.makedirs('models', exist_ok=True)
+
+        # Save model and vectorizer with 'all_events' name
+        model_filename = 'models/all_events_regression.joblib'
+        vectorizer_filename = 'models/all_events_tfidf_vectorizer_regression.joblib'
+
+        joblib.dump(model, model_filename)
+        joblib.dump(tfidf, vectorizer_filename)
+
+        y_pred = model.predict(X_test)
+
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        rmse = math.sqrt(mse)
+
+        logger.info(f"All events model trained successfully")
+        logger.info(f"MSE: {mse}, R2: {r2}, MAE: {mae}, RMSE: {rmse}")
+
+        return {
+            'event': 'all_events',
+            'mse': mse,
+            'r2': r2,
+            'mae': mae,
+            'rmse': rmse,
+            'test_sample': len(y_test),
+            'training_sample': len(y_train),
+            'total_sample': len(df),
+            'model_filename': model_filename,
+            'vectorizer_filename': vectorizer_filename
+        }
+
+    except Exception as e:
+        logger.error(f"Error processing all events model: {str(e)}")
+        logger.exception("Detailed traceback:")
+        return None
 
 def main():
     logger.info("Starting main function")
@@ -172,6 +236,14 @@ def main():
     # Train models for each event and save them
     results = train_models_per_event(merged_df)
     logger.info(f"Number of events processed: {len(results)}")
+
+    logger.info("Training all events model")
+    all_events_result = train_and_save_all_events_model(merged_df)
+    if all_events_result:
+        results.append(all_events_result)
+        logger.info("All events model added to results")
+    else:
+        logger.warning("Failed to train all events model")
 
     if not results:
         logger.warning("No models were trained. Check the data and event filtering.")

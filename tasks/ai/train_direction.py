@@ -98,6 +98,78 @@ def train_and_save_model_for_event(event, df):
         logger.exception("Detailed traceback:")
         return None
 
+def train_and_save_all_events_model(df):
+    try:
+        logger.info(f"Processing all events model, Number of samples: {len(df)}")
+        
+        # Filter out 'unknown' values
+        df = df[df['actual_side'].isin(['UP', 'DOWN'])].copy()
+        
+        logger.info(f"Value counts of actual_side after filtering: {df['actual_side'].value_counts().to_dict()}")
+        
+        if len(df) < 10:  # Arbitrary minimum number of samples
+            logger.warning(f"Not enough data for all events model after filtering. Skipping.")
+            return None
+
+        # Check if 'content' is null or empty, use 'title' if so
+        df['text_to_process'] = df.apply(lambda row: row['title'] if pd.isnull(row['content']) or row['content'] == '' else row['content'], axis=1)
+        df['processed_content'] = df['text_to_process'].apply(preprocess)
+        
+        # Use actual_side as the target variable
+        y = df['actual_side'].map({'UP': 1, 'DOWN': 0})
+        
+        tfidf = TfidfVectorizer(max_features=1000)
+        X = tfidf.fit_transform(df['processed_content'])
+
+        logger.info(f"Shape of X: {X.shape}, Shape of y: {y.shape}")
+        logger.info(f"Value counts of y: {y.value_counts().to_dict()}")
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        model = RandomForestClassifier()
+        model.fit(X_train, y_train)
+
+        # Create a directory for models if it doesn't exist
+        os.makedirs('models', exist_ok=True)
+
+        # Save model and vectorizer with 'all_events' name
+        model_filename = 'models/all_events_classifier_binary.joblib'
+        vectorizer_filename = 'models/all_events_tfidf_vectorizer_binary.joblib'
+
+        joblib.dump(model, model_filename)
+        joblib.dump(tfidf, vectorizer_filename)
+
+        y_pred = model.predict(X_test)
+        y_pred_proba = model.predict_proba(X_test)[:, 1]
+
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        recall = recall_score(y_test, y_pred, zero_division=0)
+        f1 = f1_score(y_test, y_pred, zero_division=0)
+        auc_roc = roc_auc_score(y_test, y_pred_proba)
+
+        logger.info(f"All events model trained successfully")
+        logger.info(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}, AUC-ROC: {auc_roc}")
+
+        return {
+            'event': 'all_events',
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'auc_roc': auc_roc,
+            'test_sample': len(y_test),
+            'training_sample': len(y_train),
+            'total_sample': len(df),
+            'model_filename': model_filename,
+            'vectorizer_filename': vectorizer_filename
+        }
+
+    except Exception as e:
+        logger.error(f"Error processing all events model: {str(e)}")
+        logger.exception("Detailed traceback:")
+        return None
+
 def train_models_per_event(df):
     results = []
     for event in df['event'].unique():
@@ -118,23 +190,18 @@ def process_results(results, df):
         results_df['total_sample'] = results_df['event'].map(event_counts)
         results_df = results_df.sort_values(by='accuracy', ascending=False)
         
-        # Ensure all required columns are present
-        required_columns = ['event', 'accuracy', 'precision', 'recall', 'f1_score', 'auc_roc', 'test_sample', 'training_sample', 'total_sample']
-        missing_columns = [col for col in required_columns if col not in results_df.columns]
-        if missing_columns:
-            logger.error(f"Missing required columns in results_df: {missing_columns}")
-            return
-        
-        # Ensure correct data types
+        # Ensure correct data types with safeguards
         results_df['event'] = results_df['event'].astype(str)
-        results_df['accuracy'] = results_df['accuracy'].astype(float)
-        results_df['precision'] = results_df['precision'].astype(float)
-        results_df['recall'] = results_df['recall'].astype(float)
-        results_df['f1_score'] = results_df['f1_score'].astype(float)
-        results_df['auc_roc'] = results_df['auc_roc'].astype(float)
-        results_df['test_sample'] = results_df['test_sample'].astype(int)
-        results_df['training_sample'] = results_df['training_sample'].astype(int)
-        results_df['total_sample'] = results_df['total_sample'].astype(int)
+        
+        # Handle potential non-finite values for float columns
+        float_columns = ['accuracy', 'precision', 'recall', 'f1_score', 'auc_roc']
+        for col in float_columns:
+            results_df[col] = pd.to_numeric(results_df[col], errors='coerce').fillna(0).astype(float)
+        
+        # Handle potential non-finite values for integer columns
+        int_columns = ['test_sample', 'training_sample', 'total_sample']
+        for col in int_columns:
+            results_df[col] = pd.to_numeric(results_df[col], errors='coerce').fillna(0).astype(int)
         
         # Replace NaN values with None for database compatibility
         results_df = results_df.replace({np.nan: None})
@@ -207,6 +274,14 @@ def main():
     # Train models for each event and save them
     results = train_models_per_event(merged_df)
     logger.info(f"Number of events processed: {len(results)}")
+
+    logger.info("Training all events model")
+    all_events_result = train_and_save_all_events_model(merged_df)
+    if all_events_result:
+        results.append(all_events_result)
+        logger.info("All events model added to results")
+    else:
+        logger.warning("Failed to train all events model")
 
     if not results:
         logger.warning("No models were trained. Check the data and event filtering.")
