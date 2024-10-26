@@ -1,7 +1,21 @@
 import streamlit as st
-from utils.db.instrument_db_util import insert_instrument
+from utils.db.instrument_db_util import insert_instrument, get_instrument_by_company_name
 
 st.title("Insert New Instrument")
+
+# Add search functionality
+search_company_name = st.text_input("Search by Company Name")
+search_button = st.button("Search")
+
+if search_button:
+    if search_company_name:
+        existing_instrument = get_instrument_by_company_name(search_company_name)
+        if existing_instrument:
+            st.warning(f"Instrument exists: {existing_instrument.to_dict()}. Use Update Instrument Page to make changes to instruments.")
+        else:
+            st.success("Instrument not found. You can add a new instrument below.")
+    else:
+        st.warning("Please enter a company name to search.")
 
 with st.form("insert_instrument_form"):
     issuer = st.text_input("Issuer")

@@ -68,14 +68,13 @@ def get_instrument_by_ticker(ticker):
     finally:
         session.close()
 
+# Replace the existing get_instrument_by_company_name function with this updated version
+
 def get_instrument_by_company_name(company_name):
     session = Session()
     try:
-        logger.info(f"Fetching instrument by company name: {company_name}")        
-        # Simple where condition on company name and issuer
-        query = select(Instrument).where(Instrument.issuer == company_name)
-        
-        return session.execute(query).scalars().first()
+        logger.info(f"Fetching instrument by company name: {company_name}")
+        return session.query(Instrument).filter(Instrument.issuer.ilike(f"%{company_name}%")).first()
     finally:
         session.close()
 
@@ -139,3 +138,13 @@ if __name__ == "__main__":
     Base.metadata.drop_all(engine, tables=[Instrument.__table__])
     Base.metadata.create_all(engine, tables=[Instrument.__table__])
     logger.info("Instrument table recreated successfully")
+
+# Add this new function after the existing functions
+
+def get_instrument_by_yf_ticker(yf_ticker):
+    session = Session()
+    try:
+        logger.info(f"Fetching instrument by Yahoo Finance ticker: {yf_ticker}")
+        return session.query(Instrument).filter_by(yf_ticker=yf_ticker).first()
+    finally:
+        session.close()
