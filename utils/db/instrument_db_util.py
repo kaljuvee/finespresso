@@ -148,3 +148,25 @@ def get_instrument_by_yf_ticker(yf_ticker):
         return session.query(Instrument).filter_by(yf_ticker=yf_ticker).first()
     finally:
         session.close()
+
+# Add this new function at the end of the file
+
+def get_distinct_instrument_fields():
+    session = Session()
+    try:
+        logger.info("Fetching distinct instrument fields")
+        asset_classes = session.query(Instrument.asset_class).distinct().order_by(Instrument.asset_class).all()
+        sectors = session.query(Instrument.sector).distinct().order_by(Instrument.sector).all()
+        exchanges = session.query(Instrument.exchange).distinct().order_by(Instrument.exchange).all()
+        exchange_codes = session.query(Instrument.exchange_code).distinct().order_by(Instrument.exchange_code).all()
+        countries = session.query(Instrument.country).distinct().order_by(Instrument.country).all()
+
+        return {
+            'asset_classes': [ac[0] for ac in asset_classes if ac[0]],
+            'sectors': [s[0] for s in sectors if s[0]],
+            'exchanges': [e[0] for e in exchanges if e[0]],
+            'exchange_codes': [ec[0] for ec in exchange_codes if ec[0]],
+            'countries': [c[0] for c in countries if c[0]]
+        }
+    finally:
+        session.close()

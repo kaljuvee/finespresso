@@ -1,7 +1,11 @@
 import streamlit as st
-from utils.db.instrument_db_util import insert_instrument, get_instrument_by_company_name
+from utils.db.instrument_db_util import insert_instrument, get_instrument_by_company_name, get_distinct_instrument_fields
 
 st.title("Insert New Instrument")
+
+# Load distinct fields into session state if not already present
+if 'distinct_fields' not in st.session_state:
+    st.session_state.distinct_fields = get_distinct_instrument_fields()
 
 # Add search functionality
 search_company_name = st.text_input("Search by Company Name")
@@ -22,11 +26,11 @@ with st.form("insert_instrument_form"):
     ticker = st.text_input("Ticker")
     yf_ticker = st.text_input("Yahoo Finance Ticker")
     isin = st.text_input("ISIN")
-    asset_class = st.text_input("Asset Class")
-    sector = st.text_input("Sector")
-    exchange = st.text_input("Exchange")
-    exchange_code = st.text_input("Exchange Code")
-    country = st.text_input("Country")
+    asset_class = st.selectbox("Asset Class", [""] + st.session_state.distinct_fields['asset_classes'])
+    sector = st.selectbox("Sector", [""] + st.session_state.distinct_fields['sectors'])
+    exchange = st.selectbox("Exchange", [""] + st.session_state.distinct_fields['exchanges'])
+    exchange_code = st.selectbox("Exchange Code", [""] + st.session_state.distinct_fields['exchange_codes'])
+    country = st.selectbox("Country", [""] + st.session_state.distinct_fields['countries'])
     url = st.text_input("URL")
 
     submit_button = st.form_submit_button("Insert Instrument")
