@@ -25,7 +25,7 @@ def filter_new_instruments(new_df, existing_df):
     return new_instruments
 
 def main():
-    file_path = 'data/instrument_nasdaq_altenergy.csv'
+    file_path = 'data/instrument_nasdaq_semiconductors.csv'
     new_df = read_csv_to_df(file_path)
     
     logger.info(f"Original dataframe shape: {new_df.shape}")

@@ -23,6 +23,27 @@ df['Delete'] = False
 # Define sortable columns
 sortable_columns = ['ticker', 'yf_ticker', 'issuer', 'id', 'isin', 'asset_class', 'sector', 'exchange', 'exchange_code', 'country', 'url']
 
+# Custom function to handle None values when sorting
+def sort_key(value):
+    return '' if value is None else str(value)
+
+# Add multiselect filters
+col1, col2, col3 = st.columns(3)
+with col1:
+    selected_exchanges = st.multiselect("Filter by Exchange", options=sorted(df['exchange'].unique(), key=sort_key))
+with col2:
+    selected_countries = st.multiselect("Filter by Country", options=sorted(df['country'].unique(), key=sort_key))
+with col3:
+    selected_sectors = st.multiselect("Filter by Sector", options=sorted(df['sector'].unique(), key=sort_key))
+
+# Apply filters
+if selected_exchanges:
+    df = df[df['exchange'].isin(selected_exchanges)]
+if selected_countries:
+    df = df[df['country'].isin(selected_countries)]
+if selected_sectors:
+    df = df[df['sector'].isin(selected_sectors)]
+
 # Sorting options
 col1, col2, col3 = st.columns([2, 2, 1])
 with col1:
@@ -36,7 +57,10 @@ with col3:
 
 # Custom sorting function
 def sort_dataframe(df, column, ascending):
-    return df.sort_values(by=column, ascending=ascending, key=lambda x: x.astype(str).fillna(''))
+    if column == 'id':
+        return df.sort_values(by=column, ascending=ascending, key=lambda x: pd.to_numeric(x, errors='coerce'))
+    else:
+        return df.sort_values(by=column, ascending=ascending, key=lambda x: x.fillna('').astype(str))
 
 # Sort the dataframe
 df_sorted = sort_dataframe(df, sort_column, sort_order == "Ascending")

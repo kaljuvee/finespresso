@@ -1,0 +1,66 @@
+issuer,ticker,yf_ticker,isin,asset_class,sector,exchange,exchange_code,country,url
+"ACM Research, Inc.",ACMR,ACMR,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ACMR:NASDAQ
+NVE Corporation,NVEC,NVEC,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NVEC:NASDAQ
+"PDF Solutions, Inc.",PDFS,PDFS,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PDFS:NASDAQ
+"Advanced Micro Devices, Inc.",AMD,AMD,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AMD:NASDAQ
+POET Technologies Inc.,POET,POET,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/POET:NASDAQ
+"Solitron Devices, Inc.",SODI,SODI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SODI:NASDAQ
+ASML Holding N.V.,ASML,ASML,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ASML:NASDAQ
+"Micron Technology, Inc.",MU,MU,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MU:NASDAQ
+"Himax Technologies, Inc.",HIMX,HIMX,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/HIMX:NASDAQ
+"Advanced Micro Devices, Inc.",AMD,AMD,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AMD:NASDAQ
+Dragonfly Energy Holdings Corp.,DFLI,DFLI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/DFLI:NASDAQ
+Unknown,ASMPT,ASMPT,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ASMPT:NASDAQ
+NXP Semiconductors N.V.,NXPI,NXPI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NXPI:NASDAQ
+"Allegro MicroSystems, Inc.",ALGM,ALGM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALGM:NASDAQ
+"FormFactor, Inc.",FORM,FORM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/FORM:NASDAQ
+ASM International NV,ASM.AS,ASM.AS,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ASM.AS:NASDAQ
+Silicon Motion Technology Corporation,SIMO,SIMO,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SIMO:NASDAQ
+QuickLogic Corporation,QUIK,QUIK,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/QUIK:NASDAQ
+"Himax Technologies, Inc.",HIMX,HIMX,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/HIMX:NASDAQ
+STMicroelectronics N.V.,STM,STM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/STM:NASDAQ
+Soitec SA,SOI.PA,SOI.PA,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SOI.PA:NASDAQ
+"Inspire Medical Systems, Inc.",INSP,INSP,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/INSP:NASDAQ
+Riber S.A.,ALRIB.PA,ALRIB.PA,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALRIB.PA:NASDAQ
+Unknown,AXUS-USD,AXUS-USD,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AXUS-USD:NASDAQ
+"Ambarella, Inc.",AMBA,AMBA,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AMBA:NASDAQ
+M3 Capital Corp.,MCT-P.V,MCT-P.V,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MCT-P.V:NASDAQ
+"Applied Materials, Inc.",AMAT,AMAT,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AMAT:NASDAQ
+"FTC Solar, Inc.",FTCI,FTCI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/FTCI:NASDAQ
+Broadcom Inc.,AVGO,AVGO,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AVGO:NASDAQ
+"FTC Solar, Inc.",FTCI,FTCI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/FTCI:NASDAQ
+"GoHealth, Inc.",GOCO,GOCO,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/GOCO:NASDAQ
+Tower Semiconductor Ltd.,TSEM,TSEM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TSEM:NASDAQ
+"Actuate Therapeutics, Inc. Common stock",ACTU,ACTU,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ACTU:NASDAQ
+Gilat Satellite Networks Ltd.,GILT,GILT,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/GILT:NASDAQ
+"BlackRock, Inc.",BLK,BLK,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BLK:NASDAQ
+"TPG RE Finance Trust, Inc.",TRTX,TRTX,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TRTX:NASDAQ
+"Monarch Casino & Resort, Inc.",MCRI,MCRI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MCRI:NASDAQ
+Digitalist Group Plc,DIGIGR.HE,DIGIGR.HE,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/DIGIGR.HE:NASDAQ
+SEALSQ Corp,LAES,LAES,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/LAES:NASDAQ
+Sify Technologies Limited,SIFY,SIFY,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SIFY:NASDAQ
+EverCommerce Inc.,EVCM,EVCM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/EVCM:NASDAQ
+ASUSTeK Computer Inc.,ASUUY,ASUUY,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ASUUY:NASDAQ
+NextNav Inc.,NN,NN,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NN:NASDAQ
+"Intapp, Inc.",INTA,INTA,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/INTA:NASDAQ
+SecureWorks Corp.,SCWX,SCWX,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SCWX:NASDAQ
+Artificial Intelligence Technology Solutions Inc.,AITX,AITX,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/AITX:NASDAQ
+Wearable Devices Ltd.,WLDSW,WLDSW,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/WLDSW:NASDAQ
+Mobile-health Network Solutions,MNDR,MNDR,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MNDR:NASDAQ
+"Sacks Parente Golf, Inc.",SPGC,SPGC,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SPGC:NASDAQ
+"Phunware, Inc.",PHUN,PHUN,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PHUN:NASDAQ
+STMicroelectronics N.V.,STM,STM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/STM:NASDAQ
+Microchip Technology Incorporated,MCHP,MCHP,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MCHP:NASDAQ
+VERSES AI Inc.,VRSSF,VRSSF,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/VRSSF:NASDAQ
+Dayforce Inc,DAY,DAY,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/DAY:NASDAQ
+Telos Corporation,TLS,TLS,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TLS:NASDAQ
+"Bullfrog AI Holdings, Inc.",BFRG,BFRG,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BFRG:NASDAQ
+EverCommerce Inc.,EVCM,EVCM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/EVCM:NASDAQ
+Canoo Inc.,GOEV,GOEV,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/GOEV:NASDAQ
+"Mercury Systems, Inc.",MRCY,MRCY,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/MRCY:NASDAQ
+Bilibili Inc.,BILI,BILI,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BILI:NASDAQ
+Tower Semiconductor Ltd.,TSEM,TSEM,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TSEM:NASDAQ
+Gilat Satellite Networks Ltd.,GILT,GILT,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/GILT:NASDAQ
+Riber S.A.,ALRIB.PA,ALRIB.PA,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALRIB.PA:NASDAQ
+Innofactor Oyj,IFA1V.HE,IFA1V.HE,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/IFA1V.HE:NASDAQ
+"Phunware, Inc.",PHUN,PHUN,,equity,semiconductors,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PHUN:NASDAQ
