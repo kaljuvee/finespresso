@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from bs4 import BeautifulSoup
-from tasks.ai.predict import predict
+from utils.ai.predict import predict
 import re
 from utils.enrich_util import determine_event_from_content
 from utils.static.tag_util import tag_list

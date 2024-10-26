@@ -4,14 +4,13 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import TIMESTAMP
-import logging
 from datetime import datetime
 import pandas as pd
 import streamlit as st
 from sqlalchemy import exists
+from utils.logging.log_util import get_logger
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+logger = get_logger(__name__)
 # Load environment variables
 load_dotenv()
 
@@ -86,13 +85,13 @@ def remove_duplicates(session, news_items):
         else:
             duplicate_count += 1
     
-    logging.info(f"Found {duplicate_count} duplicate items")
-    logging.info(f"Keeping {len(unique_items)} unique items")
+    logger.info(f"Found {duplicate_count} duplicate items")
+    logger.info(f"Keeping {len(unique_items)} unique items")
     
     return unique_items, duplicate_count
 
 def map_to_db(df, source):
-    logging.info(f"Mapping dataframe to News objects for source: {source}")
+    logger.info(f"Mapping dataframe to News objects for source: {source}")
     
     news_items = []
     for _, row in df.iterrows():
@@ -121,7 +120,7 @@ def map_to_db(df, source):
         )
         news_items.append(news_item)
     
-    logging.info(f"Created {len(news_items)} News objects")
+        logger.info(f"Created {len(news_items)} News objects")
     
     return news_items
 
@@ -141,12 +140,12 @@ def remove_duplicate_news():
         updated_count = session.query(News).filter(News.status == 'raw').update({News.status: 'clean'}, synchronize_session='fetch')
         
         session.commit()
-        logging.info(f"Successfully removed {deleted_count} duplicate news items.")
-        logging.info(f"Updated status to 'clean' for {updated_count} news items.")
+        logger.info(f"Successfully removed {deleted_count} duplicate news items.")
+        logger.info(f"Updated status to 'clean' for {updated_count} news items.")
         
         return deleted_count, updated_count
     except Exception as e:
-        logging.error(f"An error occurred while removing duplicates and updating status: {e}")
+        logger.error(f"An error occurred while removing duplicates and updating status: {e}")
         session.rollback()
         return 0, 0
     finally:
@@ -192,22 +191,21 @@ def get_news_df_date_range(publishers, start_date, end_date):
         session.close()
 
 def get_news_without_tickers():
-    logging.info("Retrieving news items without tickers from database")
-    
+    logger.info("Retrieving news items without tickers from database")
     session = Session()
     try:
         query = select(News).where(News.ticker.is_(None))
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        logging.info(f"Retrieved {count} news items without tickers")
+        logger.info(f"Retrieved {count} news items without tickers")
         
         return news_items
     finally:
         session.close()
 
 def update_news_tickers(news_items_with_data):
-    logging.info("Updating database with extracted tickers, yf_tickers, and instrument IDs")
+    logger.info("Updating database with extracted tickers, yf_tickers, and instrument IDs")
     
     session = Session()
     try:
@@ -231,34 +229,34 @@ def update_news_tickers(news_items_with_data):
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
                 session.commit()
-                logging.info(f"Processed {index + 1}/{total_items} items")
+                logger.info(f"Processed {index + 1}/{total_items} items")
         
-        logging.info(f"Successfully updated {updated_count} news items with tickers, yf_tickers, and instrument IDs")
+        logger.info(f"Successfully updated {updated_count} news items with tickers, yf_tickers, and instrument IDs")
     except Exception as e:
-        logging.error(f"Error updating news items: {str(e)}")
+        logger.error(f"Error updating news items: {str(e)}")
         session.rollback()
     finally:
         session.close()
 
 def update_news_status(news_ids, new_status):
-    logging.info(f"Updating status to '{new_status}' for {len(news_ids)} news items")
+    logger.info(f"Updating status to '{new_status}' for {len(news_ids)} news items")
     
     session = Session()
     try:
         updated_count = session.query(News).filter(News.id.in_(news_ids)).update({News.status: new_status}, synchronize_session='fetch')
         session.commit()
-        logging.info(f"Successfully updated status for {updated_count} news items")
+        logger.info(f"Successfully updated status for {updated_count} news items")
         
         return updated_count
     except Exception as e:
-        logging.error(f"An error occurred while updating news status: {e}")
+        logger.error(f"An error occurred while updating news status: {e}")
         session.rollback()
         return 0
     finally:
         session.close()
 
 def get_news_without_company(publisher):
-    logging.info(f"Retrieving news items without company names for publisher: {publisher}")
+    logger.info(f"Retrieving news items without company names for publisher: {publisher}")
     
     session = Session()
     try:
@@ -269,15 +267,15 @@ def get_news_without_company(publisher):
         result = session.execute(query)
         news_items = result.scalars().all()
         count = len(news_items)
-        logging.info(f"Retrieved {count} news items without company names for {publisher}")
+        logger.info(f"Retrieved {count} news items without company names for {publisher}")
         
         return news_items
     finally:
         session.close()
 
 def update_companies(enriched_df):
-    logging.info("Updating database with enriched company names")
-    
+    logger.info("Updating database with enriched company names")
+
     session = Session()
     try:
         updated_count = 0
@@ -289,18 +287,18 @@ def update_companies(enriched_df):
                 updated_count += 1
             
             if (index + 1) % 10 == 0 or index == total_items - 1:
-                logging.info(f"Updated {index + 1}/{total_items} items")
+                logger.info(f"Updated {index + 1}/{total_items} items")
         
         session.commit()
-        logging.info(f"Successfully updated {updated_count} news items with company names")
+        logger.info(f"Successfully updated {updated_count} news items with company names")
     except Exception as e:
-        logging.error(f"Error updating company names: {str(e)}")
+        logger.error(f"Error updating company names: {str(e)}")
         session.rollback()
     finally:
         session.close()
 
 def get_news_by_id(news_id):
-    logging.info(f"Retrieving news item with id: {news_id}")
+    logger.info(f"Retrieving news item with id: {news_id}")
     
     session = Session()
     try:
@@ -332,13 +330,13 @@ def get_news_by_id(news_id):
                 'event': news_item.event
             }])
         else:
-            logging.warning(f"No news item found with id: {news_id}")
+            logger.warning(f"No news item found with id: {news_id}")
             return pd.DataFrame()
     finally:
         session.close()
 
 def get_news_df(publisher=None):
-    logging.info(f"Retrieving all news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
+    logger.info(f"Retrieving all news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
     
     session = Session()
     try:
@@ -374,13 +372,13 @@ def get_news_df(publisher=None):
         } for item in news_items]
         
         df = pd.DataFrame(data)
-        logging.info(f"Retrieved {len(df)} news items")
+        logger.info(f"Retrieved {len(df)} news items")
         return df
     finally:
         session.close()
 
 def get_news_latest_df(publisher=None):
-    logging.info(f"Retrieving latest 1000 news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
+    logger.info(f"Retrieving latest 1000 news items ordered by published date{' for publisher: ' + publisher if publisher else ''}")
     
     session = Session()
     try:
@@ -418,13 +416,13 @@ def get_news_latest_df(publisher=None):
         } for item in news_items]
         
         df = pd.DataFrame(data)
-        logging.info(f"Retrieved {len(df)} latest news items")
+        logger.info(f"Retrieved {len(df)} latest news items")
         return df
     finally:
         session.close()
 
 def update_news_predictions(df):
-    logging.info("Updating news table with predictions")
+    logger.info("Updating news table with predictions")
     
     session = Session()
     try:
@@ -435,31 +433,31 @@ def update_news_predictions(df):
             if news_item:
                 if pd.notnull(row['predicted_side']):
                     news_item.predicted_side = row['predicted_side']
-                    logging.info(f"Updating predicted_side for news_id {row['news_id']}: {row['predicted_side']}")
+                    logger.info(f"Updating predicted_side for news_id {row['news_id']}: {row['predicted_side']}")
                 else:
-                    logging.warning(f"Null predicted_side for news_id {row['news_id']}")
+                    logger.warning(f"Null predicted_side for news_id {row['news_id']}")
                 if pd.notnull(row['predicted_move']):
                     news_item.predicted_move = row['predicted_move']
-                    logging.info(f"Updating predicted_move for news_id {row['news_id']}: {row['predicted_move']}")
+                    logger.info(f"Updating predicted_move for news_id {row['news_id']}: {row['predicted_move']}")
                 else:
-                    logging.warning(f"Null predicted_move for news_id {row['news_id']}")
+                    logger.warning(f"Null predicted_move for news_id {row['news_id']}")
                 updated_count += 1
             else:
-                logging.warning(f"No news item found for news_id {row['news_id']}")
+                logger.warning(f"No news item found for news_id {row['news_id']}")
             
             if (index + 1) % 100 == 0 or index == total_items - 1:
                 session.commit()
-                logging.info(f"Updated {index + 1}/{total_items} items")
+                logger.info(f"Updated {index + 1}/{total_items} items")
         
-        logging.info(f"Successfully updated {updated_count} news items with predictions")
+        logger.info(f"Successfully updated {updated_count} news items with predictions")
     except Exception as e:
-        logging.error(f"Error updating news predictions: {str(e)}")
+        logger.error(f"Error updating news predictions: {str(e)}")
         session.rollback()
     finally:
         session.close()
 
 def update_records(df):
-    logging.info(f"Updating {len(df)} records in the database")
+    logger.info(f"Updating {len(df)} records in the database")
     
     session = Session()
     try:
@@ -483,19 +481,19 @@ def update_records(df):
             
             if (index + 1) % 100 == 0 or index == len(df) - 1:
                 session.commit()
-                logging.info(f"Updated {updated_count}/{index + 1} records")
+                logger.info(f"Updated {updated_count}/{index + 1} records")
         
-        logging.info(f"Successfully updated {updated_count} records")
+        logger.info(f"Successfully updated {updated_count} records")
         return updated_count
     except Exception as e:
-        logging.error(f"Error updating records: {str(e)}")
+        logger.error(f"Error updating records: {str(e)}")
         session.rollback()
         return 0
     finally:
         session.close()
 
 def get_news_by_event(event):
-    logging.info(f"Retrieving news items for event: {event}")
+    logger.info(f"Retrieving news items for event: {event}")
     
     session = Session()
     try:
