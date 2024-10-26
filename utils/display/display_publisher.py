@@ -35,9 +35,8 @@ def display_publisher(publisher, page, items_per_page):
     # Handle None/null values safely
     df['event'] = df['event'].apply(lambda x: x.replace('_', ' ').capitalize() if isinstance(x, str) else '')
 
-    # Multiply predicted_move by 100 and format as percentage
-    df['Expected Move (%)'] = df['predicted_move'].apply(lambda x: x * 100 if pd.notnull(x) else x)
-    df['Expected Move (%)'] = df['Expected Move (%)'].apply(format_percentage)
+    # Format the predicted_move as percentage without multiplying by 100
+    df['Expected Move (%)'] = df['predicted_move'].apply(format_percentage)
 
     # Add new column for Probability % (Direction)
 
