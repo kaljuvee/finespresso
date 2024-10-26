@@ -16,6 +16,7 @@ from tasks.enrich.enrich_reason import enrich_reason
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 sector = 'biotech'
+
 # Initialize rss_dict as a global variable
 rss_dict = {}
 

@@ -1,0 +1,12 @@
+issuer,ticker,yf_ticker,isin,asset_class,exchange,exchange_code,country,url
+"Turbo Energy, S.A.",TURB,TURB,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/TURB:NASDAQ
+"High Wire Networks, Inc.",HWNI,HWNI,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/HWNI:NASDAQ
+Sky Quarry Inc.,SKYQ,SKYQ,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SKYQ:NASDAQ
+North American Construction Group Ltd.,NOA.TO,NOA.TO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/NOA.TO:NASDAQ
+Boralex Inc.,BLX.TO,BLX.TO,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BLX.TO:NASDAQ
+Pineapple Energy Inc.,PEGY,PEGY,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/PEGY:NASDAQ
+Scatec ASA,SCATC.OL,SCATC.OL,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SCATC.OL:NASDAQ
+U.S. Solar Fund plc,SOLR.V,SOLR.V,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SOLR.V:NASDAQ
+"Solid Power, Inc.",SLDP,SLDP,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/SLDP:NASDAQ
+Beam Global,BEEM,BEEM,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/BEEM:NASDAQ
+Albioma SA,ALGBE.PA,ALGBE.PA,,equity,nasdaq_us,NASDAQ,US,https://www.google.com/finance/quote/ALGBE.PA:NASDAQ
