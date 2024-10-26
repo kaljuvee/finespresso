@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, Float, select, delete, func, text
+from sqlalchemy import Column, Integer, String, Text, select, delete, update, func
 from sqlalchemy.orm import sessionmaker
 from utils.db.news_db_util import Base, engine
 from utils.logging.log_util import get_logger
 import pandas as pd
-import re
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 logger = get_logger(__name__)
 
@@ -15,7 +15,7 @@ class Instrument(Base):
     id = Column(Integer, primary_key=True)
     issuer = Column(String(255))
     ticker = Column(String(100))
-    yf_ticker = Column(String(100))
+    yf_ticker = Column(String(100), unique=True, index=True)
     isin = Column(String(100))
     asset_class = Column(String(100))
     sector = Column(String(100))
@@ -24,52 +24,39 @@ class Instrument(Base):
     country = Column(String(10))
     url = Column(Text)
 
-def save_instrument(df):
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+def save_instrument(instrument_data):
     session = Session()
     try:
-        logger.info(f"Starting to process {len(df)} instruments")
-        
-        # Filter out rows where yf_ticker is None or empty string
-        df_valid = df[df['yf_ticker'].notna() & (df['yf_ticker'] != '')]
-        
-        # Check for existing yf_tickers in the database
-        existing_instruments = session.query(Instrument).filter(
-            Instrument.yf_ticker.in_(df_valid['yf_ticker'].tolist())
-        ).all()
-        existing_yf_tickers = {instrument.yf_ticker: instrument for instrument in existing_instruments}
-        
-        new_instruments = 0
-        updated_instruments = 0
-        
-        for _, row in df_valid.iterrows():
-            yf_ticker = str(row['yf_ticker'])
-            if yf_ticker in existing_yf_tickers:
-                # Update existing instrument
-                instrument = existing_yf_tickers[yf_ticker]
-                updated_instruments += 1
+        if 'id' in instrument_data and instrument_data['id']:
+            # Update existing instrument
+            instrument = session.query(Instrument).get(instrument_data['id'])
+            if instrument:
+                for key, value in instrument_data.items():
+                    if hasattr(instrument, key) and key != 'id':
+                        setattr(instrument, key, value)
+                logger.info(f"Updated instrument with ID: {instrument.id}")
             else:
-                # Create new instrument
-                instrument = Instrument()
-                new_instruments += 1
-            
-            # Update all fields
-            instrument.issuer = None if pd.isna(row['issuer']) else str(row['issuer'])
-            instrument.ticker = None if pd.isna(row['ticker']) else str(row['ticker'])
-            instrument.yf_ticker = yf_ticker
-            instrument.isin = None if pd.isna(row['isin']) else str(row['isin'])
-            instrument.asset_class = None if pd.isna(row['asset_class']) else str(row['asset_class'])
-            instrument.exchange = None if pd.isna(row['exchange']) else str(row['exchange'])
-            instrument.exchange_code = None if pd.isna(row['exchange_code']) else str(row['exchange_code'])
-            instrument.country = None if pd.isna(row['country']) else str(row['country'])
-            instrument.url = None if pd.isna(row['url']) else str(row['url'])
-            
+                logger.warning(f"Instrument with ID {instrument_data['id']} not found")
+                return None
+        else:
+            # Create new instrument
+            instrument = Instrument(**instrument_data)
             session.add(instrument)
-        
+            logger.info("Created new instrument")
+
         session.commit()
-        logger.info(f"Processed {len(df_valid)} instruments. New: {new_instruments}, Updated: {updated_instruments}")
+        return instrument.to_dict()
+    except SQLAlchemyError as e:
+        session.rollback()
+        logger.exception(f"A database error occurred while saving instrument: {e}")
+        raise Exception(f"A database error occurred: {str(e)}")
     except Exception as e:
         session.rollback()
-        logger.error(f"An error occurred while saving instruments: {e}")
+        logger.exception(f"An unexpected error occurred while saving instrument: {e}")
+        raise
     finally:
         session.close()
 
@@ -114,6 +101,35 @@ def delete_instruments(ids):
     except Exception as e:
         session.rollback()
         logger.error(f"An error occurred while deleting instruments: {e}")
+    finally:
+        session.close()
+
+def insert_instrument(instrument_data):
+    session = Session()
+    try:
+        # Check if yf_ticker already exists
+        existing_instrument = session.query(Instrument).filter_by(yf_ticker=instrument_data['yf_ticker']).first()
+        if existing_instrument:
+            return None, f"Instrument with yf_ticker '{instrument_data['yf_ticker']}' already exists."
+
+        # Create new instrument
+        instrument = Instrument(**instrument_data)
+        session.add(instrument)
+        session.commit()
+        logger.info(f"Inserted new instrument with ID: {instrument.id}")
+        return instrument.to_dict(), "Instrument inserted successfully."
+    except IntegrityError as e:
+        session.rollback()
+        logger.exception(f"An integrity error occurred while inserting instrument: {e}")
+        return None, f"An integrity error occurred: {str(e)}"
+    except SQLAlchemyError as e:
+        session.rollback()
+        logger.exception(f"A database error occurred while inserting instrument: {e}")
+        return None, f"A database error occurred: {str(e)}"
+    except Exception as e:
+        session.rollback()
+        logger.exception(f"An unexpected error occurred while inserting instrument: {e}")
+        return None, f"An unexpected error occurred: {str(e)}"
     finally:
         session.close()
 

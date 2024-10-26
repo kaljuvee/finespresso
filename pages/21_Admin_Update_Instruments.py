@@ -4,7 +4,11 @@ from utils.db.instrument_db_util import save_instrument, get_all_instruments, de
 
 st.set_page_config(layout="wide")  # Set the page to wide mode
 
-st.title("Admin Instruments")
+st.title("Update Instruments")
+
+# Add a Refresh button at the top of the page
+if st.button("Refresh Data", key="refresh_button"):
+    st.rerun()
 
 # Load existing instruments
 df = get_all_instruments()
@@ -45,15 +49,11 @@ if selected_sectors:
     df = df[df['sector'].isin(selected_sectors)]
 
 # Sorting options
-col1, col2, col3 = st.columns([2, 2, 1])
+col1, col2 = st.columns(2)
 with col1:
     sort_column = st.selectbox("Sort by", sortable_columns)
 with col2:
     sort_order = st.radio("Sort order", ("Ascending", "Descending"), horizontal=True)
-with col3:
-    if st.button("Add New Row"):
-        new_row = pd.DataFrame([[None] * len(df.columns)], columns=df.columns)
-        df = pd.concat([df, new_row], ignore_index=True)
 
 # Custom sorting function
 def sort_dataframe(df, column, ascending):
@@ -135,8 +135,32 @@ edited_df = st.data_editor(
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Save Changes", key="save_button"):
-        save_instrument(edited_df[edited_df['Delete'] == False].drop('Delete', axis=1))
-        st.success("Instruments saved successfully!")
+        try:
+            df_to_save = edited_df[edited_df['Delete'] == False].drop('Delete', axis=1)
+            
+            updated_instruments = []
+            with st.spinner('Updating instruments...'):
+                for _, row in df_to_save.iterrows():
+                    instrument_data = row.to_dict()
+                    updated_instrument = save_instrument(instrument_data)
+                    if updated_instrument:
+                        updated_instruments.append(updated_instrument)
+            
+            updated_count = len(updated_instruments)
+            st.success(f"Instruments updated successfully! {updated_count} instruments updated.")
+            
+            if updated_count > 0:
+                st.write("Updated Instruments:")
+                updated_df = pd.DataFrame(updated_instruments)
+                st.dataframe(updated_df)
+            else:
+                st.warning("No instruments were updated. No changes were necessary.")
+            
+            # Refresh the data
+            st.rerun()
+        except Exception as e:
+            st.error(f"An error occurred while updating instruments: {str(e)}")
+            logger.exception("Error in save_instrument")
 
 with col2:
     if st.button("Delete Selected", key="delete_button"):
@@ -144,6 +168,7 @@ with col2:
         if not to_delete.empty:
             delete_instruments(to_delete['id'].tolist())
             st.success(f"{len(to_delete)} instruments deleted successfully!")
+            st.rerun()
         else:
             st.warning("No instruments selected for deletion.")
 
