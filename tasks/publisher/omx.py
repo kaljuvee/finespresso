@@ -1,16 +1,18 @@
 import asyncio
 from playwright.async_api import async_playwright
 import pandas as pd
-import logging
-from utils.db.news_db_util import map_to_db, add_news_items, remove_duplicates
+from utils.db.news_db_util import map_to_db, add_news_items
 from datetime import datetime
 import pytz
 from tasks.enrich.enrich_ticker import process_publisher
-from tasks.enrich.enrich_event import enrich_tag_from_url
+from utils.enrich_util import enrich_tag_from_url
 from tasks.ai.predict import predict
 from tasks.enrich.enrich_reason import enrich_reason
+from utils.logging.log_util import get_logger
+from utils.db.instrument_db_util import get_instrument_by_company_name
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# Initialize logger
+logger = get_logger(__name__)
 
 DEFAULT_URL = "https://www.nasdaqomxnordic.com/news/companynews"
 DEFAULT_BROWSER = "firefox"
@@ -18,18 +20,18 @@ TIMEZONE = "CET"
 
 async def scrape_nasdaq_news():
     async with async_playwright() as p:
-        logging.info(f"Launching {DEFAULT_BROWSER} browser")
+        logger.info(f"Launching {DEFAULT_BROWSER} browser")
         browser = await p.firefox.launch(headless=True)
         context = await browser.new_context(ignore_https_errors=True)
         page = await context.new_page()
 
-        logging.info(f"Navigating to {DEFAULT_URL}")
+        logger.info(f"Navigating to {DEFAULT_URL}")
         await page.goto(DEFAULT_URL)
 
-        logging.info("Waiting for the news table to load")
+        logger.info("Waiting for the news table to load")
         await page.wait_for_selector('#searchNewsTableId')
 
-        logging.info("Extracting news data")
+        logger.info("Extracting news data")
         news_data = []
         rows = await page.query_selector_all('#searchNewsTableId tbody tr')
         
@@ -69,78 +71,70 @@ async def scrape_nasdaq_news():
         await browser.close()
         
         df = pd.DataFrame(news_data)
-        logging.info(f"Scraped {len(df)} news items")
+        logger.info(f"Scraped {len(df)} news items")
         return df
 
 async def main():
     try:
         df = await scrape_nasdaq_news()
-        logging.info(f"Got OMX dataframe with {len(df)} rows")
-        logging.info(f"Sample data:\n{df.head()}")
+        logger.info(f"Got OMX dataframe with {len(df)} rows")
+        logger.info(f"Sample data:\n{df.head()}")
         
-        # Perform duplicate removal directly on the DataFrame
         news_items = map_to_db(df, 'omx')
-        unique_items, duplicate_count = remove_duplicates(news_items)
-        logging.info(f"OMX: {duplicate_count} duplicate news items removed")
+        logger.info(f"OMX: Processing all {len(news_items)} scraped items")
 
-        # Convert unique_items back to DataFrame for further processing
-        df = pd.DataFrame([{
-            'title': item.title,
-            'link': item.link,
-            'company': item.company,
-            'published_date': item.published_date,
-            'content': item.content,
-            'reason': item.reason,
-            'industry': item.industry,
-            'publisher_topic': item.publisher_topic,
-            'event': item.event,
-            'publisher': item.publisher,
-            'status': item.status,
-            'instrument_id': item.instrument_id,
-            'yf_ticker': item.yf_ticker,
-            'ticker': item.ticker,
-            'published_date_gmt': item.published_date_gmt,
-            'timezone': item.timezone,
-            'publisher_summary': item.publisher_summary,
-            'ticker_url': item.ticker_url,
-            'predicted_side': item.predicted_side,
-            'predicted_move': item.predicted_move
-        } for item in unique_items])
+        # Convert news_items to DataFrame for further processing
+        df = pd.DataFrame([item.__dict__ for item in news_items])
+
+        # Enrich instrument ID
+        logger.info("Starting instrument ID enrichment")
+        for index, row in df.iterrows():
+            instrument = get_instrument_by_company_name(row['company'])
+            if instrument:
+                df.at[index, 'instrument_id'] = instrument.id
+                df.at[index, 'ticker'] = instrument.ticker
+                df.at[index, 'yf_ticker'] = instrument.yf_ticker
+                logger.info(f"Enriched instrument ID for {row['company']}: {instrument.id}")
+            else:
+                logger.info(f"No instrument found for company: {row['company']}")
+        logger.info("Instrument ID enrichment completed")
 
         # 1. Enrich event
         try:
-            df['event'] = None  # Ensure 'event' column exists
             df = enrich_tag_from_url(df)
-            logging.info("Event enrichment completed successfully.")
+            logger.info("Event enrichment completed successfully.")
+            for index, row in df.iterrows():
+                logger.info(f"Event for {row['link']}: {row['event']}")
         except Exception as e:
-            logging.error(f"Error during event enrichment: {str(e)}", exc_info=True)
+            logger.error(f"Error during event enrichment: {str(e)}", exc_info=True)
         
         # 2. Perform predictions
         try:
             df = predict(df)
-            logging.info("Predictions completed successfully.")
+            logger.info("Predictions completed successfully.")
         except Exception as e:
-            logging.error(f"Error during predictions: {str(e)}", exc_info=True)
+            logger.error(f"Error during predictions: {str(e)}", exc_info=True)
         
         # 3. Enrich reason
         try:
             df = enrich_reason(df)
-            logging.info("Reason enrichment completed successfully.")
+            logger.info("Reason enrichment completed successfully.")
         except Exception as e:
-            logging.error(f"Error during reason enrichment: {str(e)}", exc_info=True)
+            logger.error(f"Error during reason enrichment: {str(e)}", exc_info=True)
         
         # Map enriched DataFrame back to news items
         enriched_news_items = map_to_db(df, 'omx')
 
-        added_count, duplicate_count = add_news_items(enriched_news_items)
-        logging.info(f"OMX: added {added_count} news items to the database, {duplicate_count} duplicates skipped")
+        # Add all items to the database without checking for duplicates
+        added_count, _ = add_news_items(enriched_news_items, check_uniqueness=False)
+        logger.info(f"OMX: added {added_count} news items to the database")
 
         # Call process_publisher after adding news items
         if added_count > 0:
             updated, skipped = process_publisher('omx')
-            logging.info(f"OMX: Enriched {updated} items, skipped {skipped} items")
+            logger.info(f"OMX: Enriched {updated} items, skipped {skipped} items")
     except Exception as e:
-        logging.error(f"OMX: An error occurred: {str(e)}", exc_info=True)
+        logger.error(f"OMX: An error occurred: {str(e)}", exc_info=True)
 
 if __name__ == "__main__":
     asyncio.run(main())

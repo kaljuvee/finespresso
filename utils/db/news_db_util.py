@@ -49,27 +49,30 @@ class News(Base):
     predicted_side = Column(String(10))
     predicted_move = Column(Float)
 
-def add_news_items(news_items):
-    session = Session()
-    try:
-        unique_items, duplicate_count = remove_duplicates(session, news_items)
-        
-        for item in unique_items:
-            item.downloaded_at = datetime.utcnow()
-        
-        session.add_all(unique_items)
+def add_news_items(news_items, check_uniqueness=True):
+    logger.info(f"Adding {len(news_items)} news items to the database")
+    added_count = 0
+    duplicate_count = 0
+
+    with Session() as session:
+        for item in news_items:
+            if check_uniqueness:
+                existing_item = session.query(News).filter(
+                    News.link == item.link,
+                    News.publisher == item.publisher
+                ).first()
+
+                if existing_item:
+                    duplicate_count += 1
+                    continue
+
+            session.add(item)
+            added_count += 1
+
         session.commit()
-        
-        logging.info(f"Successfully added {len(unique_items)} news items to the database.")
-        logging.info(f"Skipped {duplicate_count} duplicate items.")
-        
-        return len(unique_items), duplicate_count
-    except Exception as e:
-        logging.error(f"An error occurred while adding news items: {e}")
-        session.rollback()
-        return 0, 0
-    finally:
-        session.close()
+
+    logger.info(f"Added {added_count} news items to the database, {duplicate_count} duplicates skipped")
+    return added_count, duplicate_count
 
 def remove_duplicates(session, news_items):
     unique_items = []
@@ -526,3 +529,4 @@ def remove_duplicates(news_items):
             duplicate_count += 1
 
     return unique_items, duplicate_count
+
