@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, Text, select, delete, update, func
+from sqlalchemy import Column, Integer, String, Text, select, delete, update, func, or_
 from sqlalchemy.orm import sessionmaker
 from utils.db.news_db_util import Base, engine
 from utils.logging.log_util import get_logger
 import pandas as pd
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+import re
 
 logger = get_logger(__name__)
 
@@ -70,11 +71,38 @@ def get_instrument_by_ticker(ticker):
 
 # Replace the existing get_instrument_by_company_name function with this updated version
 
+def format_search_term(term):
+    """
+    Lowercase the term and remove special characters.
+    """
+    return re.sub(r'[^a-zA-Z0-9]', '', term.lower())
+
 def get_instrument_by_company_name(company_name):
+    logger.info(f"Looking up instrument for company: {company_name}")
+    
     session = Session()
     try:
-        logger.info(f"Fetching instrument by company name: {company_name}")
-        return session.query(Instrument).filter(Instrument.issuer.ilike(f"%{company_name}%")).first()
+        formatted_company_name = format_search_term(company_name)
+        instruments = session.query(Instrument).filter(
+            or_(
+                func.lower(func.regexp_replace(Instrument.issuer, '[^a-zA-Z0-9]', '', 'g')) == formatted_company_name,
+                func.lower(func.regexp_replace(Instrument.issuer, '[^a-zA-Z0-9]', '', 'g')).like(f"%{formatted_company_name}%")
+            )
+        ).all()
+        
+        if instruments:
+            instrument = instruments[0]
+            logger.info(f"Found instrument for {company_name}: {instrument.ticker}")
+            if len(instruments) > 1:
+                logger.warning(f"Multiple instruments found for {company_name}. Using the first match: {instrument.ticker}")
+        else:
+            instrument = None
+            logger.info(f"No instrument found for {company_name}")
+        
+        return instrument
+    except SQLAlchemyError as e:
+        logger.error(f"A database error occurred while querying for {company_name}: {str(e)}")
+        return None
     finally:
         session.close()
 
