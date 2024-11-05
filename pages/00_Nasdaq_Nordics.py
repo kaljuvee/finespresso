@@ -40,9 +40,12 @@ sortable_columns = ['Ticker', 'Title', 'Company', 'Expected Move (%)',
                    'Probability % (Direction)', 'Event', 'Reason', 'Published Date']
 col1, col2 = st.columns(2)
 with col1:
-    sort_column = st.selectbox("Sort by", sortable_columns)
+    sort_column = st.selectbox("Sort by", sortable_columns, 
+                              index=sortable_columns.index('Expected Move (%)'))
 with col2:
-    sort_order = st.radio("Sort order", ("Ascending", "Descending"), horizontal=True)
+    sort_order = st.radio("Sort order", ("Ascending", "Descending"), 
+                         index=1,  # Default to Descending
+                         horizontal=True)
 
 # Pagination
 items_per_page = 25
