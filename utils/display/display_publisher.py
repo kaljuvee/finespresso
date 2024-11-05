@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from utils.db.news_db_util import get_news_df
+from utils.db.news_db_util import get_news_df, get_news_df_date_range
 from utils.display.display_util import make_clickable
 from datetime import timedelta
 from utils.db.model_db_util import get_accuracy
@@ -16,12 +16,17 @@ def format_percentage(value):
     color = "green" if value > 0 else "red"
     return f'<span style="color: {color}">{value:.2f}%</span>'
 
-def display_publisher(publisher, page, items_per_page):
+def display_publisher(publisher, page, items_per_page, start_date=None, end_date=None,
+                     ticker_filter=None, sort_column=None, sort_ascending=True):
     # Get the cached dataframe for the specific publisher
-    df = cached_get_news_df(publisher)
+    if start_date and end_date:
+        df = get_news_df_date_range([publisher], start_date, end_date)
+    else:
+        df = cached_get_news_df(publisher)
 
-    # Sort the dataframe by published_date in descending order
-    df = df.sort_values('published_date', ascending=False)
+    # Apply ticker filter if provided
+    if ticker_filter:
+        df = df[df['ticker'].str.contains(ticker_filter, case=False, na=False)]
 
     # Create clickable links for ticker and title
     df['Ticker'] = df.apply(lambda row: make_clickable(row['ticker'], row['ticker_url']), axis=1)
@@ -46,6 +51,18 @@ def display_publisher(publisher, page, items_per_page):
 
     # Rename columns to start with capital letter and replace underscore with space
     df_display.columns = [col.replace('_', ' ').title() for col in df_display.columns]
+
+    # Sort if column specified
+    if sort_column:
+        if sort_column == 'Expected Move (%)':
+            # Sort by the numerical predicted_move column instead of the formatted string
+            df_display = df_display.sort_values(
+                by='Expected Move (%)', 
+                ascending=sort_ascending, 
+                key=lambda x: pd.to_numeric(x.str.extract(r'([-\d.]+)', expand=False), errors='coerce')
+            )
+        else:
+            df_display = df_display.sort_values(by=sort_column, ascending=sort_ascending)
 
     # Calculate start and end indices for the current page
     start_idx = (page - 1) * items_per_page

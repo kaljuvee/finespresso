@@ -57,6 +57,13 @@ def display_news(df, page, items_per_page):
 
     return total_pages
 
+def format_ticker(ticker):
+    """Create a clickable link to Yahoo Finance for a ticker."""
+    if pd.notna(ticker) and ticker:  # Check if ticker is not NaN and not empty
+        yf_url = f"https://finance.yahoo.com/quote/{ticker.strip()}"
+        return f'<a target="_blank" href="{yf_url}">{ticker}</a>'
+    return ticker
+
 def format_baltics(df):
     logging.info(f"Input DataFrame columns: {df.columns.tolist()}")
     """Format the Baltic news dataframe for display."""
@@ -69,9 +76,9 @@ def format_baltics(df):
     if 'title' in df_display.columns and 'link' in df_display.columns:
         df_display['title'] = df_display.apply(lambda row: make_clickable(row['title'], row['link']), axis=1)
 
-    # Make the Ticker clickable
-    if 'ticker' in df_display.columns and 'ticker_url' in df_display.columns:
-        df_display['ticker'] = df_display.apply(lambda row: make_clickable(row['ticker'], row['ticker_url']) if row['ticker'] and row['ticker_url'] else row['ticker'], axis=1)
+    # Make the Ticker clickable with Yahoo Finance URL - using direct HTML
+    if 'ticker' in df_display.columns:
+        df_display['ticker'] = df_display['ticker'].apply(format_ticker)
 
     # Format the Event column
     if 'event' in df_display.columns:
@@ -111,13 +118,48 @@ def display_baltics(df, page, items_per_page):
     # Slice the dataframe for the current page
     df_page = df_display.iloc[start_idx:end_idx]
 
-    # Display the table with custom CSS
+    # Display the table with enhanced custom CSS
     st.markdown("""
     <style>
-    #news_table th { text-align: left; }
-    #news_table td { white-space: normal; word-wrap: break-word; }
+    #news_table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    #news_table th {
+        text-align: left;
+        background-color: #f0f2f6;
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+    #news_table td {
+        white-space: normal;
+        word-wrap: break-word;
+        padding: 8px;
+        border: 1px solid #ddd;
+        max-width: 300px;  /* Limit cell width */
+    }
+    #news_table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    #news_table tr:hover {
+        background-color: #f5f5f5;
+    }
+    #news_table a {
+        color: #0066cc;
+        text-decoration: none;
+    }
+    #news_table a:hover {
+        text-decoration: underline;
+    }
     </style>
     """, unsafe_allow_html=True)
-    st.write(df_page.to_html(escape=False, index=False, classes=['dataframe'], table_id='news_table'), unsafe_allow_html=True)
+    
+    st.write(df_page.to_html(
+        escape=False,
+        index=False,
+        classes=['dataframe'],
+        table_id='news_table',
+        justify='left'
+    ), unsafe_allow_html=True)
 
     return total_pages
