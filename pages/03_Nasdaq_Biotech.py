@@ -55,8 +55,18 @@ page = st.selectbox("Select Page", options=range(1, 101))
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def cached_display_publisher(publisher, page, items_per_page, start_date, end_date, 
                            ticker_filter, sort_column, sort_ascending):
-    return display_publisher(publisher, page, items_per_page, start_date, end_date,
-                           ticker_filter, sort_column, sort_ascending)
+    try:
+        total_pages, df = display_publisher(publisher, page, items_per_page, start_date, end_date,
+                                          ticker_filter, sort_column, sort_ascending)
+        
+        if df is None or df.empty:
+            st.warning("No data available for the selected filters.")
+            return 0
+        
+        return total_pages
+    except Exception as e:
+        st.error(f"An error occurred while fetching the data: {str(e)}")
+        return 0
 
 # Display the news and get total pages
 total_pages = cached_display_publisher(
@@ -70,5 +80,8 @@ total_pages = cached_display_publisher(
     sort_order == "Ascending"
 )
 
-# Display pagination information
-st.write(f"Page {page} of {total_pages}")
+# Display pagination information only if there are pages
+if total_pages > 0:
+    st.write(f"Page {page} of {total_pages}")
+else:
+    st.write("No data available")
