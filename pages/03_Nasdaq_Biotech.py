@@ -16,7 +16,7 @@ if st.button("Refresh Data"):
 # Time filter
 time_filter = st.radio(
     "Time Range",
-    ["Today", "Last Week", "All Time"],
+    ["Last Week", "Today", "All Time"],
     horizontal=True
 )
 
@@ -41,7 +41,7 @@ sortable_columns = ['Ticker', 'Title', 'Company', 'Expected Move (%)',
 col1, col2 = st.columns(2)
 with col1:
     sort_column = st.selectbox("Sort by", sortable_columns, 
-                              index=sortable_columns.index('Expected Move (%)'))
+                              index=sortable_columns.index('Published Date'))
 with col2:
     sort_order = st.radio("Sort order", ("Ascending", "Descending"), 
                          index=1,  # Default to Descending
