@@ -38,8 +38,8 @@ def format_date_with_timezone(date_str, publisher):
     # Format to minute precision and add timezone abbreviation
     return f"{dt.strftime('%Y-%m-%d %H:%M')} {tz_abbrev}"
 
-def display_publisher(publisher, page, items_per_page, start_date=None, end_date=None,
-                     ticker_filter=None, sort_column=None, sort_ascending=True):
+def display_publisher(publisher, page, items_per_page, start_date=None, end_date=None, 
+                     ticker_filter=None, sort_column=None, sort_ascending=True, event_filter=None):
     # Get the cached dataframe for the specific publisher
     try:
         if start_date and end_date:
@@ -50,6 +50,12 @@ def display_publisher(publisher, page, items_per_page, start_date=None, end_date
         # Return early if dataframe is empty
         if df is None or df.empty:
             return 0, None
+
+        # Handle event filter
+        if event_filter == 'Unclassified':
+            df = df[df['event'].isna()]
+        elif event_filter:
+            df = df[df['event'] == event_filter]
 
         # Apply ticker filter if provided
         if ticker_filter:
