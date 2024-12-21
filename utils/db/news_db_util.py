@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 from sqlalchemy import exists
 from utils.logging.log_util import get_logger
+from utils.db.db_pool import DatabasePool
 
 logger = get_logger(__name__)
 # Load environment variables
@@ -22,7 +23,10 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
-class News(Base):
+# Get database pool instance
+db_pool = DatabasePool()
+
+class News(db_pool.Base):
     __tablename__ = 'news'
 
     id = Column(Integer, primary_key=True)
@@ -53,7 +57,7 @@ def add_news_items(news_items, check_uniqueness=True):
     added_count = 0
     duplicate_count = 0
 
-    with Session() as session:
+    with db_pool.get_session() as session:
         for item in news_items:
             if check_uniqueness:
                 existing_item = session.query(News).filter(
@@ -67,8 +71,6 @@ def add_news_items(news_items, check_uniqueness=True):
 
             session.add(item)
             added_count += 1
-
-        session.commit()
 
     logger.info(f"Added {added_count} news items to the database, {duplicate_count} duplicates skipped")
     return added_count, duplicate_count

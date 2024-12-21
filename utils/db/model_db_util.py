@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, Float, DateTime, func
+from utils.db.db_pool import DatabasePool
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import pandas as pd
@@ -15,12 +14,10 @@ load_dotenv()
 # Get DATABASE_URL from environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Create SQLAlchemy engine and session
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
+# Get database pool instance
+db_pool = DatabasePool()
 
-class ModelResultsBinary(Base):
+class ModelResultsBinary(db_pool.Base):
     __tablename__ = 'eq_model_results_binary'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -35,7 +32,7 @@ class ModelResultsBinary(Base):
     training_sample = Column(Integer, nullable=False)
     total_sample = Column(Integer, nullable=False)
 
-class ModelResultsRegression(Base):
+class ModelResultsRegression(db_pool.Base):
     __tablename__ = 'eq_model_results_regression'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -50,62 +47,53 @@ class ModelResultsRegression(Base):
     total_sample = Column(Integer, nullable=False)
 
 def create_tables():
-    Base.metadata.create_all(engine)
+    db_pool.create_all_tables()
 
 def save_results(results_df):
-    session = Session()
-    try:
-        for _, row in results_df.iterrows():
-            result = ModelResultsBinary(
-                event=row['event'],
-                accuracy=row['accuracy'],
-                precision=row['precision'],
-                recall=row['recall'],
-                f1_score=row['f1_score'],
-                auc_roc=row['auc_roc'],
-                test_sample=row['test_sample'],
-                training_sample=row['training_sample'],
-                total_sample=row['total_sample']
-            )
-            session.add(result)
-        session.commit()
-        logging.info(f'Successfully saved results to database')
-        return True
-    except Exception as e:
-        logging.error(f'An error occurred while saving model results: {str(e)}')
-        session.rollback()
-        return False
-    finally:
-        session.close()
+    with db_pool.get_session() as session:
+        try:
+            for _, row in results_df.iterrows():
+                result = ModelResultsBinary(
+                    event=row['event'],
+                    accuracy=row['accuracy'],
+                    precision=row['precision'],
+                    recall=row['recall'],
+                    f1_score=row['f1_score'],
+                    auc_roc=row['auc_roc'],
+                    test_sample=row['test_sample'],
+                    training_sample=row['training_sample'],
+                    total_sample=row['total_sample']
+                )
+                session.add(result)
+            logging.info(f'Successfully saved results to database')
+            return True
+        except Exception as e:
+            logging.error(f'An error occurred while saving model results: {str(e)}')
+            return False
 
 def save_regression_results(results_df):
-    session = Session()
-    try:
-        for _, row in results_df.iterrows():
-            result = ModelResultsRegression(
-                event=row['event'],
-                mse=row['mse'],
-                r2=row['r2'],
-                mae=row['mae'],
-                rmse=row['rmse'],
-                test_sample=row['test_sample'],
-                training_sample=row['training_sample'],
-                total_sample=row['total_sample']
-            )
-            session.add(result)
-        session.commit()
-        logging.info(f'Successfully saved regression results to database')
-        return True
-    except Exception as e:
-        logging.error(f'An error occurred while saving regression model results: {str(e)}')
-        session.rollback()
-        return False
-    finally:
-        session.close()
+    with db_pool.get_session() as session:
+        try:
+            for _, row in results_df.iterrows():
+                result = ModelResultsRegression(
+                    event=row['event'],
+                    mse=row['mse'],
+                    r2=row['r2'],
+                    mae=row['mae'],
+                    rmse=row['rmse'],
+                    test_sample=row['test_sample'],
+                    training_sample=row['training_sample'],
+                    total_sample=row['total_sample']
+                )
+                session.add(result)
+            logging.info(f'Successfully saved regression results to database')
+            return True
+        except Exception as e:
+            logging.error(f'An error occurred while saving regression model results: {str(e)}')
+            return False
 
 def get_results(timestamp: str = None) -> pd.DataFrame:
-    session = Session()
-    try:
+    with db_pool.get_session() as session:
         query = session.query(ModelResultsBinary)
         if timestamp:
             query = query.filter(ModelResultsBinary.timestamp == timestamp)
@@ -123,12 +111,9 @@ def get_results(timestamp: str = None) -> pd.DataFrame:
             'total_sample': result.total_sample
         } for result in results]
         return pd.DataFrame(data)
-    finally:
-        session.close()
 
 def get_regression_results(timestamp: str = None) -> pd.DataFrame:
-    session = Session()
-    try:
+    with db_pool.get_session() as session:
         query = session.query(ModelResultsRegression)
         if timestamp:
             query = query.filter(ModelResultsRegression.timestamp == timestamp)
@@ -145,18 +130,12 @@ def get_regression_results(timestamp: str = None) -> pd.DataFrame:
             'total_sample': result.total_sample
         } for result in results]
         return pd.DataFrame(data)
-    finally:
-        session.close()
 
 def get_accuracy(event: str) -> float:
-    session = Session()
-    try:
-        # Convert event to lowercase and replace spaces with underscores
-        #formatted_event = event.lower().replace(' ', '_')
-        result = session.query(ModelResultsBinary.accuracy).filter(ModelResultsBinary.event == event).first()
-        return result[0] if result else None
-    except Exception as e:
-        logging.error(f'An error occurred while fetching accuracy for event {event}: {str(e)}')
-        return None
-    finally:
-        session.close()
+    with db_pool.get_session() as session:
+        try:
+            result = session.query(ModelResultsBinary.accuracy).filter(ModelResultsBinary.event == event).first()
+            return result[0] if result else None
+        except Exception as e:
+            logging.error(f'An error occurred while fetching accuracy for event {event}: {str(e)}')
+            return None

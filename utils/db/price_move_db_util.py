@@ -1,28 +1,16 @@
-import logging
+from sqlalchemy import Column, Integer, String, Float, DateTime, text, select, join
+from utils.db.db_pool import DatabasePool
 from datetime import datetime, time
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, text, select, join
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-import os
-from sqlalchemy.exc import IntegrityError
+from utils.logging.log_util import get_logger
 import pandas as pd
 from utils.db.news_db_util import News
-from utils.logging.log_util import get_logger
 
 logger = get_logger(__name__)
 
-# Load environment variables
-load_dotenv()
+# Get database pool instance
+db_pool = DatabasePool()
 
-# Get DATABASE_URL from environment variables
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
-
-class PriceMove(Base):
+class PriceMove(db_pool.Base):
     __tablename__ = 'price_moves'
 
     id = Column(Integer, primary_key=True)
@@ -67,78 +55,61 @@ class PriceMove(Base):
 
 def store_price_move(price_move):
     try:
-        session = Session()
-        
-        # Convert news_id to string when querying
-        existing_price_move = session.query(PriceMove).filter_by(news_id=str(price_move.news_id)).first()
-        
-        if existing_price_move:
-            # Update existing record
-            for key, value in price_move.__dict__.items():
-                if key != '_sa_instance_state':  # Skip SQLAlchemy internal attribute
-                    setattr(existing_price_move, key, value)
-            logger.info(f"Updated existing price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
-        else:
-            # Add new record
-            session.add(price_move)
-            logger.info(f"Added new price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
-        
-        session.commit()
-    except IntegrityError as ie:
-        logger.error(f"IntegrityError storing price move for news_id {price_move.news_id}: {str(ie)}")
-        session.rollback()
+        with db_pool.get_session() as session:
+            existing_price_move = session.query(PriceMove).filter_by(news_id=str(price_move.news_id)).first()
+            
+            if existing_price_move:
+                for key, value in price_move.__dict__.items():
+                    if key != '_sa_instance_state':
+                        setattr(existing_price_move, key, value)
+                logger.info(f"Updated existing price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
+            else:
+                session.add(price_move)
+                logger.info(f"Added new price move for news_id: {price_move.news_id}, ticker: {price_move.ticker}")
+
     except Exception as e:
         logger.error(f"Error storing price move for news_id {price_move.news_id}: {str(e)}")
         logger.exception("Detailed traceback:")
-        session.rollback()
-    finally:
-        session.close()
+        raise
 
     # Verify that the price move was stored or updated
     try:
-        verify_session = Session()
-        # Convert news_id to string when querying
-        stored_price_move = verify_session.query(PriceMove).filter_by(news_id=str(price_move.news_id)).first()
-        if stored_price_move:
-            logger.info(f"Verified: Price move for news_id {price_move.news_id} is in the database")
-        else:
-            logger.warning(f"Verification failed: Price move for news_id {price_move.news_id} not found in the database")
+        with db_pool.get_session() as session:
+            stored_price_move = session.query(PriceMove).filter_by(news_id=str(price_move.news_id)).first()
+            if stored_price_move:
+                logger.info(f"Verified: Price move for news_id {price_move.news_id} is in the database")
+            else:
+                logger.warning(f"Verification failed: Price move for news_id {price_move.news_id} not found in the database")
     except Exception as e:
         logger.error(f"Error verifying price move storage: {str(e)}")
-    finally:
-        verify_session.close()
 
 def get_news_price_moves():
     try:
-        session = Session()
-        
-        query = select(News.id, News.content, News.title, News.event, 
-                       PriceMove.price_change_percentage, PriceMove.daily_alpha, 
-                       PriceMove.actual_side).select_from(
-            join(News, PriceMove, News.id == PriceMove.news_id)
-        )
-        
-        result = session.execute(query)
-        df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 
-                                                      'price_change_percentage', 'daily_alpha', 
-                                                      'actual_side'])
-        
-        logger.info(f"Retrieved {len(df)} rows from news and price_moves tables")
-        return df
+        with db_pool.get_session() as session:
+            query = select(News.id, News.content, News.title, News.event, 
+                           PriceMove.price_change_percentage, PriceMove.daily_alpha, 
+                           PriceMove.actual_side).select_from(
+                join(News, PriceMove, News.id == PriceMove.news_id)
+            )
+            
+            result = session.execute(query)
+            df = pd.DataFrame(result.fetchall(), columns=['id', 'content', 'title', 'event', 
+                                                          'price_change_percentage', 'daily_alpha', 
+                                                          'actual_side'])
+            
+            logger.info(f"Retrieved {len(df)} rows from news and price_moves tables")
+            return df
     except Exception as e:
         logger.error(f"Error retrieving news and price moves: {str(e)}")
         return pd.DataFrame()
-    finally:
-        session.close()
 
 # Create tables
-Base.metadata.create_all(engine)
+db_pool.create_all_tables()
 
 def add_market_column():
-    engine = create_engine(DATABASE_URL)
-    with engine.connect() as connection:
+    with db_pool.get_session() as session:
+        connection = session.connection()
         connection.execute(text("ALTER TABLE price_moves ADD COLUMN market VARCHAR(255) NOT NULL DEFAULT 'market_open';"))
-        connection.commit()
 
 # Call this function once to add the column
 # add_market_column()
