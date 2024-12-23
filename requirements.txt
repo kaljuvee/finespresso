@@ -7,3 +7,7 @@ yfinance
 scikit-learn
 python-dotenv
 pytz>=2024.1
+langchain
+langchain-community
+langchain-openai
+langchain-experimental
