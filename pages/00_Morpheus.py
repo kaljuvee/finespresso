@@ -1,7 +1,7 @@
 import streamlit as st
 import uuid
 from ai.market_agent import MarketAgent
-from utils.conversation_db_util import store_conversation, get_conversation_history
+from utils.db.conversation import store_conversation, get_conversation_history
 
 def initialize_session_state():
     if "session_id" not in st.session_state:
