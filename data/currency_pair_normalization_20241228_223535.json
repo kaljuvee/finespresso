@@ -1,0 +1,30 @@
+{
+  "test_name": "currency_pair_normalization",
+  "timestamp": "2024-12-28T22:35:35.518365",
+  "cases": [
+    {
+      "input": "How is EUR doing against USD?",
+      "expected": "EUR/USD",
+      "result": "EUR/USD",
+      "passed": true
+    },
+    {
+      "input": "What's the JPY rate?",
+      "expected": "JPY/USD",
+      "result": "JPY/USD",
+      "passed": true
+    },
+    {
+      "input": "Compare GBP and EUR",
+      "expected": "GBP/EUR",
+      "result": "GBP/EUR",
+      "passed": true
+    },
+    {
+      "input": "Random text without currencies",
+      "expected": null,
+      "result": null,
+      "passed": true
+    }
+  ]
+}

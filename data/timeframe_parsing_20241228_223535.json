@@ -1,0 +1,30 @@
+{
+  "test_name": "timeframe_parsing",
+  "timestamp": "2024-12-28T22:35:32.875274",
+  "cases": [
+    {
+      "input": "How has EUR/USD performed in the last 24 hours?",
+      "expected": "1 day, 0:00:00",
+      "result": "1 day, 0:00:00",
+      "passed": true
+    },
+    {
+      "input": "Show me the USD/JPY trend for the past 7 days",
+      "expected": "7 days, 0:00:00",
+      "result": "7 days, 0:00:00",
+      "passed": true
+    },
+    {
+      "input": "What's the GBP/USD rate for the last week?",
+      "expected": "7 days, 0:00:00",
+      "result": "7 days, 0:00:00",
+      "passed": true
+    },
+    {
+      "input": "Analysis of EUR/JPY for the past month",
+      "expected": "30 days, 0:00:00",
+      "result": "30 days, 0:00:00",
+      "passed": true
+    }
+  ]
+}
