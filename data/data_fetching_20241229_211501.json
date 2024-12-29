@@ -1,0 +1,242 @@
+{
+  "test_name": "data_fetching",
+  "timestamp": "2024-12-29T21:14:56.341373",
+  "cases": [
+    {
+      "currency_pair": "EUR/USD",
+      "query": "How has EUR/USD performed in the last hour?",
+      "description": "Last hour data (intraday)",
+      "success": false,
+      "data_info": {
+        "shape": [
+          0,
+          0
+        ],
+        "columns": [],
+        "start_time": null,
+        "end_time": null,
+        "latest_rates": {
+          "open": null,
+          "high": null,
+          "low": null,
+          "close": null
+        },
+        "sample_data": null
+      }
+    },
+    {
+      "currency_pair": "EUR/USD",
+      "query": "How has EUR/USD performed in the last 24 hours?",
+      "description": "Last 24 hours data",
+      "success": false,
+      "data_info": {
+        "shape": [
+          0,
+          0
+        ],
+        "columns": [],
+        "start_time": null,
+        "end_time": null,
+        "latest_rates": {
+          "open": null,
+          "high": null,
+          "low": null,
+          "close": null
+        },
+        "sample_data": null
+      }
+    },
+    {
+      "currency_pair": "GBP/USD",
+      "query": "What's the GBP/USD rate for today?",
+      "description": "Today's data",
+      "success": false,
+      "data_info": {
+        "shape": [
+          0,
+          0
+        ],
+        "columns": [],
+        "start_time": null,
+        "end_time": null,
+        "latest_rates": {
+          "open": null,
+          "high": null,
+          "low": null,
+          "close": null
+        },
+        "sample_data": null
+      }
+    },
+    {
+      "currency_pair": "USD/JPY",
+      "query": "Show me USD/JPY for the last week",
+      "description": "Last week data",
+      "success": true,
+      "data_info": {
+        "shape": [
+          109,
+          7
+        ],
+        "columns": [
+          "Open",
+          "High",
+          "Low",
+          "Close",
+          "Volume",
+          "Dividends",
+          "Stock Splits"
+        ],
+        "start_time": "2024-12-23 00:00:00+00:00",
+        "end_time": "2024-12-27 21:00:00+00:00",
+        "latest_rates": {
+          "open": 157.9040069580078,
+          "high": 157.9250030517578,
+          "low": 157.77200317382812,
+          "close": 157.77200317382812
+        },
+        "sample_data": {
+          "index": [
+            "2024-12-27 17:00:00+00:00",
+            "2024-12-27 18:00:00+00:00",
+            "2024-12-27 19:00:00+00:00",
+            "2024-12-27 20:00:00+00:00",
+            "2024-12-27 21:00:00+00:00"
+          ],
+          "data": [
+            {
+              "Open": 157.72900390625,
+              "High": 157.8459930419922,
+              "Low": 157.67100524902344,
+              "Close": 157.8209991455078,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 157.8249969482422,
+              "High": 157.8560028076172,
+              "Low": 157.76199340820312,
+              "Close": 157.83099365234375,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 157.8280029296875,
+              "High": 157.94400024414062,
+              "Low": 157.8249969482422,
+              "Close": 157.94400024414062,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 157.9429931640625,
+              "High": 157.94500732421875,
+              "Low": 157.84500122070312,
+              "Close": 157.9029998779297,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 157.9040069580078,
+              "High": 157.9250030517578,
+              "Low": 157.77200317382812,
+              "Close": 157.77200317382812,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "currency_pair": "GBP/EUR",
+      "query": "Show me GBP/EUR for the last month",
+      "description": "Last month data",
+      "success": true,
+      "data_info": {
+        "shape": [
+          21,
+          7
+        ],
+        "columns": [
+          "Open",
+          "High",
+          "Low",
+          "Close",
+          "Volume",
+          "Dividends",
+          "Stock Splits"
+        ],
+        "start_time": "2024-12-02 00:00:00+00:00",
+        "end_time": "2024-12-29 00:00:00+00:00",
+        "latest_rates": {
+          "open": 1.2038999795913696,
+          "high": 1.2038999795913696,
+          "low": 1.2037999629974365,
+          "close": 1.2037999629974365
+        },
+        "sample_data": {
+          "index": [
+            "2024-12-24 00:00:00+00:00",
+            "2024-12-25 00:00:00+00:00",
+            "2024-12-26 00:00:00+00:00",
+            "2024-12-27 00:00:00+00:00",
+            "2024-12-29 00:00:00+00:00"
+          ],
+          "data": [
+            {
+              "Open": 1.204300045967102,
+              "High": 1.2084100246429443,
+              "Low": 1.2041000127792358,
+              "Close": 1.204300045967102,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 1.2044999599456787,
+              "High": 1.2274999618530273,
+              "Low": 1.2037999629974365,
+              "Close": 1.2044999599456787,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 1.2060099840164185,
+              "High": 1.2065800428390503,
+              "Low": 1.2011499404907227,
+              "Close": 1.2060099840164185,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 1.2020200490951538,
+              "High": 1.2072800397872925,
+              "Low": 1.2006900310516357,
+              "Close": 1.2020200490951538,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            },
+            {
+              "Open": 1.2038999795913696,
+              "High": 1.2038999795913696,
+              "Low": 1.2037999629974365,
+              "Close": 1.2037999629974365,
+              "Volume": 0,
+              "Dividends": 0.0,
+              "Stock Splits": 0.0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
