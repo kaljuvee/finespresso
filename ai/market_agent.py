@@ -1,278 +1,438 @@
-from langchain_openai import ChatOpenAI
-from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
-from langchain.schema import SystemMessage, HumanMessage
-from langchain_experimental.agents.agent_toolkits.pandas.base import create_pandas_dataframe_agent
-import os
-from datetime import datetime, timedelta
 import yfinance as yf
 import pandas as pd
-import re
+from openai import OpenAI
 import json
-from ai.base_agent import BaseAgent
-from ai.utils.prompt_util import get_prompt_by_name
-from ai.utils.logger_util import setup_logger
+from datetime import datetime, timedelta
+import pytz
+import numpy as np
+from typing import List, Dict, Union, Optional
+import requests
+import logging
+from .base_agent import BaseAgent
+import os
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
-logger = setup_logger(__name__)
+class DateTimeEncoder(json.JSONEncoder):
+    """Custom JSON encoder for datetime objects"""
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
 
 class MarketAgent(BaseAgent):
     def __init__(self):
-        super().__init__(temperature=0.7)
-        self.timeframe_prompt = get_prompt_by_name("timeframe_parser")
-        logger.info("MarketAgent initialized")
-        
-    def parse_timeframe(self, text):
-        """Use LLM to parse timeframe from user input"""
-        logger.debug(f"Parsing timeframe from: {text}")
-        
-        # Get formatted prompt using template
-        formatted_prompt = get_prompt_by_name("timeframe_parser", {"text": text})
-        logger.debug(f"Using timeframe prompt: {formatted_prompt}")
-        
-        messages = [
-            SystemMessage(content=self.system_template),
-            HumanMessage(content=formatted_prompt)
+        # Get API key from environment variable
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not openai_api_key:
+            raise ValueError("OPENAI_API_KEY environment variable is not set")
+        super().__init__(openai_api_key)
+        self.model_name = self.default_model  # Use default model from base agent
+
+    def set_model(self, model_name: str):
+        """Set the OpenAI model to use"""
+        self.model_name = model_name
+        # Optionally reset conversation history when model changes
+        self.reset_conversation()
+
+    def _initialize(self):
+        """Initialize agent-specific components"""
+        self.client = OpenAI(api_key=self.openai_api_key)
+        self.use_plotly = False  # Default to simple line chart
+        self.tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_stock_data",
+                    "description": "Get historical stock price data and create a chart. Always use this for stock price queries.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The stock symbol (e.g., AAPL, TSLA) or company name"
+                            },
+                            "period": {
+                                "type": "string",
+                                "enum": ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"],
+                                "description": "The time period for analysis"
+                            }
+                        },
+                        "required": ["symbol", "period"]
+                    }
+                }
+            }
         ]
         
+        self.conversation_history = [
+            {"role": "system", "content": """You are a financial market analysis assistant. 
+            IMPORTANT: For ANY question about stock performance or price movements, you MUST:
+            1. ALWAYS call get_stock_data function first
+            2. Use the function's response to provide analysis
+            3. Never try to answer price-related questions without calling get_stock_data
+            
+            Time period mapping (use exactly these values):
+            - "today" or "24 hours" → "1d"
+            - "week" or "5 days" → "5d"
+            - "month" or "30 days" → "1mo"
+            - "3 months" or "quarter" → "3mo"
+            - "6 months" or "half year" → "6mo"
+            - "year" or "12 months" → "1y"
+            - "2 years" → "2y"
+            - "5 years" → "5y"
+            
+            For stock performance questions:
+            1. First identify the company/symbol and time period
+            2. Call get_stock_data with these parameters
+            3. Wait for the data
+            4. Then analyze:
+               - Price changes
+               - Trends
+               - Notable movements
+               - Volume patterns if available
+            
+            Remember: NEVER skip calling get_stock_data for price-related queries."""}
+        ]
+
+    def process_question(self, question: str) -> str:
+        """Implementation of abstract method from BaseAgent"""
+        return self.process_financial_query(question)
+
+    def find_ticker(self, company_query: str) -> Dict:
+        """Find the most relevant ticker for a company query"""
         try:
-            response = self.llm.invoke(messages)
-            logger.debug(f"Raw LLM response: {response.content}")
+            url = "https://query2.finance.yahoo.com/v1/finance/search"
+            params = {
+                'q': company_query,
+                'quotesCount': 5,
+                'newsCount': 0,
+                'enableFuzzyQuery': True,
+                'quotesQueryId': 'tss_match_phrase_query'
+            }
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
             
-            # Try to clean the response if it contains extra text
-            content = response.content.strip()
-            if not content.startswith('{'):
-                # Try to find JSON in the response
-                import re
-                json_match = re.search(r'\{.*\}', content)
-                if json_match:
-                    content = json_match.group()
-                    logger.debug(f"Extracted JSON from response: {content}")
-                else:
-                    logger.error(f"Could not find JSON in response: {content}")
-                    return timedelta(hours=24)
+            response = requests.get(url, params=params, headers=headers)
+            response.raise_for_status()
+            data = response.json()
             
-            timeframe_data = json.loads(content)
-            logger.info(f"Successfully parsed timeframe data: {timeframe_data}")
-            
-            # Convert parsed timeframe to timedelta
-            unit = timeframe_data['unit']
-            amount = timeframe_data['amount']
-            
-            logger.debug(f"Parsed timeframe: {amount} {unit}")
-            
-            if unit == 'hours':
-                return timedelta(hours=amount)
-            elif unit == 'days':
-                return timedelta(days=amount)
-            elif unit == 'weeks':
-                return timedelta(days=amount * 7)
-            elif unit == 'months':
-                return timedelta(days=amount * 30)
-            else:
-                logger.warning(f"Unknown time unit: {unit}, using default")
-                return timedelta(hours=24)  # Default fallback
+            if not data.get("quotes"):
+                return {"error": f"No ticker found for {company_query}"}
                 
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON parsing error: {e}")
-            logger.error(f"Failed to parse response content: {response.content}")
-            return timedelta(hours=24)
+            # Filter for stocks and sort by score
+            stocks = [q for q in data["quotes"] if q.get("quoteType") == "EQUITY"]
+            if not stocks:
+                return {"error": f"No stock ticker found for {company_query}"}
+                
+            best_match = stocks[0]
+            return {
+                "symbol": best_match["symbol"],
+                "name": best_match.get("shortname", best_match.get("longname")),
+                "exchange": best_match.get("exchange"),
+                "score": best_match.get("score")
+            }
+            
         except Exception as e:
-            logger.error(f"Error parsing timeframe: {e}", exc_info=True)
-            return timedelta(hours=24)  # Default fallback
-            
-    def get_currency_data(self, currency_pair, user_input):
-        """
-        Fetch currency rate data from Yahoo Finance
-        
-        Args:
-            currency_pair (str): Currency pair in format 'XXX/YYY'
-            user_input (str): User query containing timeframe information
-            
-        Returns:
-            pd.DataFrame: DataFrame with rate data
-        """
-        # Get timeframe using LLM
-        timeframe = self.parse_timeframe(user_input)
-        
-        # Format currency pair exactly like rate_util.py does
-        ticker_symbol = currency_pair.replace('/', '') + '=X'
-        logger.info(f"Fetching data for {ticker_symbol} from {timeframe} ago")
-        
-        # Use UTC for consistent timezone handling
-        end_date = pd.Timestamp.now(tz='UTC')
-        start_date = end_date - timeframe
-        
-        # Adjust interval based on timeframe for better data granularity
-        if timeframe <= timedelta(hours=1):
-            interval = "1m"  # Use 1-minute data for hour or less
-            # For very recent data, adjust start time to ensure we get data
-            start_date = end_date - timedelta(hours=2)  # Get 2 hours of data
-        elif timeframe <= timedelta(hours=24):
-            interval = "5m"  # Use 5-minute data for up to 24 hours
-            start_date = end_date - timedelta(days=1)
-        elif timeframe <= timedelta(days=7):
-            interval = "1h"
-            # Add buffer for hourly data
-            start_date = end_date - timedelta(days=8)
-        else:
-            interval = "1d"
-            # Add buffer for daily data
-            start_date = end_date - timeframe - timedelta(days=5)
-        
-        logger.debug(f"Using interval: {interval} for timeframe: {timeframe}")
-        logger.debug(f"Adjusted date range: {start_date} to {end_date}")
-        
-        def fetch_data(symbol, inverse=False):
-            try:
-                ticker = yf.Ticker(symbol)
-                data = ticker.history(start=start_date, end=end_date, interval=interval)
-                
-                if not data.empty:
-                    if inverse:
-                        # Invert rates for inverse pair
-                        for col in ['Open', 'High', 'Low', 'Close']:
-                            data[col] = 1 / data[col]
-                        logger.info(f"Successfully fetched and inverted data for {symbol}")
-                    else:
-                        logger.info(f"Successfully fetched data for {symbol}")
-                    
-                    # Filter to requested timeframe using localization-aware comparison
-                    filter_start = end_date - timeframe
-                    mask = (data.index >= filter_start) & (data.index <= end_date)
-                    filtered_data = data[mask]
-                    
-                    # Check if we have data after filtering
-                    if filtered_data.empty:
-                        logger.warning(f"No data available after filtering for {symbol}")
-                        return pd.DataFrame()
-                    
-                    logger.debug(f"Data shape after filtering: {filtered_data.shape}")
-                    logger.debug(f"Time range: {filtered_data.index[0]} to {filtered_data.index[-1]}")
-                    logger.debug(f"Latest rates: Open={filtered_data['Open'].iloc[-1]:.4f}, Close={filtered_data['Close'].iloc[-1]:.4f}")
-                    return filtered_data
-                
-                logger.warning(f"No data returned for {symbol}")
-                return pd.DataFrame()
-                
-            except Exception as e:
-                logger.error(f"Error fetching data for {symbol}: {e}", exc_info=True)
-                return pd.DataFrame()
-        
-        # Try primary pair
-        data = fetch_data(ticker_symbol)
-        if not data.empty:
-            return data
-            
-        # Try inverse pair
-        logger.info(f"Attempting to fetch inverse pair data")
-        base, quote = currency_pair.split('/')
-        inverse_pair = f"{quote}/{base}"
-        inverse_symbol = inverse_pair.replace('/', '') + '=X'
-        
-        data = fetch_data(inverse_symbol, inverse=True)
-        if not data.empty:
-            return data
-            
-        logger.error(f"Failed to fetch data for both {ticker_symbol} and {inverse_symbol}")
-        return pd.DataFrame()
-        
-    def perform_analysis(self, df, question):
-        """Use pandas DataFrame agent to analyze the rate data"""
-        if df.empty:
-            return "No data available for analysis."
-            
+            return {"error": f"Error finding ticker: {str(e)}"}
+
+    def get_stock_data(self, symbol: str, period: str = "1y") -> Dict:
+        """Fetch stock data and return formatted information"""
         try:
-            # Create pandas DataFrame agent with updated parameters
-            agent = create_pandas_dataframe_agent(
-                llm=self.llm,
-                df=df,
-                verbose=True,
-                agent_type="openai-tools",
-                handle_parsing_errors=True,
-                allow_dangerous_code=True,
-                max_iterations=5,
-                max_execution_time=30,
+            # First verify/lookup the ticker if it might be a company name
+            if not symbol.isupper() or len(symbol) > 5:
+                ticker_info = self.find_ticker(symbol)
+                if "error" in ticker_info:
+                    return ticker_info
+                symbol = ticker_info["symbol"]
+
+            stock = yf.Ticker(symbol)
+            df = stock.history(period=period)
+            
+            if df.empty:
+                return {"error": f"No data available for {symbol}"}
+            
+            # Calculate price change and percentage
+            first_close = df['Close'].iloc[0]
+            last_close = df['Close'].iloc[-1]
+            price_change = last_close - first_close
+            price_change_pct = (price_change / first_close) * 100
+            
+            data_dict = {
+                "timestamps": [int(ts.timestamp() * 1000) for ts in df.index],
+                "prices": df['Close'].tolist(),
+            }
+            if 'Volume' in df.columns:
+                data_dict["volume"] = df['Volume'].tolist()
+            
+            return {
+                "symbol": symbol,
+                "data": data_dict,
+                "summary": {
+                    "first_close": first_close,
+                    "last_close": last_close,
+                    "price_change": price_change,
+                    "price_change_pct": price_change_pct,
+                    "start_time": df.index[0].strftime('%Y-%m-%d'),
+                    "end_time": df.index[-1].strftime('%Y-%m-%d'),
+                    "period": period
+                },
+                "display_graph": True
+            }
+        except Exception as e:
+            return {"error": f"Error fetching data for {symbol}: {str(e)}"}
+
+    def get_stock_price(self, company: str) -> Dict:
+        """Get current stock price and basic information"""
+        try:
+            # First verify/lookup the ticker if it might be a company name
+            if not company.isupper() or len(company) > 5:
+                ticker_info = self.find_ticker(company)
+                if "error" in ticker_info:
+                    return ticker_info
+                company = ticker_info["symbol"]
+
+            stock = yf.Ticker(company)
+            info = stock.info
+            
+            return {
+                "symbol": company,
+                "name": info.get('longName', company),
+                "current_price": info.get('currentPrice', 'N/A'),
+                "previous_close": info.get('previousClose', 'N/A'),
+                "market_cap": info.get('marketCap', 'N/A'),
+                "volume": info.get('volume', 'N/A'),
+                "exchange": info.get('exchange', 'N/A')
+            }
+        except Exception as e:
+            return {"error": f"Error getting stock price for {company}: {str(e)}"}
+
+    def get_stock_news(self, company: str) -> Dict:
+        """Get recent news articles about a company"""
+        try:
+            # First verify/lookup the ticker if it might be a company name
+            if not company.isupper() or len(company) > 5:
+                ticker_info = self.find_ticker(company)
+                if "error" in ticker_info:
+                    return ticker_info
+                company = ticker_info["symbol"]
+
+            stock = yf.Ticker(company)
+            news = stock.news[:5]
+            
+            news_data = []
+            for item in news:
+                news_data.append({
+                    "title": item.get('title', ''),
+                    "publisher": item.get('publisher', ''),
+                    "link": item.get('link', ''),
+                    "published": datetime.fromtimestamp(item.get('providerPublishTime', 0)).strftime('%Y-%m-%d %H:%M:%S')
+                })
+            
+            return {
+                "symbol": company,
+                "news": news_data
+            }
+        except Exception as e:
+            return {"error": f"Error getting news for {company}: {str(e)}"}
+
+    def toggle_plotly(self, use_plotly: bool):
+        """Toggle between Plotly and simple line charts"""
+        self.use_plotly = use_plotly
+
+    def create_plotly_chart(self, data: Dict) -> Dict:
+        """Create a Plotly chart from the stock data"""
+        try:
+            timestamps = [datetime.fromtimestamp(ts/1000) for ts in data["data"]["timestamps"]]
+            prices = data["data"]["prices"]
+            symbol = data["symbol"]
+            
+            # Create figure with secondary y-axis
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            
+            # Add candlestick chart
+            fig.add_trace(
+                go.Scatter(
+                    x=timestamps,
+                    y=prices,
+                    name=f"{symbol} Price",
+                    line=dict(color='#2962FF', width=2),
+                    showlegend=True
+                ),
+                secondary_y=False
             )
             
-            # More specific analysis prompt
-            analysis_prompt = """
-            Using the provided DataFrame, please analyze the following:
-            1. Calculate the percentage change between the first and last Close price
-            2. Calculate the average price for the period
-            3. Find the highest and lowest prices
-            4. Determine the overall trend (up/down/sideways)
+            # Add volume bars if available
+            if "volume" in data["data"]:
+                fig.add_trace(
+                    go.Bar(
+                        x=timestamps,
+                        y=data["data"]["volume"],
+                        name="Volume",
+                        marker=dict(color='#B2DFDB'),
+                        opacity=0.5
+                    ),
+                    secondary_y=True
+                )
             
-            DataFrame info:
-            - The data contains OHLC prices
-            - Index is datetime
-            - First Close: {first_close:.4f}
-            - Last Close: {last_close:.4f}
-            - Time range: {start_time} to {end_time}
+            # Calculate price change for title
+            price_change = data["summary"]["price_change"]
+            price_change_pct = data["summary"]["price_change_pct"]
+            change_color = "green" if price_change >= 0 else "red"
             
-            Original question: {question}
-            
-            Format the response in a clear, readable way.
-            """.format(
-                first_close=df['Close'].iloc[0],
-                last_close=df['Close'].iloc[-1],
-                start_time=df.index[0],
-                end_time=df.index[-1],
-                question=question
+            # Update layout with more details
+            fig.update_layout(
+                title=dict(
+                    text=f"{symbol} Stock Price<br>"
+                         f"<span style='color: {change_color}'>Change: "
+                         f"${price_change:.2f} ({price_change_pct:.2f}%)</span>",
+                    x=0.5,
+                    xanchor='center'
+                ),
+                xaxis=dict(
+                    title="Date",
+                    rangeslider=dict(visible=False)
+                ),
+                yaxis=dict(
+                    title="Price ($)",
+                    tickformat=".2f"
+                ),
+                yaxis2=dict(
+                    title="Volume",
+                    showgrid=False
+                ),
+                template="plotly_white",
+                hovermode='x unified',
+                height=500,
+                margin=dict(t=100)  # Increase top margin for title
             )
             
-            response = agent.run(analysis_prompt)
-            return response
+            # Update y-axes ranges
+            fig.update_yaxes(title_text="Price ($)", secondary_y=False)
+            if "volume" in data["data"]:
+                fig.update_yaxes(title_text="Volume", secondary_y=True)
+            
+            return {
+                "plotly_chart": fig.to_dict(),
+                "symbol": symbol,
+                "period": data["summary"]["period"]
+            }
+            
         except Exception as e:
-            logger.error(f"Error in perform_analysis: {str(e)}", exc_info=True)
-            return f"Error performing analysis: {str(e)}"
-        
-    def normalize_currency_pair(self, text):
-        # Common currency codes in priority order
-        currencies = ['GBP', 'EUR', 'USD', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD']
-        
-        # Extract mentioned currencies
-        mentioned_currencies = [curr for curr in currencies if curr in text.upper()]
-        
-        if not mentioned_currencies:
-            return None
-        elif len(mentioned_currencies) == 1:
-            # If only one currency is mentioned, pair it with USD
-            base_curr = mentioned_currencies[0]
-            quote_curr = 'USD' if base_curr != 'USD' else 'EUR'
-            return f"{base_curr}/{quote_curr}"
-        else:
-            # Use priority order instead of alphabetical
-            first_curr = next(curr for curr in currencies if curr in mentioned_currencies)
-            second_curr = next(curr for curr in mentioned_currencies if curr != first_curr)
-            return f"{first_curr}/{second_curr}"
+            logging.error(f"Error creating Plotly chart: {str(e)}")
+            return {"error": f"Error creating Plotly chart: {str(e)}"}
 
-    def process_query(self, user_input):
-        """Process a user query about currency markets"""
+    def format_response(self, message: str, data: Optional[Dict] = None) -> Dict:
+        """Format the response with optional graph data"""
+        response = {
+            "response": message.strip(),
+            "success": True
+        }
+        
+        if data:
+            # Always include graph data if present
+            response["graph_data"] = {
+                "symbol": data["symbol"],
+                "data": data["data"],
+                "summary": data["summary"]
+            }
+            
+            # Add Plotly data if enabled
+            if self.use_plotly and data.get("display_graph"):
+                plotly_data = self.create_plotly_chart(data)
+                if "error" not in plotly_data:
+                    response["plotly_data"] = plotly_data
+        
+        return response
+
+    def process_financial_query(self, query: str) -> str:
+        """Process market analysis queries using function calling"""
         try:
-            # Step 1: Extract currency pair
-            currency_pair = self.normalize_currency_pair(user_input)
-            if not currency_pair:
-                return "I couldn't identify any currency pairs in your question. Please mention specific currencies."
+            self.conversation_history.append({"role": "user", "content": query})
             
-            # Step 2: Get currency data
-            data = self.get_currency_data(currency_pair, user_input)
-            if data.empty:
-                return f"I couldn't fetch the rate data for {currency_pair}. Please try again with a different timeframe or currency pair."
+            # First API call to get tool calls
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=self.conversation_history,
+                tools=self.tools,
+                tool_choice={"type": "function", "function": {"name": "get_stock_data"}}  # Force function call
+            )
             
-            # Step 3: Perform analysis
-            analysis = self.perform_analysis(data, user_input)
-            if not analysis:
-                return "I was unable to analyze the data. Please try rephrasing your question."
+            message = response.choices[0].message
             
-            # Step 4: Format response
-            response = f"""
-Analysis for {currency_pair}:
-Time period: {data.index[0]} to {data.index[-1]}
-Latest rate: {data['Close'].iloc[-1]:.4f}
-
-{analysis}
-"""
-            return response
+            # Add assistant's message to history
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": message.content if message.content else "",
+                "tool_calls": message.tool_calls
+            })
+            
+            # Handle tool calls
+            if message.tool_calls:
+                function_results = []
+                
+                for tool_call in message.tool_calls:
+                    function_args = json.loads(tool_call.function.arguments)
+                    
+                    # Get stock data
+                    result = self.get_stock_data(
+                        function_args["symbol"],
+                        function_args.get("period", "1y")
+                    )
+                    
+                    if result and "error" not in result:
+                        function_results.append(result)
+                        self.conversation_history.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": "get_stock_data",
+                            "content": json.dumps(result, cls=DateTimeEncoder)
+                        })
+                
+                # Get final response with the data
+                final_response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=self.conversation_history
+                )
+                
+                final_message = final_response.choices[0].message
+                self.conversation_history.append({
+                    "role": "assistant",
+                    "content": final_message.content
+                })
+                
+                # Return response with graph data
+                if function_results:
+                    return json.dumps(
+                        self.format_response(final_message.content, function_results[0]),
+                        cls=DateTimeEncoder
+                    )
+            
+            # If somehow we got here without data, force a stock data request
+            if "stock" in query.lower() or "price" in query.lower():
+                # Extract company name/symbol (simple approach)
+                words = query.split()
+                for word in words:
+                    if word.isupper():
+                        result = self.get_stock_data(word, "5d")
+                        if "error" not in result:
+                            return json.dumps(
+                                self.format_response(f"Here's the stock data for {word}", result),
+                                cls=DateTimeEncoder
+                            )
+            
+            return json.dumps(
+                self.format_response(message.content),
+                cls=DateTimeEncoder
+            )
             
         except Exception as e:
-            logger.error(f"Error processing query: {str(e)}", exc_info=True)
-            return f"I encountered an error while processing your request: {str(e)}"
+            logging.error(f"Error processing query: {str(e)}")
+            return json.dumps({
+                "response": f"I encountered an error while processing your request: {str(e)}",
+                "success": False
+            }, cls=DateTimeEncoder)
+
+    def reset_conversation(self):
+        """Reset the conversation history"""
+        self.conversation_history = [self.conversation_history[0]]  # Keep system message
