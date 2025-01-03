@@ -1,6 +1,6 @@
 import streamlit as st
 import uuid
-from ai.market_agent import MarketAgent
+from ai.routing_agent import RoutingAgent
 from utils.db.conversation import store_conversation, get_conversation_history
 import json
 import pandas as pd
@@ -9,17 +9,20 @@ from plotly.subplots import make_subplots
 from datetime import datetime
 import logging
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 def initialize_session_state():
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
     if "messages" not in st.session_state:
         st.session_state.messages = []
-    if "market_agent" not in st.session_state:
-        st.session_state.market_agent = MarketAgent()
+    if "routing_agent" not in st.session_state:
+        st.session_state.routing_agent = RoutingAgent()
     if "use_plotly" not in st.session_state:
         st.session_state.use_plotly = False
     if "model_name" not in st.session_state:
-        st.session_state.model_name = "gpt-4-turbo-preview"  # Default model
+        st.session_state.model_name = "gpt-4-turbo-preview"
 
 def display_chat_history():
     """Display the chat history in the Streamlit interface"""
@@ -28,37 +31,51 @@ def display_chat_history():
             st.markdown(message["content"])
 
 def get_sample_questions():
-    return [
-        # Stock Price Questions
-        "What's the current stock price of Apple?",
-        "How has Tesla's stock performed over the last 5 days?",
-        "Compare Microsoft and Google stock prices for the past month",
-        "What was Amazon's closing price yesterday?",
+    return {
+        "Stock Prices": [
+            "market: What's the current stock price of Apple?",
+            "market: How has Tesla's stock performed over the last 5 days?",
+            "market: Compare Microsoft and Google stock prices for the past month",
+            "market: What was Amazon's closing price yesterday?"
+        ],
         
-        # Market Cap and Fundamentals
-        "What is NVIDIA's current market capitalization?",
-        "Show me Meta's P/E ratio and market fundamentals",
-        "What are Apple's key financial metrics?",
-        "Compare the market cap of Tesla and Toyota",
+        "Market Cap and Fundamentals": [
+            "market: What is NVIDIA's current market capitalization?",
+            "market: Show me Meta's P/E ratio and market fundamentals",
+            "market: What are Apple's key financial metrics?",
+            "market: Compare the market cap of Tesla and Toyota"
+        ],
         
-        # News and Analysis
-        "What are the latest news headlines for Netflix?",
-        "Tell me about recent developments at Microsoft",
-        "What's happening with AMD stock lately?",
-        "Show me news that might affect Amazon's stock price",
+        "Market News and Analysis": [
+            "market: What are the latest news headlines for Netflix?",
+            "market: Tell me about recent developments at Microsoft",
+            "market: What's happening with AMD stock lately?",
+            "market: Show me news that might affect Amazon's stock price"
+        ],
         
-        # Technical Analysis
-        "Show me a price chart for Bitcoin over the last 3 months",
-        "What's the trading volume for GameStop today?",
-        "Analyze the trend for Disney stock this year",
-        "Show me the volatility of S&P 500 this month",
+        "Technical Analysis": [
+            "market: Show me a price chart for Bitcoin over the last 3 months",
+            "market: What's the trading volume for GameStop today?",
+            "market: Analyze the trend for Disney stock this year",
+            "market: Show me the volatility of S&P 500 this month"
+        ],
         
-        # Mixed Queries
-        "Give me a complete analysis of Apple including price, news, and fundamentals",
-        "What's the outlook for Tesla based on recent news and price action?",
-        "Compare Netflix and Disney's performance and latest developments",
-        "Analyze Intel's stock movement and recent announcements"
-    ]
+        "Mixed Market Queries": [
+            "market: Give me a complete analysis of Apple including price, news, and fundamentals",
+            "market: What's the outlook for Tesla based on recent news and price action?",
+            "market: Compare Netflix and Disney's performance and latest developments",
+            "market: Analyze Intel's stock movement and recent announcements"
+        ],
+        
+        "News & Predictions": [
+            "news: What are the latest merger-related predictions?",
+            "news: Show me today's top 5 predicted stock moves",
+            "news: Which companies have the highest predicted moves this week?",
+            "news: List all acquisition predictions from last 3 days",
+            "news: What are the trending market events today?",
+            "news: Show me predictions for companies in the tech sector"
+        ]
+    }
 
 def create_stock_chart(graph_data: dict, use_plotly: bool = False):
     """Create either a Plotly or simple line chart from graph data"""
@@ -149,6 +166,7 @@ st.title("Finespresso Copilot")
 
 # Move sidebar configuration to top of the page
 with st.sidebar:
+
     st.markdown("### Settings")
     
     # Model selection
@@ -167,7 +185,7 @@ with st.sidebar:
     new_model = model_options[selected_model]
     if new_model != st.session_state.model_name:
         st.session_state.model_name = new_model
-        st.session_state.market_agent.set_model(new_model)
+        st.session_state.routing_agent.set_model(new_model)
         # Optional: Clear chat history when model changes
         st.session_state.messages = []
     
@@ -180,7 +198,7 @@ with st.sidebar:
     )
     if use_plotly != st.session_state.use_plotly:
         st.session_state.use_plotly = use_plotly
-        st.session_state.market_agent.toggle_plotly(use_plotly)
+        st.session_state.routing_agent.toggle_plotly(use_plotly)
     
     # Add session management section
     st.markdown("### Session Management")
@@ -190,7 +208,15 @@ with st.sidebar:
             del st.session_state[key]
         # Rerun the app
         st.rerun()
-
+        # Add disclaimer at the top of sidebar
+    st.markdown("""
+    ### Finespresso Copilot
+    
+    **Disclaimer:** Finespresso Copilot is an experiment brought to you by Finespresso LLC. Finespresso Copilot is an AI research tool powered by a generative large language model. Finespresso Copilot is experimental technology and may give inaccurate or inappropriate responses. Output from Finespresso Copilot should not be construed as investment research or recommendations, and should not serve as the basis for any investment decision. All Finespresso Copilot output is provided "as is." Finespresso makes no representations or warranties with respect to the accuracy, completeness, quality, timeliness, or any other characteristic of such output. Your use of Finespresso Copilot output is at your sole risk. Please independently evaluate and verify the accuracy of any such output for your own use case.
+    
+    ---
+    """)
+    
 # Create two columns - main chat (2/3) and sample questions (1/3)
 chat_col, sample_col = st.columns([2, 1])
 
@@ -212,54 +238,40 @@ with chat_col:
     
     # Chat input
     if prompt := st.chat_input("Ask me about stocks, markets, or companies..."):
-        # Display user message
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         try:
-            # Get response from market agent
-            response = st.session_state.market_agent.process_financial_query(prompt)
-            response_data = json.loads(response)
+            # Use routing agent to handle query
+            response_data = st.session_state.routing_agent.route_query(prompt)
             
             if not response_data.get("success", True):
-                # Handle error response
                 st.error(response_data["response"])
                 response_for_history = response_data["response"]
             else:
-                # Display the text response
                 st.chat_message("assistant").markdown(response_data["response"])
                 
-                # Handle graph display
+                # Handle graph display if present
                 if "graph_data" in response_data:
                     try:
                         if st.session_state.use_plotly:
-                            # Create and display Plotly chart
                             fig = create_stock_chart(response_data["graph_data"], use_plotly=True)
-                            st.plotly_chart(
-                                fig,
-                                use_container_width=True,
-                                config={
-                                    'displayModeBar': True,
-                                    'scrollZoom': True
-                                }
-                            )
+                            st.plotly_chart(fig, use_container_width=True)
                         else:
-                            # Create and display simple line chart
                             chart_data = create_stock_chart(response_data["graph_data"], use_plotly=False)
                             st.line_chart(chart_data['price'])
                     except Exception as e:
                         st.warning(f"Could not display chart: {str(e)}")
-                        logging.error(f"Chart display error: {str(e)}")
+                        logger.error(f"Chart display error: {str(e)}")
                 
                 response_for_history = response_data["response"]
             
-            # Add response to chat history
+            # Add response to chat history and store conversation
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": response_for_history
             })
             
-            # Store conversation in database
             store_conversation(
                 user_id="anonymous",
                 session_id=st.session_state.session_id,
@@ -267,40 +279,60 @@ with chat_col:
                 answer=response_for_history
             )
             
-        except json.JSONDecodeError as e:
-            st.error(f"Error processing response: {str(e)}")
         except Exception as e:
             st.error(f"An unexpected error occurred: {str(e)}")
 
 with sample_col:
     st.markdown("### Sample Questions")
-    # Group questions by category
-    categories = {
-        "Stock Prices": get_sample_questions()[:4],
-        "Fundamentals": get_sample_questions()[4:8],
-        "News & Analysis": get_sample_questions()[8:12],
-        "Technical Analysis": get_sample_questions()[12:16],
-        "Complete Analysis": get_sample_questions()[16:]
-    }
+    # Get questions dictionary
+    categories = get_sample_questions()
     
+    # Display each category and its questions
     for category, questions in categories.items():
         st.markdown(f"#### {category}")
         for question in questions:
             if st.button(question, key=f"btn_{hash(question)}"):
                 st.session_state.messages.append({"role": "user", "content": question})
-                response = st.session_state.market_agent.process_financial_query(question)
+                
                 try:
-                    response_data = json.loads(response)
+                    # Check if it's a news query
+                    if question.lower().startswith("news:"):
+                        # Use DB Agent for news queries
+                        logger.info(f"Processing news query: {question}")  # Add logging
+                        query, results = st.session_state.db_agent.process_question(question[5:].strip())
+                        logger.info(f"DB Query executed: {query}")  # Add logging
+                        
+                        # Format the response
+                        if results is not None and not results.empty:
+                            logger.info(f"Query returned {len(results)} rows")  # Add logging
+                            response_data = {
+                                "response": f"Here are the results:\n\n{results.to_markdown()}",
+                                "success": True
+                            }
+                        else:
+                            logger.warning("Query returned no results")  # Add logging
+                            response_data = {
+                                "response": "No results found for your query.",
+                                "success": True
+                            }
+                    else:
+                        # Use Market Agent for other queries
+                        response = st.session_state.market_agent.process_financial_query(question)
+                        response_data = json.loads(response)
+                    
                     st.session_state.messages.append({
                         "role": "assistant", 
                         "content": response_data["response"]
                     })
+                    
                     store_conversation(
                         user_id="anonymous",
                         session_id=st.session_state.session_id,
                         user_prompt=question,
                         answer=response_data["response"]
                     )
-                except json.JSONDecodeError:
-                    st.error("Error processing response")
+                    
+                except Exception as e:
+                    st.error(f"Error processing response: {str(e)}")
+                
                 st.rerun()
