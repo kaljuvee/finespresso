@@ -9,9 +9,17 @@ from utils.db.news_db_util import get_news_df_date_range
 import pandas as pd
 from utils.backtest_price_util import create_price_moves  # Update this import
 
+# Time window configuration
+TIME_WINDOW_DAYS = 25
+
+# Calculate default dates
+def get_default_dates():
+    end_date = datetime.now(pytz.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+    start_date = end_date - timedelta(days=TIME_WINDOW_DAYS)
+    return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
+
 # Backtest Parameters
-START_DATE = "2024-01-01"  # YYYY-MM-DD
-END_DATE = "2024-01-31"    # YYYY-MM-DD
+START_DATE, END_DATE = get_default_dates()  # Default to last 25 days
 
 # Trading Parameters
 INITIAL_CAPITAL = 10000  # Changed from 100000 to 10000
@@ -47,10 +55,8 @@ SELECTED_EVENTS = [
     "financial_results",               # 73.08%
     "financing_agreements",            # 71.43%
     "clinical_study",                  # 69.49%
-    "bond_fixing",                     # 66.67%
     "dividend_reports_and_estimates",  # 66.67%
     "management_changes",              # 65.00%
-    "conference_call_webinar",         # 64.00%
     "partnerships",                    # 63.64%
     "earnings_releases_and_operating_result", # 61.54%
     "regulatory_filings",              # 61.54%

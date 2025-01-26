@@ -33,8 +33,8 @@ def get_trade_time(published_date, market):
         published_date = datetime.strptime(published_date, '%Y-%m-%d %H:%M:%S%z')
     
     if market == 'regular_market':
-        # One minute after publication
-        return published_date + timedelta(minutes=1)
+        # Five minutes after publication
+        return published_date + timedelta(minutes=5)
     elif market == 'pre_market':
         # Market open (9:30) same day
         return datetime.combine(published_date.date(), MARKET_OPEN, published_date.tzinfo)
@@ -60,6 +60,32 @@ def determine_market_period(published_date):
         return 'after_market'
     else:  # time(0, 0) <= pub_time < MARKET_OPEN
         return 'pre_market'
+
+def get_intraday_prices(symbol, date, interval='1m'):
+    """
+    Get intraday price data for a specific date
+    """
+    try:
+        # Check if date is within last 30 days (Yahoo's limitation)
+        current_date = datetime.now().date()
+        days_difference = (current_date - date).days
+        
+        if days_difference > 25:  # Using 25 days as safe limit
+            logger.warning(f"Date {date} is more than 25 days old. Intraday data not available for {symbol}")
+            return pd.DataFrame()
+            
+        # Download intraday data
+        start_date = date.strftime('%Y-%m-%d')
+        end_date = (date + timedelta(days=1)).strftime('%Y-%m-%d')
+        data = yf.download(symbol, start=start_date, end=end_date, interval=interval, progress=False)
+        
+        if data.empty:
+            logger.warning(f"No intraday data available for {symbol} on {date}")
+        
+        return data
+    except Exception as e:
+        logger.error(f"Error fetching intraday data for {symbol}: {e}")
+        return pd.DataFrame()
 
 def set_prices(row):
     # Convert the input row to a copy to avoid SettingWithCopyWarning
@@ -104,16 +130,49 @@ def set_prices(row):
 
         # Safely get prices using get() method with a default value
         try:
-            if market == 'pre_market':
+            if market == 'regular_market':
+                # Check if date is within last 25 days
+                current_date = datetime.now().date()
+                days_difference = (current_date - today_date_only).days
+                
+                if days_difference <= 25:
+                    # Get intraday data for entry
+                    intraday_data = get_intraday_prices(symbol, today_date_only)
+                    
+                    if not intraday_data.empty:
+                        # Get entry time (5 minutes after publication)
+                        entry_time = get_trade_time(today_date, market)
+                        
+                        # Find the closest price data after entry_time
+                        valid_times = intraday_data.index[intraday_data.index >= entry_time]
+                        if len(valid_times) > 0:
+                            entry_idx = valid_times[0]
+                            row['begin_price'] = float(intraday_data.loc[entry_idx]['Open'])
+                            row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
+                            row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
+                            row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
+                        else:
+                            logger.warning(f"No valid intraday data found after entry time for {symbol}")
+                            return row
+                    else:
+                        logger.warning(f"Falling back to daily data for {symbol} due to missing intraday data")
+                        # Fallback to daily data
+                        row['begin_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
+                        row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
+                        row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
+                        row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
+                else:
+                    logger.info(f"Date {today_date_only} is more than 25 days old, using daily data for {symbol}")
+                    # Use daily data for older dates
+                    row['begin_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
+                    row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
+                    row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
+                    row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
+            elif market == 'pre_market':
                 row['begin_price'] = float(data.loc[yf_previous_date]['Close'].iloc[0])
                 row['end_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
                 row['index_begin_price'] = float(index_data.loc[yf_previous_date]['Close'].iloc[0])
                 row['index_end_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-            elif market == 'regular_market':
-                row['begin_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
-                row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
-                row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-                row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
             elif market == 'after_market':
                 if yf_next_date in data.index and yf_next_date in index_data.index:
                     row['begin_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
