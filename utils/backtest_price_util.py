@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 import numpy as np
 from utils.date.date_adjuster import get_previous_trading_day, get_next_trading_day
 import sys
+import pytz
 
 # Create logs directory if it doesn't exist
 os.makedirs('logs', exist_ok=True)
@@ -21,60 +22,60 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-index_symbol = 'SPY'
+# Market hours in ET
 MARKET_OPEN = time(9, 30)
 MARKET_CLOSE = time(16, 0)
 
-def get_trade_time(published_date, market):
+def get_trade_time(published_date, market, market_tz=None):
     """
     Determine the trade entry time based on published date and market period
+    Returns time in market's timezone
     """
-    if isinstance(published_date, str):
-        published_date = datetime.strptime(published_date, '%Y-%m-%d %H:%M:%S%z')
+    # Use the market's timezone from the data, or UTC if not specified
+    market_tz = pytz.timezone(market_tz) if market_tz else pytz.UTC
+    market_date = published_date.astimezone(market_tz)
     
     if market == 'regular_market':
-        # Five minutes after publication
-        return published_date + timedelta(minutes=5)
+        # For regular market, enter at market open if news is before open
+        if market_date.time() < MARKET_OPEN:
+            return datetime.combine(market_date.date(), MARKET_OPEN, market_tz)
+        # Otherwise enter at next 5-minute mark, but not after close
+        entry_time = market_date + timedelta(minutes=(5 - market_date.minute % 5))
+        market_close = datetime.combine(market_date.date(), MARKET_CLOSE, market_tz)
+        return min(entry_time, market_close)
     elif market == 'pre_market':
-        # Market open (9:30) same day
-        return datetime.combine(published_date.date(), MARKET_OPEN, published_date.tzinfo)
+        # Always enter exactly at market open (9:30) same day
+        return datetime.combine(market_date.date(), MARKET_OPEN, market_tz)
     elif market == 'after_market':
-        # Market open (9:30) next trading day
-        next_trading_day = get_next_trading_day(published_date.date())
-        return datetime.combine(next_trading_day, MARKET_OPEN, published_date.tzinfo)
+        # Always enter exactly at market open (9:30) next day
+        next_trading_day = get_next_trading_day(market_date.date())
+        return datetime.combine(next_trading_day, MARKET_OPEN, market_tz)
     
     return None
 
-def determine_market_period(published_date):
+def determine_market_period(published_date, market_tz=None):
     """
     Determine if the publication time falls in pre-market, regular market, or after-market
+    Uses market's local timezone for:
+    - Pre-market: 00:00-9:30
+    - Regular: 9:30-16:00
+    - After-market: 16:00-23:59
     """
-    if isinstance(published_date, str):
-        published_date = datetime.strptime(published_date, '%Y-%m-%d %H:%M:%S%z')
+    # Use the market's timezone from the data, or UTC if not specified
+    market_tz = pytz.timezone(market_tz) if market_tz else pytz.UTC
+    market_date = published_date.astimezone(market_tz)
+    market_time = market_date.time()
     
-    pub_time = published_date.time()
-    
-    if MARKET_OPEN <= pub_time < MARKET_CLOSE:
-        return 'regular_market'
-    elif MARKET_CLOSE <= pub_time:
-        return 'after_market'
-    else:  # time(0, 0) <= pub_time < MARKET_OPEN
+    if market_time < MARKET_OPEN:
         return 'pre_market'
+    elif MARKET_OPEN <= market_time < MARKET_CLOSE:
+        return 'regular_market'
+    else:  # MARKET_CLOSE <= market_time
+        return 'after_market'
 
 def get_intraday_prices(symbol, date, interval='1m'):
-    """
-    Get intraday price data for a specific date
-    """
+    """Get intraday price data for a specific date"""
     try:
-        # Check if date is within last 30 days (Yahoo's limitation)
-        current_date = datetime.now().date()
-        days_difference = (current_date - date).days
-        
-        if days_difference > 25:  # Using 25 days as safe limit
-            logger.warning(f"Date {date} is more than 25 days old. Intraday data not available for {symbol}")
-            return pd.DataFrame()
-            
-        # Download intraday data
         start_date = date.strftime('%Y-%m-%d')
         end_date = (date + timedelta(days=1)).strftime('%Y-%m-%d')
         data = yf.download(symbol, start=start_date, end=end_date, interval=interval, progress=False)
@@ -88,118 +89,117 @@ def get_intraday_prices(symbol, date, interval='1m'):
         return pd.DataFrame()
 
 def set_prices(row):
-    # Convert the input row to a copy to avoid SettingWithCopyWarning
+    """Get entry and exit prices for a trade based on the news publication time"""
     row = row.copy()
     
     symbol = row['yf_ticker']
     logger.info(f"Processing price data for {symbol}")
 
-    if not symbol:  # Skip if no ticker symbol
+    if not symbol:
         logger.warning(f"No ticker symbol found for news_id {row.get('news_id')}")
         return row
 
-    if isinstance(row['published_date'], pd.Timestamp):
-        today_date = row['published_date'].to_pydatetime()
-    else:
-        today_date = datetime.strptime(row['published_date'], '%Y-%m-%d %H:%M:%S%z')
+    # Get timezone from the row data
+    news_tz = pytz.timezone(row['timezone']) if row.get('timezone') else pytz.UTC
     
-    # Determine market based on publication time
-    market = determine_market_period(today_date)
+    # Convert published_date to datetime with proper timezone
+    if isinstance(row['published_date'], pd.Timestamp):
+        pub_date = row['published_date'].to_pydatetime()
+    else:
+        pub_date = datetime.strptime(row['published_date'], '%Y-%m-%d %H:%M:%S%z')
+    
+    # Ensure datetime is in the correct timezone
+    if pub_date.tzinfo is None:
+        pub_date = news_tz.localize(pub_date)
+    else:
+        pub_date = pub_date.astimezone(news_tz)
+    
+    # Determine market period using the news timezone
+    market = determine_market_period(pub_date, row['timezone'])
     row['market'] = market
     
-    # Set trade time
-    row['trade_time'] = get_trade_time(today_date, market)
-    
-    # Find the previous and next trading days
-    today_date_only = today_date.date()
-    previous_trading_day = get_previous_trading_day(today_date_only)
-    next_trading_day = get_next_trading_day(today_date_only)
-    
-    yf_previous_date = previous_trading_day.strftime('%Y-%m-%d')
-    yf_today_date = today_date_only.strftime('%Y-%m-%d')
-    yf_next_date = next_trading_day.strftime('%Y-%m-%d')
+    pub_date_only = pub_date.date()
+    next_trading_day = get_next_trading_day(pub_date_only)
 
     try:
-        # Download data
-        data = yf.download(symbol, yf_previous_date, yf_next_date, progress=False)
-        index_data = yf.download(index_symbol, yf_previous_date, yf_next_date, progress=False)
-        
-        if data.empty or index_data.empty:
-            logger.warning(f"No data available for {symbol} or {index_symbol}")
-            return row
-
-        # Safely get prices using get() method with a default value
-        try:
-            if market == 'regular_market':
-                # Check if date is within last 25 days
-                current_date = datetime.now().date()
-                days_difference = (current_date - today_date_only).days
+        if market == 'pre_market':
+            intraday_data = get_intraday_prices(symbol, pub_date_only)
+            if not intraday_data.empty:
+                # Exactly 9:30 for entry, 16:00 for exit
+                market_open = datetime.combine(pub_date_only, MARKET_OPEN, news_tz)
+                market_close = datetime.combine(pub_date_only, MARKET_CLOSE, news_tz)
                 
-                if days_difference <= 25:
-                    # Get intraday data for entry
-                    intraday_data = get_intraday_prices(symbol, today_date_only)
-                    
-                    if not intraday_data.empty:
-                        # Get entry time (5 minutes after publication)
-                        entry_time = get_trade_time(today_date, market)
-                        
-                        # Find the closest price data after entry_time
-                        valid_times = intraday_data.index[intraday_data.index >= entry_time]
-                        if len(valid_times) > 0:
-                            entry_idx = valid_times[0]
-                            row['begin_price'] = float(intraday_data.loc[entry_idx]['Open'])
-                            row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
-                            row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-                            row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
-                        else:
-                            logger.warning(f"No valid intraday data found after entry time for {symbol}")
-                            return row
-                    else:
-                        logger.warning(f"Falling back to daily data for {symbol} due to missing intraday data")
-                        # Fallback to daily data
-                        row['begin_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
-                        row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
-                        row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-                        row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
+                trading_data = intraday_data[
+                    (intraday_data.index >= market_open) & 
+                    (intraday_data.index <= market_close)
+                ]
+                
+                if not trading_data.empty:
+                    row['begin_price'] = float(trading_data['Open'].iloc[0])
+                    row['end_price'] = float(trading_data['Close'].iloc[-1])
+                    row['intraday_prices'] = trading_data
+                    row['entry_time'] = market_open.replace(second=0, microsecond=0)
+                    row['exit_time'] = market_close.replace(second=0, microsecond=0)
                 else:
-                    logger.info(f"Date {today_date_only} is more than 25 days old, using daily data for {symbol}")
-                    # Use daily data for older dates
-                    row['begin_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
-                    row['end_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
-                    row['index_begin_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-                    row['index_end_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
-            elif market == 'pre_market':
-                row['begin_price'] = float(data.loc[yf_previous_date]['Close'].iloc[0])
-                row['end_price'] = float(data.loc[yf_today_date]['Open'].iloc[0])
-                row['index_begin_price'] = float(index_data.loc[yf_previous_date]['Close'].iloc[0])
-                row['index_end_price'] = float(index_data.loc[yf_today_date]['Open'].iloc[0])
-            elif market == 'after_market':
-                if yf_next_date in data.index and yf_next_date in index_data.index:
-                    row['begin_price'] = float(data.loc[yf_today_date]['Close'].iloc[0])
-                    row['end_price'] = float(data.loc[yf_next_date]['Open'].iloc[0])
-                    row['index_begin_price'] = float(index_data.loc[yf_today_date]['Close'].iloc[0])
-                    row['index_end_price'] = float(index_data.loc[yf_next_date]['Open'].iloc[0])
-                else:
-                    logger.warning(f"Next day data not available for {symbol}")
+                    logger.warning(f"No trading hours data for {symbol} on {pub_date_only}")
                     return row
+            else:
+                logger.warning(f"No intraday data for {symbol} on {pub_date_only}")
+                return row
+                
+        elif market == 'after_market':
+            intraday_data = get_intraday_prices(symbol, next_trading_day)
+            if not intraday_data.empty:
+                # Exactly 9:30 for entry, 16:00 for exit
+                market_open = datetime.combine(next_trading_day, MARKET_OPEN, news_tz)
+                market_close = datetime.combine(next_trading_day, MARKET_CLOSE, news_tz)
+                
+                trading_data = intraday_data[
+                    (intraday_data.index >= market_open) & 
+                    (intraday_data.index <= market_close)
+                ]
+                
+                if not trading_data.empty:
+                    row['begin_price'] = float(trading_data['Open'].iloc[0])
+                    row['end_price'] = float(trading_data['Close'].iloc[-1])
+                    row['intraday_prices'] = trading_data
+                    row['entry_time'] = market_open.replace(second=0, microsecond=0)
+                    row['exit_time'] = market_close.replace(second=0, microsecond=0)
+                else:
+                    logger.warning(f"No trading hours data for {symbol} on {next_trading_day}")
+                    return row
+            else:
+                logger.warning(f"No intraday data for {symbol} on {next_trading_day}")
+                return row
+                
+        else:  # regular_market
+            intraday_data = get_intraday_prices(symbol, pub_date_only)
+            if not intraday_data.empty:
+                market_close = datetime.combine(pub_date_only, MARKET_CLOSE, news_tz)
+                entry_time = get_trade_time(pub_date, market, row['timezone'])
+                
+                trading_data = intraday_data[
+                    (intraday_data.index >= entry_time) & 
+                    (intraday_data.index <= market_close)
+                ]
+                
+                if not trading_data.empty:
+                    row['begin_price'] = float(trading_data['Open'].iloc[0])
+                    row['end_price'] = float(trading_data['Close'].iloc[-1])
+                    row['intraday_prices'] = trading_data
+                    row['entry_time'] = entry_time.replace(second=0, microsecond=0)
+                    row['exit_time'] = market_close.replace(second=0, microsecond=0)
+                else:
+                    logger.warning(f"No valid intraday data after publication for {symbol}")
+                    return row
+            else:
+                logger.warning(f"No intraday data for {symbol} on {pub_date_only}")
+                return row
 
-            # Get volume data
-            row['Volume'] = float(data.loc[yf_today_date]['Volume'].iloc[0])
-
-        except KeyError as e:
-            logger.warning(f"Missing data for {symbol} on date {e}")
-            return row
-        except Exception as e:
-            logger.error(f"Error processing prices for {symbol}: {str(e)}")
-            return row
-
-        # Calculate price changes only if we have all required prices
-        if all(row.get(key) is not None for key in ['begin_price', 'end_price', 'index_begin_price', 'index_end_price']):
+        # Calculate basic price metrics
+        if row.get('begin_price') is not None and row.get('end_price') is not None:
             row['price_change'] = row['end_price'] - row['begin_price']
-            row['index_price_change'] = row['index_end_price'] - row['index_begin_price']
             row['price_change_percentage'] = (row['price_change'] / row['begin_price']) * 100
-            row['index_price_change_percentage'] = (row['index_price_change'] / row['index_begin_price']) * 100
-            row['daily_alpha'] = row['price_change_percentage'] - row['index_price_change_percentage']
             row['actual_side'] = 'UP' if row['price_change_percentage'] >= 0 else 'DOWN'
 
     except Exception as e:
@@ -209,31 +209,17 @@ def set_prices(row):
     return row
 
 def create_price_moves(news_df):
+    """Process each news item to get price data"""
     logger.info(f"Starting to create price moves for {len(news_df)} news items")
     news_df = news_df.reset_index(drop=True)
-    processed_rows = []
-
-    for index, row in news_df.iterrows():
-        try:
-            logger.info(f"Processing row {index} for ticker {row['yf_ticker']}")
-            processed_row = set_prices(row)
-            processed_rows.append(processed_row)
-        except Exception as e:
-            logger.error(f"Error processing row {index} for ticker {row['yf_ticker']}: {e}")
-            logger.exception("Detailed traceback:")
-            continue
-
-    processed_df = pd.DataFrame(processed_rows)
-    logger.info(f"Processed {len(processed_df)} rows successfully")
-
-    required_price_columns = ['begin_price', 'end_price', 'index_begin_price', 'index_end_price']
-    missing_columns = [col for col in required_price_columns if col not in processed_df.columns]
-    if missing_columns:
-        logger.warning(f"Missing columns in the DataFrame: {missing_columns}")
-        return processed_df
-
+    
+    # Process each row
+    processed_df = pd.DataFrame([set_prices(row) for _, row in news_df.iterrows()])
+    
+    # Remove rows with missing price data
+    required_price_columns = ['begin_price', 'end_price']
     original_len = len(processed_df)
     processed_df.dropna(subset=required_price_columns, inplace=True)
-    logger.info(f"Removed {original_len - len(processed_df)} rows with NaN values")
-
+    logger.info(f"Removed {original_len - len(processed_df)} rows with missing price data")
+    
     return processed_df 

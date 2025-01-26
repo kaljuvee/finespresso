@@ -10,7 +10,7 @@ import pandas as pd
 from utils.backtest_price_util import create_price_moves  # Update this import
 
 # Time window configuration
-TIME_WINDOW_DAYS = 25
+TIME_WINDOW_DAYS = 5
 
 # Calculate default dates
 def get_default_dates():
@@ -23,7 +23,7 @@ START_DATE, END_DATE = get_default_dates()  # Default to last 25 days
 
 # Trading Parameters
 INITIAL_CAPITAL = 10000  # Changed from 100000 to 10000
-POSITION_SIZE = 0.08    # 8% of capital per trade
+POSITION_SIZE = 0.20    # 8% of capital per trade
 TAKE_PROFIT = 0.01     # 1% take profit
 STOP_LOSS = 0.005      # 0.5% stop loss
 

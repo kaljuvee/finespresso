@@ -36,7 +36,7 @@ col3, col4 = st.columns(2)
 with col3:
     initial_capital = st.number_input("Initial Capital ($)", value=10000, step=1000)
 with col4:
-    position_size = st.number_input("Position Size (%)", value=8, min_value=1, max_value=100)
+    position_size = st.number_input("Position Size (%)", value=10, min_value=1, max_value=100)
 
 # Take Profit and Stop Loss
 col5, col6 = st.columns(2)

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import pytz
 from utils.backtest_price_util import create_price_moves, get_intraday_prices
 from utils.logging.log_util import get_logger
 
@@ -12,6 +13,55 @@ def calculate_position_size(capital, position_size_pct):
 def calculate_shares(position_size, entry_price):
     return int(position_size / entry_price)
 
+def check_exit(intraday_data, entry_price, target_price, stop_price, is_long, default_exit_time, default_exit_price):
+    """
+    Check if stop loss or target price is hit, otherwise exit at market close
+    
+    Args:
+        intraday_data: DataFrame with intraday price data
+        entry_price: Trade entry price
+        target_price: Target exit price
+        stop_price: Stop loss price
+        is_long: Boolean indicating if trade is long
+        default_exit_time: Market close time
+        default_exit_price: Market close price
+    
+    Returns:
+        tuple: (exit_price, exit_time, hit_target, hit_stop)
+    """
+    exit_price = default_exit_price
+    exit_time = default_exit_time
+    hit_target = False
+    hit_stop = False
+    
+    for idx, price_data in intraday_data.iterrows():
+        current_price = float(price_data['Close'].iloc[0])
+        
+        if is_long:
+            if current_price >= target_price:
+                exit_price = target_price
+                exit_time = idx
+                hit_target = True
+                break
+            elif current_price <= stop_price:
+                exit_price = stop_price
+                exit_time = idx
+                hit_stop = True
+                break
+        else:  # short trade
+            if current_price <= target_price:
+                exit_price = target_price
+                exit_time = idx
+                hit_target = True
+                break
+            elif current_price >= stop_price:
+                exit_price = stop_price
+                exit_time = idx
+                hit_stop = True
+                break
+                
+    return exit_price, exit_time, hit_target, hit_stop
+
 def run_backtest(news_df, initial_capital, position_size, take_profit, stop_loss, enable_advanced=False):
     logger.info("Starting backtest")
     
@@ -19,19 +69,10 @@ def run_backtest(news_df, initial_capital, position_size, take_profit, stop_loss
         logger.warning("No news data provided for backtest")
         return None
     
-    # Debug log the date range
-    logger.info(f"Date range in news_df: {news_df['published_date'].min()} to {news_df['published_date'].max()}")
-    
-    # Ensure published_date is timezone-aware
-    if not pd.api.types.is_datetime64tz_dtype(news_df['published_date']):
-        logger.info("Converting published_date to timezone-aware")
-        news_df['published_date'] = pd.to_datetime(news_df['published_date']).dt.tz_localize('UTC')
-    
-    # Debug log a few sample dates before filtering
-    logger.info("Sample of published dates before filtering:")
-    logger.info(news_df['published_date'].head())
-    
-    # Note: We don't need to filter the dates here since backtester.py already filters them
+    # Ensure timezone column exists
+    if 'timezone' not in news_df.columns:
+        logger.warning("No timezone information in news data, defaulting to UTC")
+        news_df['timezone'] = 'UTC'
     
     # Create price moves for the news events
     price_moves_df = create_price_moves(news_df)
@@ -49,82 +90,35 @@ def run_backtest(news_df, initial_capital, position_size, take_profit, stop_loss
     
     for _, row in price_moves_df.iterrows():
         try:
-            # Calculate position size for this trade
+            # Calculate position size and entry details
             trade_position_size = calculate_position_size(current_capital, position_size)
-            
-            # Entry price is the price at news publication
             entry_price = row['begin_price']
             shares = calculate_shares(trade_position_size, entry_price)
             
             if shares == 0:
                 continue
                 
-            # Determine trade direction
+            # Determine trade direction and prices
             is_long = row['predicted_side'] == 'UP'
+            target_price = entry_price * (1 + take_profit) if is_long else entry_price * (1 - take_profit)
+            stop_price = entry_price * (1 - stop_loss) if is_long else entry_price * (1 + stop_loss)
             
-            # Calculate target and stop prices
-            if is_long:
-                target_price = entry_price * (1 + take_profit)
-                stop_price = entry_price * (1 - stop_loss)
+            # Check for exit conditions
+            if 'intraday_prices' in row:
+                exit_price, exit_time, hit_target, hit_stop = check_exit(
+                    intraday_data=row['intraday_prices'],
+                    entry_price=entry_price,
+                    target_price=target_price,
+                    stop_price=stop_price,
+                    is_long=is_long,
+                    default_exit_time=row['exit_time'],
+                    default_exit_price=row['end_price']
+                )
             else:
-                target_price = entry_price * (1 - take_profit)
-                stop_price = entry_price * (1 + stop_loss)
-            
-            # Get entry time and price
-            entry_time = row['trade_time']
-            
-            # For regular market trades, check intraday prices for exit conditions
-            if row['market'] == 'regular_market':
-                intraday_data = get_intraday_prices(row['ticker'], entry_time.date())
-                
-                if not intraday_data.empty:
-                    # Get prices after entry time
-                    prices_after_entry = intraday_data[intraday_data.index >= entry_time]
-                    
-                    exit_price = row['end_price']  # default to end of day
-                    exit_time = row['published_date'] + pd.Timedelta(days=1)
-                    hit_target = False
-                    hit_stop = False
-                    
-                    for idx, price_data in prices_after_entry.iterrows():
-                        current_price = float(price_data['Close'])  # Convert to float
-                        
-                        if is_long:
-                            if current_price >= target_price:
-                                exit_price = target_price
-                                exit_time = idx
-                                hit_target = True
-                                break
-                            elif current_price <= stop_price:
-                                exit_price = stop_price
-                                exit_time = idx
-                                hit_stop = True
-                                break
-                        else:  # short trade
-                            if current_price <= target_price:
-                                exit_price = target_price
-                                exit_time = idx
-                                hit_target = True
-                                break
-                            elif current_price >= stop_price:
-                                exit_price = stop_price
-                                exit_time = idx
-                                hit_stop = True
-                                break
-                else:
-                    # Fallback to simple exit price logic if no intraday data
-                    end_price = float(row['end_price'])  # Convert to float
-                    hit_target = end_price >= target_price if is_long else end_price <= target_price
-                    hit_stop = end_price <= stop_price if is_long else end_price >= stop_price
-                    exit_price = target_price if hit_target else (stop_price if hit_stop else end_price)
-                    exit_time = row['published_date'] + pd.Timedelta(days=1)
-            else:
-                # For pre/after market trades, use existing logic
-                end_price = float(row['end_price'])  # Convert to float
-                hit_target = end_price >= target_price if is_long else end_price <= target_price
-                hit_stop = end_price <= stop_price if is_long else end_price >= stop_price
-                exit_price = target_price if hit_target else (stop_price if hit_stop else end_price)
-                exit_time = row['published_date'] + pd.Timedelta(days=1)
+                exit_price = row['end_price']
+                exit_time = row['exit_time']
+                hit_target = False
+                hit_stop = False
             
             # Calculate P&L
             pnl = shares * (exit_price - entry_price) if is_long else shares * (entry_price - exit_price)
@@ -137,7 +131,7 @@ def run_backtest(news_df, initial_capital, position_size, take_profit, stop_loss
             trade = {
                 'published_date': row['published_date'],
                 'market': row['market'],
-                'entry_time': entry_time,
+                'entry_time': row['entry_time'],
                 'exit_time': exit_time,
                 'ticker': row['ticker'],
                 'direction': 'LONG' if is_long else 'SHORT',
@@ -152,8 +146,6 @@ def run_backtest(news_df, initial_capital, position_size, take_profit, stop_loss
                 'pnl_pct': pnl_pct,
                 'capital_after': current_capital,
                 'news_event': row['event'],
-                'predicted_move': row['predicted_move'],
-                'actual_move': row['price_change_percentage'],
                 'link': row['link']
             }
             trades.append(trade)
